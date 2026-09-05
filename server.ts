@@ -1,3 +1,4 @@
+import fs from 'fs';
 import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
@@ -35,6 +36,16 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 // Initialize Solana Connection
 const connection = new Connection(SOLANA_RPC_URL, 'confirmed');
+
+// Helper to load configured Solana CLI payer keypair
+function loadConfiguredPayer(): Keypair {
+  const keypairPath = process.env.SOLANA_KEYPAIR_PATH || path.join(process.env.USERPROFILE || process.env.HOME || '', '.config', 'solana', 'id.json');
+  if (!fs.existsSync(keypairPath)) {
+    throw new Error(`Solana CLI keypair not found at path: ${keypairPath}. Ensure 'solana-keygen new' has been run.`);
+  }
+  const rawKey = JSON.parse(fs.readFileSync(keypairPath, 'utf-8'));
+  return Keypair.fromSecretKey(Uint8Array.from(rawKey));
+}
 
 // Initialize Gemini Client
 let genAI: GoogleGenerativeAI | null = null;
@@ -381,7 +392,7 @@ app.post('/api/solana/airdrop', async (req, res) => {
   }
 });
 
-// FAULT-TOLERANT ON-CHAIN TOKEN DEPLOYMENT
+// REAL ON-CHAIN TOKEN DEPLOYMENT USING CONFIGURED SOLANA CLI WALLET
 app.post('/api/solana/deploy-token', async (req, res) => {
   try {
     const { payerSecretKey, revokeMintAuthority = true } = req.body;
@@ -390,64 +401,72 @@ app.post('/api/solana/deploy-token', async (req, res) => {
     if (payerSecretKey && Array.isArray(payerSecretKey)) {
       payer = Keypair.fromSecretKey(Uint8Array.from(payerSecretKey));
     } else {
-      payer = Keypair.generate();
+      payer = loadConfiguredPayer();
     }
 
-    const mintKeypair = Keypair.generate();
-    let mintAddress = mintKeypair.publicKey.toBase58();
-    let tokenAccountAddress = Keypair.generate().publicKey.toBase58();
-    let mintTxSig = `MINT_TX_${Date.now()}_${Math.random().toString(36).substring(2, 12)}`;
-    let revokeTxSig = revokeMintAuthority ? `REVOKE_TX_${Date.now()}_${Math.random().toString(36).substring(2, 12)}` : null;
+    console.log(`[DEPLOY] Initiating token deployment using payer: ${payer.publicKey.toBase58()}`);
 
-    try {
-      const airdropSig = await connection.requestAirdrop(payer.publicKey, 2 * LAMPORTS_PER_SOL);
-      const latestBlockhash = await connection.getLatestBlockhash();
-      await connection.confirmTransaction({
-        blockhash: latestBlockhash.blockhash,
-        lastValidBlockHeight: latestBlockhash.lastValidBlockHeight,
-        signature: airdropSig,
+    // Verify payer has sufficient balance for rent-exempt accounts and tx fees
+    const balanceLamports = await connection.getBalance(payer.publicKey, 'confirmed');
+    const balanceSol = balanceLamports / LAMPORTS_PER_SOL;
+    console.log(`[DEPLOY] Payer balance: ${balanceSol} SOL (${balanceLamports} lamports)`);
+
+    const minRequiredLamports = 0.02 * LAMPORTS_PER_SOL;
+    if (balanceLamports < minRequiredLamports) {
+      return res.status(400).json({
+        success: false,
+        error: `Insufficient SOL balance: ${balanceSol.toFixed(4)} SOL found in payer wallet ${payer.publicKey.toBase58()}. Minimum 0.02 SOL required for rent and fees.`
       });
+    }
 
-      const mint = await createMint(
-        connection,
-        payer,
-        payer.publicKey,
-        payer.publicKey,
-        9,
-        mintKeypair
-      );
-      mintAddress = mint.toBase58();
+    // Generate fresh keypair for the SPL token mint
+    const mintKeypair = Keypair.generate();
+    console.log(`[DEPLOY] Creating mint: ${mintKeypair.publicKey.toBase58()}`);
 
-      const tokenAccount = await getOrCreateAssociatedTokenAccount(
+    const mint = await createMint(
+      connection,
+      payer,
+      payer.publicKey,
+      payer.publicKey,
+      9,
+      mintKeypair
+    );
+    const mintAddress = mint.toBase58();
+    console.log(`[DEPLOY] Mint created successfully: ${mintAddress}`);
+
+    // Create or retrieve Associated Token Account for payer
+    const tokenAccount = await getOrCreateAssociatedTokenAccount(
+      connection,
+      payer,
+      mint,
+      payer.publicKey
+    );
+    const tokenAccountAddress = tokenAccount.address.toBase58();
+    console.log(`[DEPLOY] Token account: ${tokenAccountAddress}`);
+
+    // Total supply: 1 Quadrillion (1,000,000,000,000,000) with 9 decimals
+    const totalSupplyRaw = BigInt('1000000000000000') * BigInt('1000000000');
+    const mintTxSig = await mintTo(
+      connection,
+      payer,
+      mint,
+      tokenAccount.address,
+      payer,
+      totalSupplyRaw
+    );
+    console.log(`[DEPLOY] MintTo tx confirmed: ${mintTxSig}`);
+
+    let revokeTxSig: string | null = null;
+    if (revokeMintAuthority) {
+      revokeTxSig = await setAuthority(
         connection,
         payer,
         mint,
-        payer.publicKey
-      );
-      tokenAccountAddress = tokenAccount.address.toBase58();
-
-      const totalSupplyRaw = BigInt('1000000000000000') * BigInt('1000000000');
-      mintTxSig = await mintTo(
-        connection,
         payer,
-        mint,
-        tokenAccount.address,
-        payer,
-        totalSupplyRaw
+        AuthorityType.MintTokens,
+        null
       );
-
-      if (revokeMintAuthority) {
-        revokeTxSig = await setAuthority(
-          connection,
-          payer,
-          mint,
-          payer,
-          AuthorityType.MintTokens,
-          null
-        );
-      }
-    } catch (onChainErr: any) {
-      console.warn('Devnet faucet rate-limited (429) or busy RPC. Using deterministic cryptographic mint proof.');
+      console.log(`[DEPLOY] Mint authority revoked tx: ${revokeTxSig}`);
     }
 
     res.json({
@@ -461,29 +480,18 @@ app.post('/api/solana/deploy-token', async (req, res) => {
       decimals: 9,
       mintTxSignature: mintTxSig,
       revokeTxSignature: revokeTxSig,
-      mintAuthorityRevoked: revokeMintAuthority,
+      mintAuthorityRevoked: !!revokeMintAuthority,
       network: SOLANA_NETWORK,
       explorerMintUrl: `https://explorer.solana.com/address/${mintAddress}?cluster=devnet`,
       explorerMintTxUrl: `https://explorer.solana.com/tx/${mintTxSig}?cluster=devnet`,
+      confirmedOnChain: true,
     });
   } catch (error: any) {
-    console.error('Token deployment error:', error);
-    const fallbackMint = Keypair.generate().publicKey.toBase58();
-    res.json({
-      success: true,
-      tokenName: 'JarSol',
-      tokenSymbol: 'JARSOL',
-      mintAddress: fallbackMint,
-      tokenAccountAddress: Keypair.generate().publicKey.toBase58(),
-      deployerAddress: Keypair.generate().publicKey.toBase58(),
-      totalSupplyFormatted: '1,000,000,000,000,000 $JARSOL',
-      decimals: 9,
-      mintTxSignature: `MINT_TX_BACKUP_${Date.now()}`,
-      revokeTxSignature: `REVOKE_TX_BACKUP_${Date.now()}`,
-      mintAuthorityRevoked: true,
-      network: SOLANA_NETWORK,
-      explorerMintUrl: `https://explorer.solana.com/address/${fallbackMint}?cluster=devnet`,
-      explorerMintTxUrl: `https://explorer.solana.com/tx/MINT_TX_BACKUP_${Date.now()}?cluster=devnet`,
+    console.error('On-chain token deployment error:', error);
+    res.status(500).json({
+      success: false,
+      error: error.message || 'On-chain token deployment failed',
+      details: error.toString()
     });
   }
 });
