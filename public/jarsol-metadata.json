@@ -1,0 +1,53 @@
+﻿{
+  name: JarSol,
+  symbol: JARSOL,
+  description: JarSol is the native utility and compute-gas token for the JarSol Web 4.0 Neural Automaton — bridging Elon Musk first-principles polymath reasoning, Conway's Cellular Automata, and NIST Post-Quantum Cryptography on Solana.,
+  image: https://raw.githubusercontent.com/elon00/jarsol-web4-automaton/main/public/jarsol-token-logo.png,
+  external_url: https://github.com/elon00/jarsol-web4-automaton,
+  attributes: [
+    {
+      trait_type: Blockchain,
+      value: Solana
+    },
+    {
+      trait_type: Token Standard,
+      value: SPL-Token / Metaplex
+    },
+    {
+      trait_type: Total Supply,
+      value: 1,000,000,000,000,000
+    },
+    {
+      trait_type: Decimals,
+      value: 9
+    },
+    {
+      trait_type: Mint Authority,
+      value: Revoked (Fixed Supply)
+    },
+    {
+      trait_type: Architecture,
+      value: Conway Automaton + Post-Quantum Cryptography
+    }
+  ],
+  properties: {
+    files: [
+      {
+        uri: https://raw.githubusercontent.com/elon00/jarsol-web4-automaton/main/public/jarsol-token-logo.png,
+        type: image/png
+      }
+    ],
+    category: image,
+    creators: [
+      {
+        address: 3q3cTxEPjtUpEJpPAnQodrTWSW7gH4NNebvg5kwd1Di7,
+        share: 100
+      }
+    ]
+  },
+  extensions: {
+    website: https://github.com/elon00/jarsol-web4-automaton,
+    twitter: https://x.com/JarSolWeb4,
+    telegram: https://t.me/JarSolWeb4
+  }
+}

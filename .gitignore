@@ -15,3 +15,6 @@ jarvis_core/index
 jarvis_core/packed-refs
 jarvis_core/description
 jarvis_core/config
+*.zip
+alchemy-demo/
+server.ts.backup
