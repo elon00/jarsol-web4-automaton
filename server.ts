@@ -101,30 +101,30 @@ function generateElonPolymathResponse(query: string, timeStr: string, dateStr: s
 // ==========================================
 app.get('/api/health', async (req, res) => {
   try {
-    let version = { 'solana-core': '1.18.26' };
-    let slot = 320491820;
-    try {
-      version = await connection.getVersion();
-      slot = await connection.getSlot();
-    } catch (rpcErr) {}
-
+    const [version, slot] = await Promise.all([
+      connection.getVersion(),
+      connection.getSlot(),
+    ]);
     res.json({
       status: 'ONLINE',
-      project: 'JarSol // Elon-Musk Style Conway Automaton & Quantum Web 4.0 Neural Core',
+      project: 'JarSol Reality-First Automation Platform',
       version: '4.0.0',
       network: SOLANA_NETWORK,
       solanaRpc: SOLANA_RPC_URL,
       solanaVersion: version,
       solanaSlot: slot,
       geminiConfigured: !!GEMINI_API_KEY,
-      geminiModel: 'gemini-3.6-flash',
-      pqcStandard: 'NIST FIPS 203 (ML-KEM) & FIPS 204 (ML-DSA)',
-      tokenSupply: '1,000,000,000,000,000 $JARSOL (1,000 Trillion)',
-      corePersona: 'Elon Musk-Style Visionary Polymath (AI, Quantum, Conway, Crypto, Algo, RevenueCat)',
-      earthSync: 'Real-World Date, Time, Year, and Season Mirrored 100%',
+      pqcStatus: 'NOT_IMPLEMENTED',
+      tokenStatus: 'UNVERIFIED',
+      evidenceRule: 'No feature is VERIFIED without reproducible evidence.',
     });
   } catch (error: any) {
-    res.status(500).json({ status: 'DEGRADED', error: error.message });
+    res.status(503).json({
+      status: 'DEGRADED',
+      network: SOLANA_NETWORK,
+      solanaRpc: SOLANA_RPC_URL,
+      error: error.message,
+    });
   }
 });
 
@@ -260,41 +260,29 @@ REAL-WORLD TRUTH:
   });
 });
 
-// Autonomous AI Legal & Regulatory Double-Auditor
+// Regulatory analysis is informational only and must not self-certify legal compliance.
 app.post('/api/gemini/audit', async (req, res) => {
-  const prompt = `Perform an exhaustive, rigorous Double-Audit on the JarSol crypto asset ($JARSOL, 1,000 Trillion Total Supply) under:
-1. US SEC Howey Test (4 Prongs: Investment of Money, Common Enterprise, Expectation of Profits, Solely from Efforts of Others).
-2. EU MiCA (Markets in Crypto-Assets) Title II utility token compliance.
-3. Solana SPL Token-2022 Immutable Mint & Liquidity Burn Security on Devnet/Testnet.`;
-
-  if (genAI) {
-    try {
-      const model = genAI.getGenerativeModel({ model: 'gemini-3.6-flash' });
-      const result = await model.generateContent(prompt);
-      const text = result.response.text();
-      if (text) {
-        return res.json({
-          success: true,
-          report: text,
-          auditTimestamp: new Date().toISOString(),
-          auditor: 'JarSol Regulatory AI // Gemini 3.6 Flash Engine',
-          overallRiskScore: 4.2,
-          howeyClassification: 'NON-SECURITY / CONSUMPTIVE UTILITY TOKEN',
-          micaCompliance: 'FULL PASSED (TITLE II ART. 4-14)',
-        });
-      }
-    } catch (e) {}
+  if (!genAI) {
+    return res.status(503).json({
+      success: false,
+      status: 'UNAVAILABLE',
+      reason: 'AI audit provider is not configured. No legal classification is inferred.',
+    });
   }
-
-  res.json({
-    success: true,
-    report: `### JARSOL COMPREHENSIVE REGULATORY DOUBLE-AUDIT REPORT\n**Audit Authority**: JarSol Regulatory AI\n**Target**: $JARSOL SPL-2022 (1,000,000,000,000,000 Supply on Devnet/Testnet)\n\n#### 1. US SEC Howey Test Evaluation\n- **Prong 1 (Investment of Money)**: Tokens acquired via open decentralized liquidity with zero ICO/pre-sale capital pooling. [LOW RISK - 2.1%]\n- **Prong 2 (Common Enterprise)**: Fully decentralized Conway automaton compute nodes without horizontal investor pooling. [LOW RISK - 3.5%]\n- **Prong 3 & 4 (Expectation of Profit from Efforts of Others)**: Token functions solely as a consumptive fuel for AI agent compute cycles, zero dividend promises, 100% utility driven. [PASSED - 4.8%]\n**Classification**: NON-SECURITY / CONSUMPTIVE UTILITY TOKEN.\n\n#### 2. EU MiCA Title II Compliance\n- Full crypto-asset whitepaper transparency published (Articles 4-14).\n- 100% Raydium LP burned with verifiable on-chain proof.\n- Multi-jurisdictional consumer disclosure warnings integrated. [PASSED]`,
-    auditTimestamp: new Date().toISOString(),
-    auditor: 'JarSol Regulatory AI // Gemini 3.6 Flash Engine',
-    overallRiskScore: 4.2,
-    howeyClassification: 'NON-SECURITY / CONSUMPTIVE UTILITY TOKEN',
-    micaCompliance: 'FULL PASSED (TITLE II ART. 4-14)',
-  });
+  try {
+    const model = genAI.getGenerativeModel({ model: 'gemini-flash-latest' });
+    const result = await model.generateContent(
+      'Provide an informational risk-analysis framework only. Do not certify legal compliance, classify a token as a security/non-security, or claim MiCA/SEC approval.'
+    );
+    res.json({
+      success: true,
+      status: 'INFORMATIONAL_NOT_LEGAL_ADVICE',
+      report: result.response.text(),
+      auditTimestamp: new Date().toISOString(),
+    });
+  } catch (error: any) {
+    res.status(503).json({ success: false, status: 'UNAVAILABLE', error: error.message });
+  }
 });
 
 // ==========================================
@@ -303,85 +291,41 @@ app.post('/api/gemini/audit', async (req, res) => {
 app.get('/api/solana/balance/:pubkey', async (req, res) => {
   try {
     const pubkey = new PublicKey(req.params.pubkey);
-    let balanceLamports = 2 * LAMPORTS_PER_SOL;
-    let parsedTokens: any[] = [];
-
-    try {
-      balanceLamports = await connection.getBalance(pubkey);
-      const tokenAccounts = await connection.getParsedTokenAccountsByOwner(pubkey, {
-        programId: TOKEN_PROGRAM_ID,
-      });
-
-      parsedTokens = tokenAccounts.value.map((ta) => {
-        const info = ta.account.data.parsed.info;
-        return {
-          pubkey: ta.pubkey.toBase58(),
-          mint: info.mint,
-          amount: info.tokenAmount.uiAmountString,
-          decimals: info.tokenAmount.decimals,
-        };
-      });
-    } catch (e) {}
-
-    const balanceSol = balanceLamports / LAMPORTS_PER_SOL;
-
-    res.json({
-      address: pubkey.toBase58(),
-      sol: balanceSol,
-      lamports: balanceLamports,
-      tokens: parsedTokens,
-      network: SOLANA_NETWORK,
+    const [balanceLamports, tokenAccounts] = await Promise.all([
+      connection.getBalance(pubkey),
+      connection.getParsedTokenAccountsByOwner(pubkey, { programId: TOKEN_PROGRAM_ID }),
+    ]);
+    const tokens = tokenAccounts.value.map((ta) => {
+      const info = ta.account.data.parsed.info;
+      return {
+        pubkey: ta.pubkey.toBase58(),
+        mint: info.mint,
+        amount: info.tokenAmount.uiAmountString,
+        decimals: info.tokenAmount.decimals,
+      };
     });
+    res.json({ address: pubkey.toBase58(), sol: balanceLamports / LAMPORTS_PER_SOL, lamports: balanceLamports, tokens, network: SOLANA_NETWORK, status: 'VERIFIED_RPC' });
   } catch (error: any) {
-    res.status(400).json({ error: error.message });
+    res.status(503).json({ status: 'UNAVAILABLE', error: error.message });
   }
 });
 
 app.post('/api/solana/airdrop', async (req, res) => {
   try {
     const { address, amount = 2 } = req.body;
-    if (!address) {
-      return res.status(400).json({ error: 'Solana wallet address is required' });
-    }
-
+    if (!address) return res.status(400).json({ error: 'Solana wallet address is required' });
+    if (SOLANA_NETWORK !== 'devnet' && SOLANA_NETWORK !== 'testnet') return res.status(400).json({ error: 'Airdrop is restricted to test clusters' });
     const pubkey = new PublicKey(address);
-    let airdropSignature = `AIRDROP_${Date.now()}_${Math.random().toString(36).substring(2, 10)}`;
-
-    try {
-      airdropSignature = await connection.requestAirdrop(
-        pubkey,
-        amount * LAMPORTS_PER_SOL
-      );
-
-      const latestBlockHash = await connection.getLatestBlockhash();
-      await connection.confirmTransaction({
-        blockhash: latestBlockHash.blockhash,
-        lastValidBlockHeight: latestBlockHash.lastValidBlockHeight,
-        signature: airdropSignature,
-      });
-    } catch (faucetErr: any) {
-      console.warn('Devnet faucet rate-limited (429), granting simulated Devnet test balance.');
-    }
-
-    res.json({
-      success: true,
-      signature: airdropSignature,
-      airdroppedSol: amount,
-      newBalanceSol: 2.0,
-      explorerUrl: `https://explorer.solana.com/tx/${airdropSignature}?cluster=devnet`,
-      note: 'Devnet airdrop verified. Use https://faucet.solana.com for direct external faucet funding.',
-    });
+    const signature = await connection.requestAirdrop(pubkey, amount * LAMPORTS_PER_SOL);
+    const latest = await connection.getLatestBlockhash();
+    await connection.confirmTransaction({ blockhash: latest.blockhash, lastValidBlockHeight: latest.lastValidBlockHeight, signature }, 'confirmed');
+    res.json({ success: true, status: 'CONFIRMED', signature, airdroppedSol: amount, network: SOLANA_NETWORK });
   } catch (error: any) {
-    res.json({
-      success: true,
-      airdroppedSol: 2,
-      newBalanceSol: 2.0,
-      note: 'Devnet test funding granted.',
-    });
+    res.status(503).json({ success: false, status: 'FAILED', error: error.message });
   }
 });
 
-// FAULT-TOLERANT ON-CHAIN TOKEN DEPLOYMENT
+// ON-CHAIN TOKEN DEPLOYMENT
 app.post('/api/solana/deploy-token', async (req, res) => {
   try {
     const { payerSecretKey, revokeMintAuthority = true } = req.body;
@@ -488,126 +432,40 @@ app.post('/api/solana/deploy-token', async (req, res) => {
   }
 });
 
-// REAL RAYDIUM / ORCA DEX SWAP EXECUTION ON SOLANA DEVNET
+// DEX quote simulation only. No on-chain swap is claimed or broadcast.
 app.post('/api/dex/swap', async (req, res) => {
-  try {
-    const { fromToken, toToken, amount, userAddress, slippage = 0.5 } = req.body;
-
-    if (!amount || amount <= 0) {
-      return res.status(400).json({ error: 'Valid swap amount required' });
-    }
-
-    const solReserve = 50000;
-    const jarsolReserve = 450000000000000;
-    const spotPriceJarsolPerSol = jarsolReserve / solReserve;
-
-    let outputAmount = 0;
-    let priceImpact = 0;
-
-    if (fromToken === 'SOL') {
-      const inputWithFee = amount * 0.997;
-      outputAmount = (inputWithFee * jarsolReserve) / (solReserve + inputWithFee);
-      priceImpact = (amount / (solReserve + amount)) * 100;
-    } else {
-      const inputWithFee = amount * 0.997;
-      outputAmount = (inputWithFee * solReserve) / (jarsolReserve + inputWithFee);
-      priceImpact = (amount / (jarsolReserve + amount)) * 100;
-    }
-
-    const tempPayer = Keypair.generate();
-    let onChainSignature = `DEX_SWAP_${Date.now()}_${Math.random().toString(36).substring(2, 10)}`;
-
-    try {
-      const latestBlock = await connection.getLatestBlockhash();
-      const tx = new Transaction().add(
-        SystemProgram.transfer({
-          fromPubkey: tempPayer.publicKey,
-          toPubkey: new PublicKey('11111111111111111111111111111111'),
-          lamports: 1000,
-        })
-      );
-      tx.recentBlockhash = latestBlock.blockhash;
-      tx.feePayer = tempPayer.publicKey;
-      tx.sign(tempPayer);
-
-      const rawTx = tx.serialize();
-      const simulatedSig = Buffer.from(sha3_256(rawTx)).toString('hex');
-      onChainSignature = `DEX_SWAP_${simulatedSig.substring(0, 44)}`;
-    } catch (e) {}
-
-    res.json({
-      success: true,
-      fromToken,
-      toToken,
-      inputAmount: amount,
-      outputAmount: outputAmount,
-      spotPrice: spotPriceJarsolPerSol,
-      priceImpactPercent: parseFloat(priceImpact.toFixed(4)),
-      ammFeePercent: 0.3,
-      deflationaryBurnBurned: fromToken === 'JARSOL' ? amount * 0.01 : outputAmount * 0.01,
-      route: 'Raydium CPMM Pool (SOL/JARSOL)',
-      signature: onChainSignature,
-      timestamp: new Date().toISOString(),
-      network: SOLANA_NETWORK,
-      explorerUrl: `https://explorer.solana.com/tx/${onChainSignature}?cluster=devnet`,
-    });
-  } catch (error: any) {
-    res.status(500).json({ error: error.message });
-  }
+  const { fromToken, toToken, amount } = req.body;
+  if (!amount || amount <= 0) return res.status(400).json({ error: 'Valid swap amount required' });
+  res.json({
+    success: true,
+    status: 'SIMULATION',
+    fromToken,
+    toToken,
+    inputAmount: amount,
+    execution: 'NOT_BROADCAST',
+    signature: null,
+    explorerUrl: null,
+    note: 'This endpoint does not execute a Raydium/Orca swap and must not be presented as on-chain execution.',
+    timestamp: new Date().toISOString(),
+  });
 });
 
 // ==========================================
 // 4. POST-QUANTUM CRYPTOGRAPHY (PQC) ENGINE
 // ==========================================
 app.post('/api/pqc/generate-keys', (req, res) => {
-  const { algorithm = 'ML-DSA-65' } = req.body;
-
-  const randomBytes = new Uint8Array(64);
-  for (let i = 0; i < 64; i++) {
-    randomBytes[i] = Math.floor(Math.random() * 256);
-  }
-
-  const hash3_512 = sha3_512(randomBytes);
-  const hash3_256 = sha3_256(randomBytes);
-
-  const hexSeed = Buffer.from(hash3_512).toString('hex');
-  const hexPk = '0x_pqc_pk_' + hexSeed.substring(0, 48);
-  const hexSk = '0x_pqc_sk_masked_' + hexSeed.substring(48, 96);
-  const solHybridAddress = 'PQC_' + Buffer.from(hash3_256).toString('base64').replace(/[^a-zA-Z0-9]/g, '').substring(0, 32);
-
-  res.json({
-    success: true,
-    algorithm: algorithm,
-    standard: algorithm.startsWith('ML-DSA') ? 'NIST FIPS 204 (Dilithium Signature)' : 'NIST FIPS 203 (Kyber KEM)',
-    publicKey: hexPk,
-    secretKey: hexSk,
-    solanaHybridAddress: solHybridAddress,
-    latticeDimension: algorithm === 'ML-DSA-87' ? 8 : 6,
-    modulusQ: 8380417,
-    polynomialRing: 'R_q = Z_q[X] / (X^256 + 1)',
-    shorQuantumResistance: '100% Resistant (Hard Shortest Vector Problem)',
-    timestamp: new Date().toISOString(),
+  res.status(501).json({
+    success: false,
+    status: 'NOT_IMPLEMENTED',
+    reason: 'No standards-backed ML-KEM/ML-DSA implementation is currently linked to this endpoint.',
   });
 });
 
 app.post('/api/pqc/verify-signature', (req, res) => {
-  const { message, publicKey, signature, hybridMode = true } = req.body;
-
-  if (!message || !signature) {
-    return res.status(400).json({ error: 'Message and signature are required' });
-  }
-
-  const msgHash = sha3_256(new TextEncoder().encode(message));
-  const verificationHash = Buffer.from(msgHash).toString('hex').substring(0, 16);
-
-  res.json({
-    verified: true,
-    hybridMode: hybridMode,
-    messageDigest: '0x' + verificationHash,
-    quantumProof: 'VALID_LATTICE_SAMPLE',
-    algorithm: 'ML-DSA-65 + Ed25519 Dual Verification',
-    quantumSecurityBits: 192,
-    verifiedAt: new Date().toISOString(),
+  res.status(501).json({
+    verified: false,
+    status: 'NOT_IMPLEMENTED',
+    reason: 'Signature verification requires a real ML-DSA implementation and test vectors.',
   });
 });
 
