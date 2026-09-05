@@ -1,0 +1,17 @@
+node_modules
+dist
+.env
+*.log
+New Text Document.txt
+__pycache__/
+*.pyc
+test_*.ts
+jarvis_core/objects/
+jarvis_core/hooks/
+jarvis_core/logs/
+jarvis_core/refs/
+jarvis_core/HEAD
+jarvis_core/index
+jarvis_core/packed-refs
+jarvis_core/description
+jarvis_core/config
