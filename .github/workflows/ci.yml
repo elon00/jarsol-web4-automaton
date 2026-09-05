@@ -1,0 +1,41 @@
+﻿name: JarSol Web4 CI/CD Verification
+
+on:
+  push:
+    branches: [ main, reality-hardening-v2 ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  verify:
+    name: 🛡️ Build, Typecheck & On-Chain Verification
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 📥 Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: ⚙️ Setup Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: 📦 Install Dependencies
+        run: npm install
+
+      - name: 🔍 TypeScript Compilation Check
+        run: npx tsc --noEmit
+
+      - name: 🏗️ Production Build (Vite & Express)
+        run: npm run build
+
+      - name: 📡 Test Solana RPC Connectivity
+        run: npm run test:rpc
+
+      - name: 💎 Audit Devnet Canonical Mint
+        run: npm run verify:devnet
+
+      - name: 🚀 Audit Testnet Canonical Mint
+        run: npm run verify:testnet
