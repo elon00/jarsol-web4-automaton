@@ -1,0 +1,16 @@
+{
+  "success": true,
+  "tokenName": "JarSol",
+  "tokenSymbol": "JARSOL",
+  "mintAddress": "224P34UfTWzQvi7VfDyY3rP4ayKKMuYR2KYXfpxUzxdn",
+  "tokenAccountAddress": "HVKYVBdbfn9R3Uqn7KbyYkEHnaA8NJf3qZxXTzr46Jm4",
+  "deployerAddress": "3q3cTxEPjtUpEJpPAnQodrTWSW7gH4NNebvg5kwd1Di7",
+  "totalSupplyFormatted": "1,000,000,000,000,000 ",
+  "decimals": 9,
+  "mintAuthorityRevoked": true,
+  "freezeAuthority": "3q3cTxEPjtUpEJpPAnQodrTWSW7gH4NNebvg5kwd1Di7",
+  "network": "devnet",
+  "explorerMintUrl": "https://explorer.solana.com/address/224P34UfTWzQvi7VfDyY3rP4ayKKMuYR2KYXfpxUzxdn?cluster=devnet",
+  "deployedAt": "2026-09-05T20:00:00.000Z",
+  "confirmedOnChain": true
+}
