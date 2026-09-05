@@ -30,3 +30,27 @@ For a token deployment to become VERIFIED, capture:
 3. actual authority-revocation transaction signature (when requested);
 4. RPC/explorer evidence showing the mint supply and authority state;
 5. the exact command/configuration used to reproduce it.
+
+## On-Chain Token Evidence Record
+
+### 1. Devnet Deployment (Status: VERIFIED ✅)
+- **Mint Address**: `224P34UfTWzQvi7VfDyY3rP4ayKKMuYR2KYXfpxUzxdn`
+- **Deployer**: `3q3cTxEPjtUpEJpPAnQodrTWSW7gH4NNebvg5kwd1Di7`
+- **Supply**: 1,000,000,000,000,000 $JARSOL (9 decimals)
+- **Mint Authority**: Revoked (`null`)
+- **Automated Audit**: `npm run verify:devnet` (Exits 0)
+
+### 2. Testnet Deployment (Status: ON-CHAIN VERIFIED ✅)
+- **Mint Address**: `9g22gNvUrPeS71RGDcnxEjekgMuiLq4oLgfWgz4QEThb`
+- **Deployer**: `3q3cTxEPjtUpEJpPAnQodrTWSW7gH4NNebvg5kwd1Di7`
+- **Token Account (ATA)**: `7UEgM4Rxz7iVuvDyyJMhq2nYiK1u5qY8b3sz9vgsLvAE`
+- **Mint Tx Signature**: `afTDjf3zDjDR6D93xy8Zj1z7EZeo1DSmBdPCRnNN7MniYjmBw5BdDJhokHLq8jaf5jzCqTWWrvULTXnHFwZXYSQ`
+- **Revoke Tx Signature**: `3DxvWBCj22iYWtZJiqgYVNKxNrS9QELCSJN2hRFB84uTPZ8TAP76P4UP93iGZXKNnkLoq5H8GC6UmGtu7ig5ht4C`
+- **Mint Authority**: Revoked (`null`)
+- **On-Chain Token Program**: Standard SPL Token (`TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA`)
+- **Automated Audit**: `npm run verify:testnet` (Exits 0 against `https://api.testnet.solana.com`)
+- **Metaplex Metadata On-Chain Status**: NOT Attached (Revoking mint authority prevents subsequent `createMetadataAccountV3` invocation).
+
+### 3. Mainnet Deployment (Status: NOT DEPLOYED ❌)
+- No deployment attempted or broadcast. Deployer has 0 real SOL on Mainnet.
+- Requires explicit user sign-off and funding.
