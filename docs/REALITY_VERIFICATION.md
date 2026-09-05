@@ -44,9 +44,13 @@ For a token deployment to become VERIFIED, capture:
 - **Mint Address**: `9g22gNvUrPeS71RGDcnxEjekgMuiLq4oLgfWgz4QEThb`
 - **Deployer**: `3q3cTxEPjtUpEJpPAnQodrTWSW7gH4NNebvg5kwd1Di7`
 - **Token Account (ATA)**: `7UEgM4Rxz7iVuvDyyJMhq2nYiK1u5qY8b3sz9vgsLvAE`
+- **Decimals**: 9
+- **Actual On-Chain Supply**: `2,003,764,205.206896640 $JARSOL` (raw units: `2003764205206896640`)
+  - *Mathematical Note*: Solana's SPL Token standard stores supply in a 64-bit unsigned integer (`u64`, max value $1.84 \times 10^{19}$). The requested $10^{15} \times 10^9 = 10^{24}$ overflows $2^{64}$, resulting in $10^{24} \pmod{2^{64}} = 2,003,764,205,206,896,640$ raw units.
 - **Mint Tx Signature**: `afTDjf3zDjDR6D93xy8Zj1z7EZeo1DSmBdPCRnNN7MniYjmBw5BdDJhokHLq8jaf5jzCqTWWrvULTXnHFwZXYSQ`
-- **Revoke Tx Signature**: `3DxvWBCj22iYWtZJiqgYVNKxNrS9QELCSJN2hRFB84uTPZ8TAP76P4UP93iGZXKNnkLoq5H8GC6UmGtu7ig5ht4C`
-- **Mint Authority**: Revoked (`null`)
+- **Revoke Mint Authority Signature**: `3DxvWBCj22iYWtZJiqgYVNKxNrS9QELCSJN2hRFB84uTPZ8TAP76P4UP93iGZXKNnkLoq5H8GC6UmGtu7ig5ht4C`
+- **Mint Authority**: Revoked (`null`) — Supply cannot be inflated.
+- **Freeze Authority**: `3q3cTxEPjtUpEJpPAnQodrTWSW7gH4NNebvg5kwd1Di7` — Active (NOT Revoked).
 - **On-Chain Token Program**: Standard SPL Token (`TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA`)
 - **Automated Audit**: `npm run verify:testnet` (Exits 0 against `https://api.testnet.solana.com`)
 - **Metaplex Metadata On-Chain Status**: NOT Attached (Revoking mint authority prevents subsequent `createMetadataAccountV3` invocation).
