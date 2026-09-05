@@ -37,14 +37,26 @@ app.use(express.static(path.join(__dirname, 'public')));
 // Initialize Solana Connection
 const connection = new Connection(SOLANA_RPC_URL, 'confirmed');
 
-// Helper to load configured Solana CLI payer keypair
 function loadConfiguredPayer(): Keypair {
-  const keypairPath = process.env.SOLANA_KEYPAIR_PATH || path.join(process.env.USERPROFILE || process.env.HOME || '', '.config', 'solana', 'id.json');
-  if (!fs.existsSync(keypairPath)) {
-    throw new Error(`Solana CLI keypair not found at path: ${keypairPath}. Ensure 'solana-keygen new' has been run.`);
+  const keypairPath = process.env.SOLANA_KEYPAIR_PATH;
+
+  if (!keypairPath) {
+    throw new Error(
+      'SOLANA_KEYPAIR_PATH is not configured. Refusing temporary payer generation.'
+    );
   }
-  const rawKey = JSON.parse(fs.readFileSync(keypairPath, 'utf-8'));
-  return Keypair.fromSecretKey(Uint8Array.from(rawKey));
+
+  if (!fs.existsSync(keypairPath)) {
+    throw new Error(`Solana keypair file not found: ${keypairPath}`);
+  }
+
+  const secretKey = JSON.parse(fs.readFileSync(keypairPath, 'utf8'));
+
+  if (!Array.isArray(secretKey)) {
+    throw new Error('Invalid Solana keypair file format.');
+  }
+
+  return Keypair.fromSecretKey(Uint8Array.from(secretKey));
 }
 
 // Initialize Gemini Client
@@ -395,31 +407,25 @@ app.post('/api/solana/airdrop', async (req, res) => {
 // REAL ON-CHAIN TOKEN DEPLOYMENT USING CONFIGURED SOLANA CLI WALLET
 app.post('/api/solana/deploy-token', async (req, res) => {
   try {
-    const { payerSecretKey, revokeMintAuthority = true } = req.body;
+    const { revokeMintAuthority = true } = req.body;
 
-    let payer: Keypair;
-    if (payerSecretKey && Array.isArray(payerSecretKey)) {
-      payer = Keypair.fromSecretKey(Uint8Array.from(payerSecretKey));
-    } else {
-      payer = loadConfiguredPayer();
-    }
+    const payer = loadConfiguredPayer();
 
-    console.log(`[DEPLOY] Initiating token deployment using payer: ${payer.publicKey.toBase58()}`);
+    const payerBalance = await connection.getBalance(
+      payer.publicKey,
+      'confirmed'
+    );
 
-    // Verify payer has sufficient balance for rent-exempt accounts and tx fees
-    const balanceLamports = await connection.getBalance(payer.publicKey, 'confirmed');
-    const balanceSol = balanceLamports / LAMPORTS_PER_SOL;
-    console.log(`[DEPLOY] Payer balance: ${balanceSol} SOL (${balanceLamports} lamports)`);
-
-    const minRequiredLamports = 0.02 * LAMPORTS_PER_SOL;
-    if (balanceLamports < minRequiredLamports) {
+    if (payerBalance < 0.05 * LAMPORTS_PER_SOL) {
       return res.status(400).json({
         success: false,
-        error: `Insufficient SOL balance: ${balanceSol.toFixed(4)} SOL found in payer wallet ${payer.publicKey.toBase58()}. Minimum 0.02 SOL required for rent and fees.`
+        verified: false,
+        error: 'Configured payer has insufficient SOL.',
+        payer: payer.publicKey.toBase58(),
+        balanceSol: payerBalance / LAMPORTS_PER_SOL
       });
     }
 
-    // Generate fresh keypair for the SPL token mint
     const mintKeypair = Keypair.generate();
     console.log(`[DEPLOY] Creating mint: ${mintKeypair.publicKey.toBase58()}`);
 
@@ -522,7 +528,7 @@ app.post('/api/dex/swap', async (req, res) => {
       priceImpact = (amount / (jarsolReserve + amount)) * 100;
     }
 
-    const tempPayer = Keypair.generate();
+    const tempPayer = loadConfiguredPayer();
     let onChainSignature = `DEX_SWAP_${Date.now()}_${Math.random().toString(36).substring(2, 10)}`;
 
     try {
