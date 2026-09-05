@@ -79,29 +79,11 @@ export const SolanaLaunchpad: React.FC<SolanaLaunchpadProps> = ({
 
       setDeploymentResult(result);
       playSuccessChime();
-      onToast('🎉 1,000 Trillion $JARSOL successfully deployed on Solana Testnet/Devnet!', 'success');
+      onToast('🎉 Token successfully deployed on Solana!', 'success');
       onRefreshBalance();
     } catch (err: any) {
-      console.warn('Deployment fallback active:', err);
-      // Fallback deterministic response
-      const fallbackResult: SplTokenDeploymentResult = {
-        success: true,
-        tokenName: 'JarSol',
-        tokenSymbol: 'JARSOL',
-        mintAddress: `MINT_${Date.now().toString(36).toUpperCase()}_${Math.random().toString(36).substring(2, 8).toUpperCase()}`,
-        tokenAccountAddress: `ATA_${Date.now().toString(36).toUpperCase()}_${Math.random().toString(36).substring(2, 8).toUpperCase()}`,
-        deployerAddress: wallet.address || 'DeployerKeypair111111111111111111111111',
-        totalSupplyFormatted: '1,000,000,000,000,000 $JARSOL',
-        decimals: 9,
-        mintTxSignature: `TX_${Date.now().toString(36).toUpperCase()}`,
-        revokeTxSignature: revokeAuthority ? `REVOKE_${Date.now().toString(36).toUpperCase()}` : null,
-        mintAuthorityRevoked: revokeAuthority,
-        network: wallet.network,
-        explorerMintUrl: `https://explorer.solana.com/?cluster=${wallet.network}`,
-        explorerMintTxUrl: `https://explorer.solana.com/?cluster=${wallet.network}`,
-      };
-      setDeploymentResult(fallbackResult);
-      onToast('🎉 1,000 Trillion $JARSOL successfully deployed!', 'success');
+      console.error('Deployment error:', err);
+      onToast(`❌ Deployment failed: ${err.message || 'On-chain transaction error'}`, 'error');
     } finally {
       setDeploying(false);
     }
@@ -298,12 +280,24 @@ export const SolanaLaunchpad: React.FC<SolanaLaunchpadProps> = ({
 
               <div className="grid grid-cols-2 gap-2 pt-1 text-[11px]">
                 <div className="bg-black/30 p-1.5 rounded border border-slate-800">
-                  <span className="text-slate-400 block text-[10px]">Supply:</span>
-                  <span className="text-emerald-300 font-bold">1,000 Trillion</span>
+                  <span className="text-slate-400 block text-[10px]">Supply (On-Chain):</span>
+                  <span className="text-cyan-300 font-bold truncate block" title={CANONICAL_DEPLOYMENTS.testnet.totalSupply}>
+                    2.003B $JARSOL
+                  </span>
                 </div>
                 <div className="bg-black/30 p-1.5 rounded border border-slate-800">
                   <span className="text-slate-400 block text-[10px]">Mint Authority:</span>
-                  <span className="text-emerald-400 font-bold">Revoked (Fixed)</span>
+                  <span className="text-emerald-400 font-bold">Revoked (null)</span>
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-2 text-[10px]">
+                <div className="bg-black/30 p-1.5 rounded border border-slate-800">
+                  <span className="text-slate-400 block">Freeze Authority:</span>
+                  <span className="text-amber-400 font-bold">Active (Deployer)</span>
+                </div>
+                <div className="bg-black/30 p-1.5 rounded border border-slate-800">
+                  <span className="text-slate-400 block">Metadata Account:</span>
+                  <span className="text-slate-400 font-bold">Not Attached</span>
                 </div>
               </div>
             </div>
