@@ -383,23 +383,29 @@ app.post('/api/solana/airdrop', async (req, res) => {
         signature: airdropSignature,
       });
     } catch (faucetErr: any) {
-      console.warn('Devnet faucet rate-limited (429), granting simulated Devnet test balance.');
+      return res.status(503).json({
+        success: false,
+        verified: false,
+        error: faucetErr?.message || 'Devnet faucet request failed or rate-limited (429).',
+        note: 'Devnet faucet is currently rate-limited. Use https://faucet.solana.com for direct external funding.',
+      });
     }
 
-    res.json({
+    const balanceLamports = await connection.getBalance(pubkey);
+    return res.json({
       success: true,
+      verified: true,
       signature: airdropSignature,
       airdroppedSol: amount,
-      newBalanceSol: 2.0,
+      newBalanceSol: balanceLamports / LAMPORTS_PER_SOL,
       explorerUrl: `https://explorer.solana.com/tx/${airdropSignature}?cluster=devnet`,
-      note: 'Devnet airdrop verified. Use https://faucet.solana.com for direct external faucet funding.',
     });
   } catch (error: any) {
-    res.json({
-      success: true,
-      airdroppedSol: 2,
-      newBalanceSol: 2.0,
-      note: 'Devnet test funding granted.',
+    return res.status(503).json({
+      success: false,
+      verified: false,
+      error: error?.message || 'Solana airdrop transaction failed',
+      note: 'Faucet/RPC action did not complete. Please use an external faucet.',
     });
   }
 });
@@ -408,6 +414,19 @@ app.post('/api/solana/airdrop', async (req, res) => {
 const REGISTRY_PATH = path.join(__dirname, 'jarsol-deployment.json');
 
 app.get('/api/solana/canonical-mint', (req, res) => {
+  const network = (req.query.network as string)?.toLowerCase();
+  if (network) {
+    const clusterPath = path.join(__dirname, 'deployments', `${network}.json`);
+    if (fs.existsSync(clusterPath)) {
+      try {
+        const registry = JSON.parse(fs.readFileSync(clusterPath, 'utf-8'));
+        return res.json({ success: true, ...registry });
+      } catch (e: any) {
+        return res.status(500).json({ error: e.message });
+      }
+    }
+  }
+
   if (fs.existsSync(REGISTRY_PATH)) {
     try {
       const registry = JSON.parse(fs.readFileSync(REGISTRY_PATH, 'utf-8'));
@@ -547,126 +566,37 @@ app.post('/api/solana/deploy-token', async (req, res) => {
   }
 });
 
-// REAL RAYDIUM / ORCA DEX SWAP EXECUTION ON SOLANA DEVNET
-app.post('/api/dex/swap', async (req, res) => {
-  try {
-    const { fromToken, toToken, amount, userAddress, slippage = 0.5 } = req.body;
-
-    if (!amount || amount <= 0) {
-      return res.status(400).json({ error: 'Valid swap amount required' });
-    }
-
-    const solReserve = 50000;
-    const jarsolReserve = 450000000000000;
-    const spotPriceJarsolPerSol = jarsolReserve / solReserve;
-
-    let outputAmount = 0;
-    let priceImpact = 0;
-
-    if (fromToken === 'SOL') {
-      const inputWithFee = amount * 0.997;
-      outputAmount = (inputWithFee * jarsolReserve) / (solReserve + inputWithFee);
-      priceImpact = (amount / (solReserve + amount)) * 100;
-    } else {
-      const inputWithFee = amount * 0.997;
-      outputAmount = (inputWithFee * solReserve) / (jarsolReserve + inputWithFee);
-      priceImpact = (amount / (jarsolReserve + amount)) * 100;
-    }
-
-    const tempPayer = loadConfiguredPayer();
-    let onChainSignature = `DEX_SWAP_${Date.now()}_${Math.random().toString(36).substring(2, 10)}`;
-
-    try {
-      const latestBlock = await connection.getLatestBlockhash();
-      const tx = new Transaction().add(
-        SystemProgram.transfer({
-          fromPubkey: tempPayer.publicKey,
-          toPubkey: new PublicKey('11111111111111111111111111111111'),
-          lamports: 1000,
-        })
-      );
-      tx.recentBlockhash = latestBlock.blockhash;
-      tx.feePayer = tempPayer.publicKey;
-      tx.sign(tempPayer);
-
-      const rawTx = tx.serialize();
-      const simulatedSig = Buffer.from(sha3_256(rawTx)).toString('hex');
-      onChainSignature = `DEX_SWAP_${simulatedSig.substring(0, 44)}`;
-    } catch (e) {}
-
-    res.json({
-      success: true,
-      fromToken,
-      toToken,
-      inputAmount: amount,
-      outputAmount: outputAmount,
-      spotPrice: spotPriceJarsolPerSol,
-      priceImpactPercent: parseFloat(priceImpact.toFixed(4)),
-      ammFeePercent: 0.3,
-      deflationaryBurnBurned: fromToken === 'JARSOL' ? amount * 0.01 : outputAmount * 0.01,
-      route: 'Raydium CPMM Pool (SOL/JARSOL)',
-      signature: onChainSignature,
-      timestamp: new Date().toISOString(),
-      network: SOLANA_NETWORK,
-      explorerUrl: `https://explorer.solana.com/tx/${onChainSignature}?cluster=devnet`,
-    });
-  } catch (error: any) {
-    res.status(500).json({ error: error.message });
-  }
+// DEX endpoint: fail-closed (simulations must not be reported as on-chain execution)
+app.post('/api/dex/swap', async (_req, res) => {
+  return res.status(501).json({
+    success: false,
+    verified: false,
+    status: 'UNKNOWN',
+    error: 'Live Raydium/Orca swap execution is not implemented by this endpoint.',
+    simulationAvailable: true,
+    note: 'This endpoint does not execute or broadcast an on-chain swap and fails closed instead of reporting simulated execution.',
+  });
 });
 
 // ==========================================
 // 4. POST-QUANTUM CRYPTOGRAPHY (PQC) ENGINE
 // ==========================================
-app.post('/api/pqc/generate-keys', (req, res) => {
-  const { algorithm = 'ML-DSA-65' } = req.body;
-
-  const randomBytes = new Uint8Array(64);
-  for (let i = 0; i < 64; i++) {
-    randomBytes[i] = Math.floor(Math.random() * 256);
-  }
-
-  const hash3_512 = sha3_512(randomBytes);
-  const hash3_256 = sha3_256(randomBytes);
-
-  const hexSeed = Buffer.from(hash3_512).toString('hex');
-  const hexPk = '0x_pqc_pk_' + hexSeed.substring(0, 48);
-  const hexSk = '0x_pqc_sk_masked_' + hexSeed.substring(48, 96);
-  const solHybridAddress = 'PQC_' + Buffer.from(hash3_256).toString('base64').replace(/[^a-zA-Z0-9]/g, '').substring(0, 32);
-
-  res.json({
-    success: true,
-    algorithm: algorithm,
-    standard: algorithm.startsWith('ML-DSA') ? 'NIST FIPS 204 (Dilithium Signature)' : 'NIST FIPS 203 (Kyber KEM)',
-    publicKey: hexPk,
-    secretKey: hexSk,
-    solanaHybridAddress: solHybridAddress,
-    latticeDimension: algorithm === 'ML-DSA-87' ? 8 : 6,
-    modulusQ: 8380417,
-    polynomialRing: 'R_q = Z_q[X] / (X^256 + 1)',
-    shorQuantumResistance: '100% Resistant (Hard Shortest Vector Problem)',
-    timestamp: new Date().toISOString(),
+app.post('/api/pqc/generate-keys', (_req, res) => {
+  return res.status(501).json({
+    success: false,
+    verified: false,
+    status: 'UNKNOWN',
+    error: 'Real ML-DSA / ML-KEM key generation is not implemented by this endpoint.',
+    note: 'NIST PQC implementation requires actual FIPS 203/204 test vectors and libraries.',
   });
 });
 
-app.post('/api/pqc/verify-signature', (req, res) => {
-  const { message, publicKey, signature, hybridMode = true } = req.body;
-
-  if (!message || !signature) {
-    return res.status(400).json({ error: 'Message and signature are required' });
-  }
-
-  const msgHash = sha3_256(new TextEncoder().encode(message));
-  const verificationHash = Buffer.from(msgHash).toString('hex').substring(0, 16);
-
-  res.json({
-    verified: true,
-    hybridMode: hybridMode,
-    messageDigest: '0x' + verificationHash,
-    quantumProof: 'VALID_LATTICE_SAMPLE',
-    algorithm: 'ML-DSA-65 + Ed25519 Dual Verification',
-    quantumSecurityBits: 192,
-    verifiedAt: new Date().toISOString(),
+app.post('/api/pqc/verify-signature', (_req, res) => {
+  return res.status(501).json({
+    success: false,
+    verified: false,
+    status: 'UNKNOWN',
+    error: 'Real ML-DSA signature verification is not implemented by this endpoint.',
   });
 });
 

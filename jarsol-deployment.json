@@ -11,6 +11,29 @@
   "freezeAuthority": "3q3cTxEPjtUpEJpPAnQodrTWSW7gH4NNebvg5kwd1Di7",
   "network": "devnet",
   "explorerMintUrl": "https://explorer.solana.com/address/224P34UfTWzQvi7VfDyY3rP4ayKKMuYR2KYXfpxUzxdn?cluster=devnet",
-  "deployedAt": "2026-09-05T20:00:00.000Z",
-  "confirmedOnChain": true
+  "confirmedOnChain": true,
+  "clusters": {
+    "devnet": {
+      "mintAddress": "224P34UfTWzQvi7VfDyY3rP4ayKKMuYR2KYXfpxUzxdn",
+      "tokenAccountAddress": "HVKYVBdbfn9R3Uqn7KbyYkEHnaA8NJf3qZxXTzr46Jm4",
+      "deployerAddress": "3q3cTxEPjtUpEJpPAnQodrTWSW7gH4NNebvg5kwd1Di7",
+      "status": "DEPLOYED",
+      "confirmedOnChain": true,
+      "mintAuthorityRevoked": true,
+      "explorerMintUrl": "https://explorer.solana.com/address/224P34UfTWzQvi7VfDyY3rP4ayKKMuYR2KYXfpxUzxdn?cluster=devnet"
+    },
+    "testnet": {
+      "mintAddress": "9g22gNvUrPeS71RGDcnxEjekgMuiLq4oLgfWgz4QEThb",
+      "tokenAccountAddress": "7UEgM4Rxz7iVuvDyyJMhq2nYiK1u5qY8b3sz9vgsLvAE",
+      "deployerAddress": "3q3cTxEPjtUpEJpPAnQodrTWSW7gH4NNebvg5kwd1Di7",
+      "status": "DEPLOYED",
+      "confirmedOnChain": true,
+      "mintAuthorityRevoked": true,
+      "mintTxSignature": "afTDjf3zDjDR6D93xy8Zj1z7EZeo1DSmBdPCRnNN7MniYjmBw5BdDJhokHLq8jaf5jzCqTWWrvULTXnHFwZXYSQ",
+      "revokeTxSignature": "3DxvWBCj22iYWtZJiqgYVNKxNrS9QELCSJN2hRFB84uTPZ8TAP76P4UP93iGZXKNnkLoq5H8GC6UmGtu7ig5ht4C",
+      "deployedAt": "2026-09-05T22:45:41.773Z",
+      "explorerMintUrl": "https://explorer.solana.com/address/9g22gNvUrPeS71RGDcnxEjekgMuiLq4oLgfWgz4QEThb?cluster=testnet",
+      "explorerMintTxUrl": "https://explorer.solana.com/tx/afTDjf3zDjDR6D93xy8Zj1z7EZeo1DSmBdPCRnNN7MniYjmBw5BdDJhokHLq8jaf5jzCqTWWrvULTXnHFwZXYSQ?cluster=testnet"
+    }
+  }
 }
