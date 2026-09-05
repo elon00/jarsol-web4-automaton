@@ -53,7 +53,7 @@ export const CANONICAL_DEPLOYMENTS: Record<'devnet' | 'testnet' | 'mainnet-beta'
     deployerAddress: '3q3cTxEPjtUpEJpPAnQodrTWSW7gH4NNebvg5kwd1Di7',
     tokenAccountAddress: '7UEgM4Rxz7iVuvDyyJMhq2nYiK1u5qY8b3sz9vgsLvAE',
     decimals: 9,
-    totalSupply: '1,000,000,000,000,000 $JARSOL',
+    totalSupply: '2,003,764,205.206896640 $JARSOL',
     status: 'ACTIVE',
     explorerUrl: 'https://explorer.solana.com/address/9g22gNvUrPeS71RGDcnxEjekgMuiLq4oLgfWgz4QEThb?cluster=testnet'
   },
