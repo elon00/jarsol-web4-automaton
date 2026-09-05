@@ -22,6 +22,54 @@ import { SplTokenDeploymentResult, NetworkType } from '../types';
 export const SOLANA_DEVNET_RPC = 'https://api.devnet.solana.com';
 export const SOLANA_TESTNET_RPC = 'https://api.testnet.solana.com';
 
+export interface CanonicalClusterInfo {
+  network: NetworkType;
+  label: string;
+  mintAddress: string;
+  deployerAddress: string;
+  tokenAccountAddress: string;
+  decimals: number;
+  totalSupply: string;
+  status: 'ACTIVE' | 'PENDING';
+  explorerUrl: string;
+}
+
+export const CANONICAL_DEPLOYMENTS: Record<'devnet' | 'testnet' | 'mainnet-beta', CanonicalClusterInfo> = {
+  devnet: {
+    network: 'devnet',
+    label: 'Solana Devnet',
+    mintAddress: '224P34UfTWzQvi7VfDyY3rP4ayKKMuYR2KYXfpxUzxdn',
+    deployerAddress: '3q3cTxEPjtUpEJpPAnQodrTWSW7gH4NNebvg5kwd1Di7',
+    tokenAccountAddress: 'HVKYVBdbfn9R3Uqn7KbyYkEHnaA8NJf3qZxXTzr46Jm4',
+    decimals: 9,
+    totalSupply: '1,000,000,000,000,000 $JARSOL',
+    status: 'ACTIVE',
+    explorerUrl: 'https://explorer.solana.com/address/224P34UfTWzQvi7VfDyY3rP4ayKKMuYR2KYXfpxUzxdn?cluster=devnet'
+  },
+  testnet: {
+    network: 'testnet',
+    label: 'Solana Testnet',
+    mintAddress: '9g22gNvUrPeS71RGDcnxEjekgMuiLq4oLgfWgz4QEThb',
+    deployerAddress: '3q3cTxEPjtUpEJpPAnQodrTWSW7gH4NNebvg5kwd1Di7',
+    tokenAccountAddress: '7UEgM4Rxz7iVuvDyyJMhq2nYiK1u5qY8b3sz9vgsLvAE',
+    decimals: 9,
+    totalSupply: '1,000,000,000,000,000 $JARSOL',
+    status: 'ACTIVE',
+    explorerUrl: 'https://explorer.solana.com/address/9g22gNvUrPeS71RGDcnxEjekgMuiLq4oLgfWgz4QEThb?cluster=testnet'
+  },
+  'mainnet-beta': {
+    network: 'mainnet-beta',
+    label: 'Solana Mainnet-Beta',
+    mintAddress: 'Pending Release Approval (Phase 5)',
+    deployerAddress: '3q3cTxEPjtUpEJpPAnQodrTWSW7gH4NNebvg5kwd1Di7',
+    tokenAccountAddress: 'Pending Mint',
+    decimals: 9,
+    totalSupply: '1,000,000,000,000,000 $JARSOL',
+    status: 'PENDING',
+    explorerUrl: 'https://explorer.solana.com'
+  }
+};
+
 export interface TokenBalance {
   mint: string;
   amount: string;

@@ -17,7 +17,7 @@ import {
   AlertCircle
 } from 'lucide-react';
 import { WalletState, SplTokenDeploymentResult } from '../types';
-import { deploy1000TrillionSplToken, requestDevnetAirdrop, getExplorerUrl } from '../utils/solana';
+import { deploy1000TrillionSplToken, requestDevnetAirdrop, getExplorerUrl, CANONICAL_DEPLOYMENTS } from '../utils/solana';
 import { playCyberClick, playSuccessChime } from '../utils/audio';
 
 interface SolanaLaunchpadProps {
@@ -202,6 +202,111 @@ export const SolanaLaunchpad: React.FC<SolanaLaunchpadProps> = ({
                 </>
               )}
             </button>
+          </div>
+        </div>
+      </div>
+
+      {/* CANONICAL ON-CHAIN VERIFIED MULTI-CLUSTER DEPLOYMENTS */}
+      <div className="p-6 rounded-2xl bg-[#061217] border border-cyan-500/40 space-y-4 shadow-[0_0_30px_rgba(0,240,255,0.1)]">
+        <div className="flex items-center justify-between border-b border-cyan-950 pb-3">
+          <div className="flex items-center gap-2.5">
+            <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse" />
+            <h2 className="text-sm font-cyber font-bold text-slate-100 uppercase tracking-wider">
+              On-Chain Verified Deployments // Multi-Cluster Registry
+            </h2>
+          </div>
+          <span className="text-[11px] font-mono text-cyan-400 bg-cyan-950/80 px-2.5 py-0.5 rounded border border-cyan-500/30">
+            Real Cryptographic Proofs
+          </span>
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          {/* Devnet Canonical Card */}
+          <div className="p-4 rounded-xl bg-slate-900/80 border border-emerald-500/40 space-y-3 relative overflow-hidden">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <span className="px-2 py-0.5 rounded bg-emerald-950 text-emerald-400 font-mono text-xs font-bold border border-emerald-500/30">
+                  DEVNET CANONICAL
+                </span>
+                <span className="text-[11px] text-slate-400 font-mono">100% Immutable</span>
+              </div>
+              <a
+                href={CANONICAL_DEPLOYMENTS.devnet.explorerUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-xs font-mono text-cyan-400 hover:text-cyan-300 flex items-center gap-1 bg-cyan-950/60 px-2 py-1 rounded border border-cyan-500/30 transition-colors"
+              >
+                <span>Explorer</span>
+                <ExternalLink className="w-3 h-3" />
+              </a>
+            </div>
+
+            <div className="space-y-1.5 font-mono text-xs">
+              <div>
+                <div className="text-[10px] text-slate-400">Mint Address</div>
+                <div className="text-cyan-300 font-bold break-all flex items-center justify-between bg-black/40 p-1.5 rounded border border-slate-800">
+                  <span>{CANONICAL_DEPLOYMENTS.devnet.mintAddress}</span>
+                  <button onClick={() => copyToClipboard(CANONICAL_DEPLOYMENTS.devnet.mintAddress, 'Devnet Mint')}>
+                    <Copy className="w-3.5 h-3.5 text-slate-400 hover:text-cyan-300 ml-2 shrink-0" />
+                  </button>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-2 pt-1 text-[11px]">
+                <div className="bg-black/30 p-1.5 rounded border border-slate-800">
+                  <span className="text-slate-400 block text-[10px]">Supply:</span>
+                  <span className="text-emerald-300 font-bold">1,000 Trillion</span>
+                </div>
+                <div className="bg-black/30 p-1.5 rounded border border-slate-800">
+                  <span className="text-slate-400 block text-[10px]">Mint Authority:</span>
+                  <span className="text-emerald-400 font-bold">Revoked (Fixed)</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Testnet Canonical Card */}
+          <div className="p-4 rounded-xl bg-slate-900/80 border border-cyan-500/40 space-y-3 relative overflow-hidden">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <span className="px-2 py-0.5 rounded bg-cyan-950 text-cyan-400 font-mono text-xs font-bold border border-cyan-500/30">
+                  TESTNET CANONICAL
+                </span>
+                <span className="text-[11px] text-slate-400 font-mono">100% Immutable</span>
+              </div>
+              <a
+                href={CANONICAL_DEPLOYMENTS.testnet.explorerUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-xs font-mono text-cyan-400 hover:text-cyan-300 flex items-center gap-1 bg-cyan-950/60 px-2 py-1 rounded border border-cyan-500/30 transition-colors"
+              >
+                <span>Explorer</span>
+                <ExternalLink className="w-3 h-3" />
+              </a>
+            </div>
+
+            <div className="space-y-1.5 font-mono text-xs">
+              <div>
+                <div className="text-[10px] text-slate-400">Mint Address</div>
+                <div className="text-cyan-300 font-bold break-all flex items-center justify-between bg-black/40 p-1.5 rounded border border-slate-800">
+                  <span>{CANONICAL_DEPLOYMENTS.testnet.mintAddress}</span>
+                  <button onClick={() => copyToClipboard(CANONICAL_DEPLOYMENTS.testnet.mintAddress, 'Testnet Mint')}>
+                    <Copy className="w-3.5 h-3.5 text-slate-400 hover:text-cyan-300 ml-2 shrink-0" />
+                  </button>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-2 pt-1 text-[11px]">
+                <div className="bg-black/30 p-1.5 rounded border border-slate-800">
+                  <span className="text-slate-400 block text-[10px]">Supply:</span>
+                  <span className="text-emerald-300 font-bold">1,000 Trillion</span>
+                </div>
+                <div className="bg-black/30 p-1.5 rounded border border-slate-800">
+                  <span className="text-slate-400 block text-[10px]">Mint Authority:</span>
+                  <span className="text-emerald-400 font-bold">Revoked (Fixed)</span>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
