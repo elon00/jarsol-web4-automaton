@@ -405,11 +405,45 @@ app.post('/api/solana/airdrop', async (req, res) => {
 });
 
 // REAL ON-CHAIN TOKEN DEPLOYMENT USING CONFIGURED SOLANA CLI WALLET
+const REGISTRY_PATH = path.join(__dirname, 'jarsol-deployment.json');
+
+app.get('/api/solana/canonical-mint', (req, res) => {
+  if (fs.existsSync(REGISTRY_PATH)) {
+    try {
+      const registry = JSON.parse(fs.readFileSync(REGISTRY_PATH, 'utf-8'));
+      return res.json({ success: true, ...registry });
+    } catch (e: any) {
+      return res.status(500).json({ error: e.message });
+    }
+  }
+  res.status(404).json({ error: 'No canonical mint registered yet' });
+});
+
 app.post('/api/solana/deploy-token', async (req, res) => {
   try {
-    const { revokeMintAuthority = true } = req.body;
+    const { forceRedeploy = false, revokeMintAuthority = true } = req.body;
 
     const payer = loadConfiguredPayer();
+
+    // Idempotency: Return existing verified canonical deployment unless forceRedeploy is explicitly true
+    if (!forceRedeploy && fs.existsSync(REGISTRY_PATH)) {
+      try {
+        const existing = JSON.parse(fs.readFileSync(REGISTRY_PATH, 'utf-8'));
+        if (existing.mintAddress) {
+          const mintInfo = await connection.getParsedAccountInfo(new PublicKey(existing.mintAddress), 'confirmed');
+          if (mintInfo && mintInfo.value) {
+            console.log(`[DEPLOY] Returning verified existing canonical deployment: ${existing.mintAddress}`);
+            return res.json({
+              ...existing,
+              idempotent: true,
+              message: 'Canonical deployment already active. Pass { forceRedeploy: true } to create a new mint.'
+            });
+          }
+        }
+      } catch (regErr) {
+        console.warn('Existing registry read error, continuing deployment check:', regErr);
+      }
+    }
 
     const payerBalance = await connection.getBalance(
       payer.publicKey,
@@ -475,7 +509,7 @@ app.post('/api/solana/deploy-token', async (req, res) => {
       console.log(`[DEPLOY] Mint authority revoked tx: ${revokeTxSig}`);
     }
 
-    res.json({
+    const deploymentResult = {
       success: true,
       tokenName: 'JarSol',
       tokenSymbol: 'JARSOL',
@@ -491,7 +525,18 @@ app.post('/api/solana/deploy-token', async (req, res) => {
       explorerMintUrl: `https://explorer.solana.com/address/${mintAddress}?cluster=devnet`,
       explorerMintTxUrl: `https://explorer.solana.com/tx/${mintTxSig}?cluster=devnet`,
       confirmedOnChain: true,
-    });
+      deployedAt: new Date().toISOString(),
+      idempotent: false,
+    };
+
+    try {
+      fs.writeFileSync(REGISTRY_PATH, JSON.stringify(deploymentResult, null, 2), 'utf-8');
+      console.log(`[DEPLOY] Saved canonical deployment to ${REGISTRY_PATH}`);
+    } catch (saveErr) {
+      console.warn('Could not persist deployment registry:', saveErr);
+    }
+
+    res.json(deploymentResult);
   } catch (error: any) {
     console.error('On-chain token deployment error:', error);
     res.status(500).json({
