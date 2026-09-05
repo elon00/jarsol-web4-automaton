@@ -1,5 +1,24 @@
 {
   "network": "testnet",
-  "status": "NOT_DEPLOYED",
-  "token": null
+  "status": "DEPLOYED",
+  "token": {
+    "name": "JarSol",
+    "symbol": "JARSOL",
+    "mintAddress": "9g22gNvUrPeS71RGDcnxEjekgMuiLq4oLgfWgz4QEThb",
+    "tokenAccountAddress": "7UEgM4Rxz7iVuvDyyJMhq2nYiK1u5qY8b3sz9vgsLvAE",
+    "deployerAddress": "3q3cTxEPjtUpEJpPAnQodrTWSW7gH4NNebvg5kwd1Di7",
+    "decimals": 9,
+    "totalSupplyFormatted": "1,000,000,000,000,000 $JARSOL",
+    "rawSupply": "1000000000000000000000000"
+  },
+  "deployment": {
+    "confirmedOnChain": true,
+    "mintAuthorityRevoked": true,
+    "freezeAuthority": "3q3cTxEPjtUpEJpPAnQodrTWSW7gH4NNebvg5kwd1Di7",
+    "mintTxSignature": "afTDjf3zDjDR6D93xy8Zj1z7EZeo1DSmBdPCRnNN7MniYjmBw5BdDJhokHLq8jaf5jzCqTWWrvULTXnHFwZXYSQ",
+    "revokeTxSignature": "3DxvWBCj22iYWtZJiqgYVNKxNrS9QELCSJN2hRFB84uTPZ8TAP76P4UP93iGZXKNnkLoq5H8GC6UmGtu7ig5ht4C",
+    "deployedAt": "2026-09-05T22:45:41.773Z",
+    "explorerMintUrl": "https://explorer.solana.com/address/9g22gNvUrPeS71RGDcnxEjekgMuiLq4oLgfWgz4QEThb?cluster=testnet",
+    "explorerMintTxUrl": "https://explorer.solana.com/tx/afTDjf3zDjDR6D93xy8Zj1z7EZeo1DSmBdPCRnNN7MniYjmBw5BdDJhokHLq8jaf5jzCqTWWrvULTXnHFwZXYSQ?cluster=testnet"
+  }
 }

@@ -9,8 +9,9 @@
     "start": "concurrently \"npm run server\" \"npm run dev\"",
     "build": "tsc && vite build",
     "preview": "vite preview",
-    "test:rpc": "tsx -e \"import { Connection } from '@solana/web3.js'; const c = new Connection('https://api.devnet.solana.com'); c.getVersion().then(v => console.log('Solana Devnet Connected:', v));\"",
-    "verify:devnet": "tsx scripts/verify-devnet.ts"
+    "verify:devnet": "tsx scripts/verify-devnet.ts",
+    "deploy:testnet": "tsx scripts/deploy-testnet.ts",
+    "verify:testnet": "tsx scripts/verify-testnet.ts"
   },
   "dependencies": {
     "@google/generative-ai": "^0.24.0",
