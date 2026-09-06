@@ -19,7 +19,8 @@
     "metadata:testnet": "tsx scripts/create-metadata.ts testnet",
     "deploy:mainnet": "tsx scripts/deploy-mainnet.ts",
     "verify:secrets": "tsx scripts/verify-secrets.ts",
-    "verify:all": "npx tsc --noEmit && npm run build && npm run verify:devnet && npm run verify:testnet && npm run verify:testnet:fresh && npm audit --omit=dev --audit-level=high",
+    "test:quantum": "tsx quantum/06_TESTS/pqc-smoke.test.ts && tsx quantum/06_TESTS/known-answer.test.ts && tsx quantum/06_TESTS/portfolio-benchmark.test.ts",
+    "benchmark:quantum": "tsx quantum/04_QUANTUM_PORTFOLIO/benchmark-runner.ts",
     "finish:all": "tsx scripts/finish-all.ts"
   },
   "dependencies": {

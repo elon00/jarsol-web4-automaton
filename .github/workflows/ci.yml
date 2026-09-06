@@ -29,6 +29,8 @@ jobs:
         run: npm ci
       - name: Typecheck
         run: npx tsc --noEmit
+      - name: Quantum PQC & Portfolio Verification
+        run: npm run test:quantum
       - name: Production build
         run: npm run build
 

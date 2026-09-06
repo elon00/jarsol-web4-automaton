@@ -18,9 +18,9 @@ interface GateResult {
 
 const results: GateResult[] = [];
 
-function runGate(gateNumber: number, name: string, command: string): boolean {
+function runGate(gateNumber: number, totalGates: number, name: string, command: string): boolean {
   console.log(`\n=====================================================================`);
-  console.log(`▶ GATE [${gateNumber}/9]: ${name}`);
+  console.log(`▶ GATE [${gateNumber}/${totalGates}]: ${name}`);
   console.log(`💻 Command: ${command}`);
   console.log(`=====================================================================`);
 
@@ -59,12 +59,13 @@ async function finishAll() {
     { num: 6, name: 'Solana Devnet On-Chain Verification', cmd: 'npm run verify:devnet' },
     { num: 7, name: 'Solana Testnet Canonical Verification', cmd: 'npm run verify:testnet' },
     { num: 8, name: 'Solana Testnet Safe Fresh Template Verification', cmd: 'npm run verify:testnet:fresh' },
-    { num: 9, name: 'Documentation & Competition Package Reality Check', cmd: 'node -e "if (!fs.existsSync(\'docs/COMPETITION_READINESS.md\') || !fs.existsSync(\'SECURITY.md\')) process.exit(1);"' }
+    { num: 9, name: 'Documentation & Competition Package Reality Check', cmd: 'node -e "if (!fs.existsSync(\'docs/COMPETITION_READINESS.md\') || !fs.existsSync(\'SECURITY.md\')) process.exit(1);"' },
+    { num: 10, name: 'Quantum-Ready PQC & Portfolio Optimization Verification', cmd: 'npm run test:quantum' }
   ];
 
   let anyFailed = false;
   for (const gate of gates) {
-    const ok = runGate(gate.num, gate.name, gate.cmd);
+    const ok = runGate(gate.num, gates.length, gate.name, gate.cmd);
     if (!ok) {
       anyFailed = true;
       break; // Fail-closed
