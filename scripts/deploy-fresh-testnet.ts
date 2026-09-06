@@ -1,6 +1,6 @@
-import { Connection, Keypair, PublicKey, LAMPORTS_PER_SOL } from '@solana/web3.js';
-import { createMint, getOrCreateAssociatedTokenAccount, mintTo, setAuthority, AuthorityType } from '@solana/spl-token';
-import { Metaplex, keypairIdentity } from '@metaplex-foundation/js';
+import { Connection, Keypair, PublicKey, LAMPORTS_PER_SOL, Transaction, sendAndConfirmTransaction } from '@solana/web3.js';
+import { createMint, getOrCreateAssociatedTokenAccount, mintTo, setAuthority, AuthorityType } from './spl-helper.js';
+import { findMetadataPda, createMetadataAccountV3Instruction } from './metaplex-helper.js';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -13,7 +13,6 @@ const REGISTRY_PATH = path.join(__dirname, '..', 'deployments', 'testnet.json');
 const ROOT_REGISTRY_PATH = path.join(__dirname, '..', 'jarsol-deployment.json');
 const KEYPAIR_PATH = process.env.SOLANA_KEYPAIR_PATH || 'C:/Users/marti/.config/solana/id.json';
 const METADATA_URI = 'https://raw.githubusercontent.com/elon00/jarsol-web4-automaton/main/public/jarsol-metadata.json';
-const METAPLEX_PROGRAM_ID = new PublicKey('metaqbxxUerdq28cj1RbAWkYQm3ybzjb6a8bt518x1s');
 
 async function deployFreshTestnet() {
   console.log('=====================================================================');
@@ -72,26 +71,26 @@ async function deployFreshTestnet() {
   console.log(`✅ [CONFIRMED] Mint Created: ${mint.toBase58()}`);
 
   // Derive Metaplex Metadata PDA
-  const [metadataPDA] = PublicKey.findProgramAddressSync(
-    [Buffer.from('metadata'), METAPLEX_PROGRAM_ID.toBuffer(), mint.toBuffer()],
-    METAPLEX_PROGRAM_ID
-  );
+  const metadataPDA = findMetadataPda(mint);
   console.log(`📍 [PDA] Derived Metaplex Metadata PDA: ${metadataPDA.toBase58()}`);
 
   // 4. Step 2: Create Metaplex Metadata Account V3 BEFORE revoking authority
   console.log('\n🎨 [STEP 2] Creating On-Chain Metaplex Metadata V3...');
-  const metaplex = Metaplex.make(connection).use(keypairIdentity(payer));
   let metadataTxSig = '';
   try {
-    const sftResult = await metaplex.nfts().createSft({
-      useExistingMint: mint,
-      name: 'JarSol',
-      symbol: 'JARSOL',
-      uri: METADATA_URI,
-      sellerFeeBasisPoints: 0,
-      isMutable: true,
-    });
-    metadataTxSig = sftResult.response.signature;
+    const tx = new Transaction().add(
+      createMetadataAccountV3Instruction(
+        metadataPDA,
+        mint,
+        payer.publicKey,
+        payer.publicKey,
+        payer.publicKey,
+        'JarSol',
+        'JARSOL',
+        METADATA_URI
+      )
+    );
+    metadataTxSig = await sendAndConfirmTransaction(connection, tx, [payer]);
     console.log(`✅ [CONFIRMED] Metaplex Metadata attached on-chain! Tx: ${metadataTxSig}`);
   } catch (metaErr: any) {
     console.error('❌ Metaplex metadata attachment error:', metaErr);

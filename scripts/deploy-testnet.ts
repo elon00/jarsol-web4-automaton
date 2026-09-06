@@ -1,5 +1,5 @@
 import { Connection, Keypair, LAMPORTS_PER_SOL } from '@solana/web3.js';
-import { createMint, getOrCreateAssociatedTokenAccount, mintTo, setAuthority, AuthorityType } from '@solana/spl-token';
+import { createMint, getOrCreateAssociatedTokenAccount, mintTo, setAuthority, AuthorityType } from './spl-helper.js';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';

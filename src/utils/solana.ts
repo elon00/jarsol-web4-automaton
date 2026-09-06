@@ -9,14 +9,7 @@ import {
   Transaction,
   SystemProgram
 } from '@solana/web3.js';
-import { 
-  createMint, 
-  getOrCreateAssociatedTokenAccount, 
-  mintTo, 
-  setAuthority, 
-  AuthorityType,
-  TOKEN_PROGRAM_ID
-} from '@solana/spl-token';
+export const TOKEN_PROGRAM_ID = new PublicKey('TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA');
 import { SplTokenDeploymentResult, NetworkType } from '../types';
 
 export const SOLANA_DEVNET_RPC = 'https://api.devnet.solana.com';

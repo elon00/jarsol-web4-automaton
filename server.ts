@@ -12,7 +12,7 @@ import {
   setAuthority,
   AuthorityType,
   TOKEN_PROGRAM_ID,
-} from '@solana/spl-token';
+} from './scripts/spl-helper.js';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 
 dotenv.config();

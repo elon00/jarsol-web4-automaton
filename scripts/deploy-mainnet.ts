@@ -1,8 +1,6 @@
-import { Connection, Keypair, PublicKey, LAMPORTS_PER_SOL } from '@solana/web3.js';
-import { createMint, getOrCreateAssociatedTokenAccount, mintTo, setAuthority, AuthorityType } from '@solana/spl-token';
-import { createUmi } from '@metaplex-foundation/umi-bundle-defaults';
-import { mplTokenMetadata, createV1, TokenStandard } from '@metaplex-foundation/mpl-token-metadata';
-import { createSignerFromKeypair, keypairIdentity, percentAmount, publicKey as umiPublicKey } from '@metaplex-foundation/umi';
+import { Connection, Keypair, PublicKey, LAMPORTS_PER_SOL, Transaction, sendAndConfirmTransaction } from '@solana/web3.js';
+import { createMint, getOrCreateAssociatedTokenAccount, mintTo, setAuthority, AuthorityType } from './spl-helper.js';
+import { findMetadataPda, createMetadataAccountV3Instruction } from './metaplex-helper.js';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -15,30 +13,6 @@ const REGISTRY_PATH = path.join(__dirname, '..', 'deployments', 'mainnet.json');
 const ROOT_REGISTRY_PATH = path.join(__dirname, '..', 'jarsol-deployment.json');
 const KEYPAIR_PATH = process.env.SOLANA_KEYPAIR_PATH;
 const METADATA_URI = 'https://raw.githubusercontent.com/elon00/jarsol-web4-automaton/main/public/jarsol-metadata.json';
-const METAPLEX_PROGRAM_ID = new PublicKey('metaqbxxUerdq28cj1RbAWkYQm3ybzjb6a8bt518x1s');
-
-async function createOnChainMetadata(rpcUrl: string, payer: Keypair, mint: PublicKey): Promise<string> {
-  const umi = createUmi(rpcUrl).use(mplTokenMetadata());
-  const umiKeypair = {
-    publicKey: umiPublicKey(payer.publicKey.toBase58()),
-    secretKey: payer.secretKey,
-  };
-  const signer = createSignerFromKeypair(umi, umiKeypair);
-  umi.use(keypairIdentity(signer));
-
-  const result = await createV1(umi, {
-    mint: umiPublicKey(mint.toBase58()),
-    authority: signer,
-    name: 'JarSol',
-    symbol: 'JARSOL',
-    uri: METADATA_URI,
-    sellerFeeBasisPoints: percentAmount(0),
-    decimals: 9,
-    tokenStandard: TokenStandard.Fungible,
-  }).sendAndConfirm(umi);
-
-  return String(result.signature);
-}
 
 async function deployMainnet() {
   console.log('=====================================================================');
@@ -103,14 +77,32 @@ async function deployMainnet() {
     mintKeypair
   );
 
-  const [metadataPDA] = PublicKey.findProgramAddressSync(
-    [Buffer.from('metadata'), METAPLEX_PROGRAM_ID.toBuffer(), mint.toBuffer()],
-    METAPLEX_PROGRAM_ID
-  );
+  // Derive Metaplex Metadata PDA
+  const metadataPDA = findMetadataPda(mint);
+  console.log(`📍 [PDA] Derived Metaplex Metadata PDA: ${metadataPDA.toBase58()}`);
 
-  console.log('\n🎨 [STEP 2] Creating on-chain Metaplex metadata with Umi...');
-  const metadataTxSig = await createOnChainMetadata(MAINNET_RPC, payer, mint);
-  console.log(`✅ [CONFIRMED] Metadata attached. Tx: ${metadataTxSig}`);
+  // 4. Step 2: Create Metaplex Metadata Account V3 BEFORE revoking authority
+  console.log('\n🎨 [STEP 2] Creating On-Chain Metaplex Metadata V3...');
+  let metadataTxSig = '';
+  try {
+    const tx = new Transaction().add(
+      createMetadataAccountV3Instruction(
+        metadataPDA,
+        mint,
+        payer.publicKey,
+        payer.publicKey,
+        payer.publicKey,
+        'JarSol',
+        'JARSOL',
+        METADATA_URI
+      )
+    );
+    metadataTxSig = await sendAndConfirmTransaction(connection, tx, [payer]);
+    console.log(`✅ [CONFIRMED] Metaplex Metadata attached on-chain! Tx: ${metadataTxSig}`);
+  } catch (metaErr: any) {
+    console.error('❌ Metaplex metadata attachment error:', metaErr);
+    throw metaErr;
+  }
 
   console.log('\n📦 [STEP 3] Creating recipient ATA...');
   const tokenAccount = await getOrCreateAssociatedTokenAccount(connection, payer, mint, payer.publicKey);
