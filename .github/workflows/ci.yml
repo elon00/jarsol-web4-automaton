@@ -2,7 +2,7 @@ name: JarSol Reality-First CI
 
 on:
   push:
-    branches: [main, reality-hardening-v2]
+    branches: [main, reality-hardening-v2, reality-next-steps-v2]
   pull_request:
     branches: [main]
   workflow_dispatch:
@@ -23,7 +23,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 24
           cache: npm
       - name: Install locked dependencies
         run: npm ci
@@ -41,7 +41,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 24
           cache: npm
       - name: Install locked dependencies
         run: npm ci
@@ -60,8 +60,16 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 24
           cache: npm
-      - run: npm ci
+      - name: Install locked dependencies
+        run: npm ci
       - name: Audit production dependencies
         run: npm audit --omit=dev --audit-level=high
+
+  final-gate:
+    name: Final Reality Gate
+    needs: [quality, solana-testnet, security]
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "All mandatory CI gates passed."
