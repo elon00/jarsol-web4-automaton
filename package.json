@@ -17,7 +17,8 @@
     "verify:testnet:fresh": "tsx scripts/verify-fresh-testnet.ts",
     "metadata:devnet": "tsx scripts/create-metadata.ts devnet",
     "metadata:testnet": "tsx scripts/create-metadata.ts testnet",
-    "deploy:mainnet": "tsx scripts/deploy-mainnet.ts"
+    "deploy:mainnet": "tsx scripts/deploy-mainnet.ts",
+    "verify:all": "npx tsc --noEmit && npm run build && npm run verify:devnet && npm run verify:testnet && npm run verify:testnet:fresh && npm audit --omit=dev --audit-level=high"
   },
   "dependencies": {
     "@google/generative-ai": "^0.24.0",
