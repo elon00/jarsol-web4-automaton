@@ -282,7 +282,7 @@ export const SolanaLaunchpad: React.FC<SolanaLaunchpadProps> = ({
                 <div className="bg-black/30 p-1.5 rounded border border-slate-800">
                   <span className="text-slate-400 block text-[10px]">Supply (On-Chain):</span>
                   <span className="text-cyan-300 font-bold truncate block" title={CANONICAL_DEPLOYMENTS.testnet.totalSupply}>
-                    2.003B $JARSOL
+                    1,000,000,000 $JARSOL
                   </span>
                 </div>
                 <div className="bg-black/30 p-1.5 rounded border border-slate-800">
@@ -293,11 +293,11 @@ export const SolanaLaunchpad: React.FC<SolanaLaunchpadProps> = ({
               <div className="grid grid-cols-2 gap-2 text-[10px]">
                 <div className="bg-black/30 p-1.5 rounded border border-slate-800">
                   <span className="text-slate-400 block">Freeze Authority:</span>
-                  <span className="text-amber-400 font-bold">Active (Deployer)</span>
+                  <span className="text-emerald-400 font-bold">Revoked (Trustless)</span>
                 </div>
                 <div className="bg-black/30 p-1.5 rounded border border-slate-800">
                   <span className="text-slate-400 block">Metadata Account:</span>
-                  <span className="text-slate-400 font-bold">Not Attached</span>
+                  <span className="text-emerald-400 font-bold">Attached & Verified</span>
                 </div>
               </div>
             </div>

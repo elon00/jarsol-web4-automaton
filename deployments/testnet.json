@@ -1,26 +1,34 @@
 {
   "network": "testnet",
   "status": "DEPLOYED",
+  "phase": "PHASE_4_FRESH_DRY_RUN",
   "token": {
     "name": "JarSol",
     "symbol": "JARSOL",
-    "mintAddress": "9g22gNvUrPeS71RGDcnxEjekgMuiLq4oLgfWgz4QEThb",
-    "tokenAccountAddress": "7UEgM4Rxz7iVuvDyyJMhq2nYiK1u5qY8b3sz9vgsLvAE",
+    "mintAddress": "AeZcfycXZvgjt1Rkyee8w34tApSrLnzL7nJoH2P6EQxG",
+    "tokenAccountAddress": "DYfJeDoaU4P3PV2E5SQQ8o4NpDuWqdPkb4qRuKrdzEtz",
     "deployerAddress": "3q3cTxEPjtUpEJpPAnQodrTWSW7gH4NNebvg5kwd1Di7",
     "decimals": 9,
-    "totalSupplyFormatted": "2,003,764,205.206896640 $JARSOL",
-    "rawSupply": "2003764205206896640",
-    "supplyNote": "On-chain SPL u64 integer representation (10^24 truncated to 64-bit unsigned integer)"
+    "totalSupplyFormatted": "1,000,000,000 $JARSOL",
+    "rawSupply": "1000000000000000000",
+    "supplyModel": "Safe u64 (1 Billion @ 9 Decimals)",
+    "metadataPDA": "27CcdoNxjp5LNLtTYRmvDJVSThhbvXuFjGjZPYBD6AhR",
+    "metadataUri": "https://raw.githubusercontent.com/elon00/jarsol-web4-automaton/main/public/jarsol-metadata.json"
   },
   "deployment": {
     "confirmedOnChain": true,
     "mintAuthorityRevoked": true,
-    "freezeAuthority": "3q3cTxEPjtUpEJpPAnQodrTWSW7gH4NNebvg5kwd1Di7",
-    "freezeAuthorityRevoked": false,
-    "mintTxSignature": "afTDjf3zDjDR6D93xy8Zj1z7EZeo1DSmBdPCRnNN7MniYjmBw5BdDJhokHLq8jaf5jzCqTWWrvULTXnHFwZXYSQ",
-    "revokeTxSignature": "3DxvWBCj22iYWtZJiqgYVNKxNrS9QELCSJN2hRFB84uTPZ8TAP76P4UP93iGZXKNnkLoq5H8GC6UmGtu7ig5ht4C",
-    "deployedAt": "2026-09-05T22:45:41.773Z",
-    "explorerMintUrl": "https://explorer.solana.com/address/9g22gNvUrPeS71RGDcnxEjekgMuiLq4oLgfWgz4QEThb?cluster=testnet",
-    "explorerMintTxUrl": "https://explorer.solana.com/tx/afTDjf3zDjDR6D93xy8Zj1z7EZeo1DSmBdPCRnNN7MniYjmBw5BdDJhokHLq8jaf5jzCqTWWrvULTXnHFwZXYSQ?cluster=testnet"
+    "freezeAuthorityRevoked": true,
+    "mintAuthority": null,
+    "freezeAuthority": null,
+    "metadataAttachedOnChain": true,
+    "metadataTxSignature": "3qvix7RfLU2jvqTGchDwUm1eeAagHLKYgsv6CNDTJuSVMSrWxoKfHSoyaL1BmdadeEPkEDTKY5Kh9M8w5BGmLwyd",
+    "mintTxSignature": "rg3zCWaTpVEVRGVhEbjFUtDuDkJ7ntz2MdMCkSqZCQL8u6yofmA2us2WtxytXtjXaPindDLUs8wgqE2v9sAhGwZ",
+    "revokeMintTxSignature": "4kqS6DZ84yHwFj8ERzHwEey4RxgLmzuxD1g1obLdAmRkjKygmmciCyossgC5GQasaDYVNgmqD4yeKj8LDb29sh9m",
+    "revokeFreezeTxSignature": "2PbX3KooEBYwPr8EwRf1zVSNwvhR5JpwFoNziUBoD9wBkTH9sT7BhsC26EfDmWiBW1MXNx9syUGMa7Sg4LnuJH7e",
+    "deployedAt": "2026-09-06T00:05:33.579Z",
+    "explorerMintUrl": "https://explorer.solana.com/address/AeZcfycXZvgjt1Rkyee8w34tApSrLnzL7nJoH2P6EQxG?cluster=testnet",
+    "explorerMintTxUrl": "https://explorer.solana.com/tx/rg3zCWaTpVEVRGVhEbjFUtDuDkJ7ntz2MdMCkSqZCQL8u6yofmA2us2WtxytXtjXaPindDLUs8wgqE2v9sAhGwZ?cluster=testnet",
+    "explorerMetadataPdaUrl": "https://explorer.solana.com/address/27CcdoNxjp5LNLtTYRmvDJVSThhbvXuFjGjZPYBD6AhR?cluster=testnet"
   }
 }
