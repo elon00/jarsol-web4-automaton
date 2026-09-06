@@ -49,13 +49,13 @@ export const CANONICAL_DEPLOYMENTS: Record<'devnet' | 'testnet' | 'mainnet-beta'
   testnet: {
     network: 'testnet',
     label: 'Solana Testnet',
-    mintAddress: '9g22gNvUrPeS71RGDcnxEjekgMuiLq4oLgfWgz4QEThb',
+    mintAddress: 'AeZcfycXZvgjt1Rkyee8w34tApSrLnzL7nJoH2P6EQxG',
     deployerAddress: '3q3cTxEPjtUpEJpPAnQodrTWSW7gH4NNebvg5kwd1Di7',
-    tokenAccountAddress: '7UEgM4Rxz7iVuvDyyJMhq2nYiK1u5qY8b3sz9vgsLvAE',
+    tokenAccountAddress: 'DYfJeDoaU4P3PV2E5SQQ8o4NpDuWqdPkb4qRuKrdzEtz',
     decimals: 9,
-    totalSupply: '2,003,764,205.206896640 $JARSOL',
+    totalSupply: '1,000,000,000 $JARSOL',
     status: 'ACTIVE',
-    explorerUrl: 'https://explorer.solana.com/address/9g22gNvUrPeS71RGDcnxEjekgMuiLq4oLgfWgz4QEThb?cluster=testnet'
+    explorerUrl: 'https://explorer.solana.com/address/AeZcfycXZvgjt1Rkyee8w34tApSrLnzL7nJoH2P6EQxG?cluster=testnet'
   },
   'mainnet-beta': {
     network: 'mainnet-beta',

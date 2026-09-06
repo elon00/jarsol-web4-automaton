@@ -13,6 +13,8 @@
     "verify:devnet": "tsx scripts/verify-devnet.ts",
     "deploy:testnet": "tsx scripts/deploy-testnet.ts",
     "verify:testnet": "tsx scripts/verify-testnet.ts",
+    "deploy:testnet:fresh": "tsx scripts/deploy-fresh-testnet.ts",
+    "verify:testnet:fresh": "tsx scripts/verify-fresh-testnet.ts",
     "metadata:devnet": "tsx scripts/create-metadata.ts devnet",
     "metadata:testnet": "tsx scripts/create-metadata.ts testnet"
   },

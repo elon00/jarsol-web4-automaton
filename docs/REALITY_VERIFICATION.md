@@ -40,20 +40,26 @@ For a token deployment to become VERIFIED, capture:
 - **Mint Authority**: Revoked (`null`)
 - **Automated Audit**: `npm run verify:devnet` (Exits 0)
 
-### 2. Testnet Deployment (Status: ON-CHAIN VERIFIED ✅)
-- **Mint Address**: `9g22gNvUrPeS71RGDcnxEjekgMuiLq4oLgfWgz4QEThb`
+### 2. Testnet Canonical Deployment — Phase 4 Fresh Safe Dry Run (Status: ON-CHAIN VERIFIED PRODUCTION TEMPLATE ✅)
+- **Mint Address**: `AeZcfycXZvgjt1Rkyee8w34tApSrLnzL7nJoH2P6EQxG`
 - **Deployer**: `3q3cTxEPjtUpEJpPAnQodrTWSW7gH4NNebvg5kwd1Di7`
-- **Token Account (ATA)**: `7UEgM4Rxz7iVuvDyyJMhq2nYiK1u5qY8b3sz9vgsLvAE`
+- **Token Account (ATA)**: `DYfJeDoaU4P3PV2E5SQQ8o4NpDuWqdPkb4qRuKrdzEtz`
 - **Decimals**: 9
-- **Actual On-Chain Supply**: `2,003,764,205.206896640 $JARSOL` (raw units: `2003764205206896640`)
-  - *Mathematical Note*: Solana's SPL Token standard stores supply in a 64-bit unsigned integer (`u64`, max value $1.84 \times 10^{19}$). The requested $10^{15} \times 10^9 = 10^{24}$ overflows $2^{64}$, resulting in $10^{24} \pmod{2^{64}} = 2,003,764,205,206,896,640$ raw units.
-- **Mint Tx Signature**: `afTDjf3zDjDR6D93xy8Zj1z7EZeo1DSmBdPCRnNN7MniYjmBw5BdDJhokHLq8jaf5jzCqTWWrvULTXnHFwZXYSQ`
-- **Revoke Mint Authority Signature**: `3DxvWBCj22iYWtZJiqgYVNKxNrS9QELCSJN2hRFB84uTPZ8TAP76P4UP93iGZXKNnkLoq5H8GC6UmGtu7ig5ht4C`
-- **Mint Authority**: Revoked (`null`) — Supply cannot be inflated.
-- **Freeze Authority**: `3q3cTxEPjtUpEJpPAnQodrTWSW7gH4NNebvg5kwd1Di7` — Active (NOT Revoked).
-- **On-Chain Token Program**: Standard SPL Token (`TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA`)
-- **Automated Audit**: `npm run verify:testnet` (Exits 0 against `https://api.testnet.solana.com`)
-- **Metaplex Metadata On-Chain Status**: NOT Attached (Revoking mint authority prevents subsequent `createMetadataAccountV3` invocation).
+- **Exact On-Chain Supply**: `1,000,000,000 $JARSOL` (raw units: `1000000000000000000`, 10^18)
+  - *Mathematical Proof*: $10^9 \times 10^9 = 10^{18} < 2^{64}-1 \approx 1.844 \times 10^{19}$. Fits completely inside $u64$ without truncation.
+- **On-Chain Metaplex Metadata V3**:
+  - **PDA Address**: `27CcdoNxjp5LNLtTYRmvDJVSThhbvXuFjGjZPYBD6AhR`
+  - **Status**: **ATTACHED & VERIFIED ON-CHAIN ✅** (Created before mint authority revocation)
+  - **Metadata Tx Signature**: `3qvix7RfLU2jvqTGchDwUm1eeAagHLKYgsv6CNDTJuSVMSrWxoKfHSoyaL1BmdadeEPkEDTKY5Kh9M8w5BGmLwyd`
+  - **URI**: `https://raw.githubusercontent.com/elon00/jarsol-web4-automaton/main/public/jarsol-metadata.json`
+- **Mint Tx Signature**: `rg3zCWaTpVEVRGVhEbjFUtDuDkJ7ntz2MdMCkSqZCQL8u6yofmA2us2WtxytXtjXaPindDLUs8wgqE2v9sAhGwZ`
+- **Revoke Mint Authority Signature**: `4kqS6DZ84yHwFj8ERzHwEey4RxgLmzuxD1g1obLdAmRkjKygmmciCyossgC5GQasaDYVNgmqD4yeKj8LDb29sh9m`
+- **Revoke Freeze Authority Signature**: `2PbX3KooEBYwPr8EwRf1zVSNwvhR5JpwFoNziUBoD9wBkTH9sT7BhsC26EfDmWiBW1MXNx9syUGMa7Sg4LnuJH7e`
+- **Mint Authority**: **REVOKED (`null`)** — Supply is mathematically locked.
+- **Freeze Authority**: **REVOKED (`null`)** — Option A: 100% Trustless Censorship Resistance.
+- **Token Program**: Standard SPL Token (`TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA`)
+- **Automated Audit**: `npm run verify:testnet:fresh` (Exits 0 against `https://api.testnet.solana.com`)
+- **Historical Testing Milestone**: Initial testnet mint `9g22gNvUrPeS71RGDcnxEjekgMuiLq4oLgfWgz4QEThb` had u64 supply wrapping ($10^{24} \to 2.003\text{B}$) and active freeze authority, successfully superseded by this Phase 4 dry run.
 
 ### 3. Mainnet Deployment (Status: NOT DEPLOYED ❌)
 - No deployment attempted or broadcast. Deployer has 0 real SOL on Mainnet.
