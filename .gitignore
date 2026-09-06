@@ -18,3 +18,9 @@ jarvis_core/config
 *.zip
 alchemy-demo/
 server.ts.backup
+
+id.json
+*.keypair.json
+*.key
+secrets/
+wallets/
