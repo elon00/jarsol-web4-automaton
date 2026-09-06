@@ -11,7 +11,7 @@ const __dirname = path.dirname(__filename);
 const MAINNET_RPC = process.env.SOLANA_MAINNET_RPC || 'https://api.mainnet-beta.solana.com';
 const REGISTRY_PATH = path.join(__dirname, '..', 'deployments', 'mainnet.json');
 const ROOT_REGISTRY_PATH = path.join(__dirname, '..', 'jarsol-deployment.json');
-const KEYPAIR_PATH = process.env.SOLANA_KEYPAIR_PATH || 'C:/Users/marti/.config/solana/id.json';
+const KEYPAIR_PATH = process.env.SOLANA_KEYPAIR_PATH;
 const METADATA_URI = 'https://raw.githubusercontent.com/elon00/jarsol-web4-automaton/main/public/jarsol-metadata.json';
 const METAPLEX_PROGRAM_ID = new PublicKey('metaqbxxUerdq28cj1RbAWkYQm3ybzjb6a8bt518x1s');
 
@@ -38,6 +38,11 @@ async function deployMainnet() {
 
   console.log(`📡 [RPC] Cluster URL: ${MAINNET_RPC}`);
   console.log(`🌐 [METADATA URI] ${METADATA_URI}`);
+
+  // SAFETY GATE 3: Keypair path must be explicitly supplied; no machine-specific fallback.
+  if (!KEYPAIR_PATH) {
+    throw new Error('SOLANA_KEYPAIR_PATH must be explicitly configured. Refusing to use a default keypair path.');
+  }
 
   // 1. Validate environment and keypair
   if (!fs.existsSync(KEYPAIR_PATH)) {
