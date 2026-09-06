@@ -96,8 +96,8 @@ export async function fetchWalletBalance(
     if (res.ok) {
       const data = await res.json();
       return {
-        sol: data.sol ?? 2.0,
-        tokens: data.tokens || [],
+        sol: Number(data.sol ?? 0),
+        tokens: Array.isArray(data.tokens) ? data.tokens : [],
       };
     }
   } catch (e) {}
@@ -123,8 +123,8 @@ export async function fetchWalletBalance(
       sol: balanceLamports / LAMPORTS_PER_SOL,
       tokens: parsedTokens,
     };
-  } catch (err) {
-    return { sol: 2.0, tokens: [] };
+  } catch (err: any) {
+    throw new Error(err?.message || 'Unable to fetch verified wallet balance');
   }
 }
 
@@ -139,86 +139,22 @@ export async function requestAirdropOnChain(
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ address, amount: amountSol }),
     });
-    if (res.ok) {
-      const data = await res.json();
-      return {
-        success: true,
-        signature: data.signature,
-        explorerUrl: data.explorerUrl,
-      };
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok || !data.success || !data.signature) {
+      throw new Error(data.error || 'Verified airdrop failed');
     }
-  } catch (e) {}
-
-  try {
-    const conn = getSolanaConnection(network);
-    const pubkey = new PublicKey(address);
-    const sig = await conn.requestAirdrop(pubkey, amountSol * LAMPORTS_PER_SOL);
-    const latestBlock = await conn.getLatestBlockhash();
-    await conn.confirmTransaction({
-      blockhash: latestBlock.blockhash,
-      lastValidBlockHeight: latestBlock.lastValidBlockHeight,
-      signature: sig,
-    });
-
-    return {
-      success: true,
-      signature: sig,
-      explorerUrl: getExplorerUrl('tx', sig, network),
-    };
+    return { success: true, signature: data.signature, explorerUrl: data.explorerUrl };
   } catch (err: any) {
-    const simulatedSig = `DEVNET_AIRDROP_${Date.now()}`;
-    return {
-      success: true,
-      signature: simulatedSig,
-      explorerUrl: `https://faucet.solana.com`,
-    };
+    return { success: false, error: err?.message || 'Verified airdrop failed' };
   }
 }
 
 export const requestDevnetAirdrop = requestAirdropOnChain;
 
-export async function deploy1000TrillionSplToken(
-  payerKeypair?: Keypair,
-  network: NetworkType = 'devnet',
-  revokeAuthority: boolean = true
-): Promise<SplTokenDeploymentResult> {
-  try {
-    const res = await fetch('/api/solana/deploy-token', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        payerSecretKey: payerKeypair ? Array.from(payerKeypair.secretKey) : undefined,
-        revokeMintAuthority: revokeAuthority,
-      }),
-    });
-    if (res.ok) {
-      const data = await res.json();
-      if (data.success) {
-        return data;
-      }
-    }
-  } catch (err) {}
-
-  const mintKeypair = Keypair.generate();
-  const mintAddress = mintKeypair.publicKey.toBase58();
-  const ataAddress = Keypair.generate().publicKey.toBase58();
-  const deployerAddress = payerKeypair ? payerKeypair.publicKey.toBase58() : Keypair.generate().publicKey.toBase58();
-  const mintTxSig = `MINT_TX_${Date.now()}_${Math.random().toString(36).substring(2, 10)}`;
-
-  return {
-    success: true,
-    tokenName: 'JarSol',
-    tokenSymbol: 'JARSOL',
-    mintAddress: mintAddress,
-    tokenAccountAddress: ataAddress,
-    deployerAddress: deployerAddress,
-    totalSupplyFormatted: '1,000,000,000,000,000 $JARSOL',
-    decimals: 9,
-    mintTxSignature: mintTxSig,
-    revokeTxSignature: revokeAuthority ? `REVOKE_${Date.now()}` : null,
-    mintAuthorityRevoked: revokeAuthority,
-    network: network,
-    explorerMintUrl: `https://explorer.solana.com/address/${mintAddress}?cluster=${network}`,
-    explorerMintTxUrl: `https://explorer.solana.com/tx/${mintTxSig}?cluster=${network}`,
-  };
+/**
+ * Token deployment is intentionally server-side and requires a configured payer.
+ * The client must not generate simulated mint addresses or transaction signatures.
+ */
+export async function deploy1000TrillionSplToken(): Promise<SplTokenDeploymentResult> {
+  throw new Error('Client-side token deployment is disabled. Use the verified server deployment endpoint on an approved test cluster.');
 }
