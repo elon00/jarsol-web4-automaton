@@ -1,5 +1,5 @@
 import React from 'react';
-import { X, Wallet, ShieldAlert, CheckCircle2, Key, ExternalLink, RefreshCw, Copy, Check } from 'lucide-react';
+import { X, Wallet, CheckCircle2, Key, ExternalLink, RefreshCw, Copy, Check } from 'lucide-react';
 import { WalletState } from '../types';
 import { connectPhantomWallet, connectSolflareWallet, connectInstantDevnetKeypair } from '../utils/wallet';
 import { playCyberClick, playSuccessChime } from '../utils/audio';
@@ -170,7 +170,7 @@ export const WalletModal: React.FC<WalletModalProps> = ({
           ) : (
             <div className="space-y-3">
               <p className="text-xs text-slate-400">
-                Select your preferred Solana wallet provider to interact with the 1,000 Trillion $JARSOL Launchpad and Conway Automaton OS.
+                Select a Solana wallet provider. Testnet and devnet functionality should be verified before any production use.
               </p>
 
               {/* Instant Devnet Keypair Option */}
