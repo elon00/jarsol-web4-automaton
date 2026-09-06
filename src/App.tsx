@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useCallback } from 'react';
 import { CyberHeader } from './components/CyberHeader';
 import { WalletModal } from './components/WalletModal';
 import { MetaverseGameEngine } from './components/MetaverseGameEngine';
@@ -19,7 +19,6 @@ import { ReadmeViewer } from './components/ReadmeViewer';
 
 import { WalletState, NetworkType } from './types';
 import { fetchWalletBalance } from './utils/solana';
-import { connectInstantDevnetKeypair } from './utils/wallet';
 import { CheckCircle2, AlertCircle, Info, AlertTriangle, X } from 'lucide-react';
 
 export interface ToastMessage {
@@ -73,13 +72,6 @@ export function App() {
     }
   }, [wallet.address, wallet.network]);
 
-  useEffect(() => {
-    connectInstantDevnetKeypair(wallet.network).then(({ walletState }) => {
-      setWallet(walletState);
-    }).catch((e) => {
-      console.warn('Initial keypair load:', e);
-    });
-  }, []);
 
   const handleNetworkChange = (net: NetworkType) => {
     setWallet((prev) => ({ ...prev, network: net }));
@@ -264,9 +256,9 @@ export function App() {
           <div className="flex items-center gap-4 text-[11px]">
             <span>NIST FIPS 203/204 PQC</span>
             <span>•</span>
-            <span>1,000 Trillion $JARSOL</span>
+            <span>1,000,000,000 JARSOL testnet supply</span>
             <span>•</span>
-            <span>Google Gemini 3.6 Flash</span>
+            <span>Reality-First verification enabled</span>
           </div>
         </div>
       </footer>
