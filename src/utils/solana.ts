@@ -124,7 +124,7 @@ export async function fetchWalletBalance(
       tokens: parsedTokens,
     };
   } catch (err: any) {
-    return { sol: 0, tokens: [], unavailable: true, error: err?.message || 'Unable to fetch verified wallet balance' } as WalletBalance;
+    return { sol: 0, tokens: [], unavailable: true, error: err?.message || 'Unable to fetch verified wallet balance' };
   }
 }
 
