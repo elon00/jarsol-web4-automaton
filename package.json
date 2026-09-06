@@ -21,7 +21,8 @@
     "verify:secrets": "tsx scripts/verify-secrets.ts",
     "test:quantum": "tsx quantum/06_TESTS/pqc-smoke.test.ts && tsx quantum/06_TESTS/known-answer.test.ts && tsx quantum/06_TESTS/portfolio-benchmark.test.ts",
     "benchmark:quantum": "tsx quantum/04_QUANTUM_PORTFOLIO/benchmark-runner.ts",
-    "finish:all": "tsx scripts/finish-all.ts"
+    "finish:all": "tsx scripts/finish-all.ts",
+    "production:ready": "tsx scripts/production-ready.ts"
   },
   "dependencies": {
     "@google/generative-ai": "^0.24.0",
