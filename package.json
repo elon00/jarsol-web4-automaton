@@ -16,7 +16,8 @@
     "deploy:testnet:fresh": "tsx scripts/deploy-fresh-testnet.ts",
     "verify:testnet:fresh": "tsx scripts/verify-fresh-testnet.ts",
     "metadata:devnet": "tsx scripts/create-metadata.ts devnet",
-    "metadata:testnet": "tsx scripts/create-metadata.ts testnet"
+    "metadata:testnet": "tsx scripts/create-metadata.ts testnet",
+    "deploy:mainnet": "tsx scripts/deploy-mainnet.ts"
   },
   "dependencies": {
     "@google/generative-ai": "^0.24.0",
