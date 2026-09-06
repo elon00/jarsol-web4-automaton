@@ -1,41 +1,67 @@
-﻿name: JarSol Web4 CI/CD Verification
+name: JarSol Reality-First CI
 
 on:
   push:
-    branches: [ main, reality-hardening-v2 ]
+    branches: [main, reality-hardening-v2]
   pull_request:
-    branches: [ main ]
+    branches: [main]
   workflow_dispatch:
 
+permissions:
+  contents: read
+
+concurrency:
+  group: jarsol-ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
-  verify:
-    name: 🛡️ Build, Typecheck & On-Chain Verification
+  quality:
+    name: Quality and Build
     runs-on: ubuntu-latest
-
+    timeout-minutes: 15
     steps:
-      - name: 📥 Checkout Repository
-        uses: actions/checkout@v4
-
-      - name: ⚙️ Setup Node.js 20
-        uses: actions/setup-node@v4
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
         with:
           node-version: 20
-          cache: 'npm'
-
-      - name: 📦 Install Dependencies
-        run: npm install
-
-      - name: 🔍 TypeScript Compilation Check
+          cache: npm
+      - name: Install locked dependencies
+        run: npm ci
+      - name: Typecheck
         run: npx tsc --noEmit
-
-      - name: 🏗️ Production Build (Vite & Express)
+      - name: Production build
         run: npm run build
 
-      - name: 📡 Test Solana RPC Connectivity
-        run: npm run test:rpc
-
-      - name: 💎 Audit Devnet Canonical Mint
+  solana-testnet:
+    name: Fresh Testnet Verification
+    needs: quality
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - name: Install locked dependencies
+        run: npm ci
+      - name: Verify canonical Devnet evidence
         run: npm run verify:devnet
-
-      - name: 🚀 Audit Testnet Canonical Mint
+      - name: Verify canonical Testnet evidence
         run: npm run verify:testnet
+      - name: Verify fresh safe Testnet template
+        run: npm run verify:testnet:fresh
+
+  security:
+    name: Dependency Audit
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+      - name: Audit production dependencies
+        run: npm audit --omit=dev --audit-level=high
