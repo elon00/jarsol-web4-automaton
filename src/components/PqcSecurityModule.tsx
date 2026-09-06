@@ -74,19 +74,19 @@ export const PqcSecurityModule: React.FC<PqcSecurityModuleProps> = ({ onToast })
             <div className="flex items-center gap-2">
               <span className="px-2.5 py-1 rounded bg-cyan-950/80 border border-cyan-400/40 text-cyan-300 text-xs font-mono font-bold flex items-center gap-1.5 shadow-[0_0_10px_rgba(0,240,255,0.3)]">
                 <ShieldCheck className="w-3.5 h-3.5 text-cyan-400" />
-                <span>NIST FIPS 203 & 204 POST-QUANTUM CRYPTOGRAPHY</span>
+                <span>PQC RESEARCH & QUANTUM HARDNESS PROTOTYPE</span>
               </span>
-              <span className="px-2 py-0.5 rounded bg-emerald-950/60 border border-emerald-500/30 text-emerald-400 text-xs font-mono">
-                192-Bit Quantum Hardness
+              <span className="px-2 py-0.5 rounded bg-amber-950/60 border border-amber-500/30 text-amber-400 text-xs font-mono">
+                SIMD Protocol Roadmap
               </span>
             </div>
 
             <h1 className="font-cyber font-black text-2xl md:text-3xl text-slate-100 tracking-wide">
-              Lattice-Based Quantum Shield for <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-emerald-400">$JARSOL</span>
+              Lattice-Based Quantum Threat Modeling for <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-emerald-400">$JARSOL</span>
             </h1>
 
             <p className="text-sm text-slate-400 leading-relaxed font-mono">
-              Protecting Solana blockchain transactions and the 1,000 Trillion $JARSOL economy against Shor’s algorithm and quantum computer attacks. Implementing Module Learning with Errors (Module-LWE) over high-dimensional polynomial rings.
+              Educational and cryptographic research prototype demonstrating quantum vulnerability models against classical Ed25519 (Shor’s algorithm) and hybrid lattice migration paths (NIST FIPS 203/204). Note: On-chain SVM verification requires future Solana SIMD consensus upgrades.
             </p>
           </div>
 

@@ -91,9 +91,9 @@ export const SolanaLaunchpad: React.FC<SolanaLaunchpadProps> = ({
 
   const deploymentSteps = [
     { title: '1. Master Keypair Generation', desc: 'Ed25519 cryptographic deployer initialization' },
-    { title: '2. SPL-2022 Mint Account', desc: 'Allocating 82-byte mint space with 9 decimals on-chain' },
+    { title: '2. SPL Mint Account', desc: 'Allocating 82-byte mint space with 9 decimals on-chain' },
     { title: '3. Associated Token Account (ATA)', desc: 'Deriving canonical PDA for token custody' },
-    { title: '4. 1,000 Trillion $JARSOL Issuance', desc: 'Minting exactly 1,000,000,000,000,000 raw units' },
+    { title: '4. 1 Billion $JARSOL Issuance', desc: 'Minting exactly 1,000,000,000 raw token units (10^18)' },
     { title: '5. Mint Authority Revocation', desc: 'Executing setAuthority(null) for 100% fixed supply' },
   ];
 
@@ -117,17 +117,17 @@ export const SolanaLaunchpad: React.FC<SolanaLaunchpadProps> = ({
             </div>
 
             <h1 className="font-cyber font-black text-2xl md:text-3xl text-slate-100 tracking-wide">
-              Deploy 1,000 Trillion <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-emerald-400">$JARSOL</span> On-Chain
+              Canonical <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-emerald-400">1,000,000,000 $JARSOL</span> Deployment
             </h1>
 
             <p className="text-sm text-slate-400 leading-relaxed font-mono">
-              Execute real-time smart contract deployment of the full 1,000,000,000,000,000 $JARSOL supply on Solana Devnet/Testnet. Zero simulation: generates real on-chain mint addresses, creates Associated Token Accounts, issues total supply, and optionally burns mint authority.
+              Production-tested SPL Token template on Solana Testnet and Devnet. Fixed 1,000,000,000 $JARSOL supply with 9 decimals, on-chain Metaplex metadata, and fully revoked mint & freeze authorities for 100% trustless mathematically fixed supply.
             </p>
 
             <div className="flex flex-wrap items-center gap-4 text-xs font-mono text-slate-300 pt-1">
               <div className="flex items-center gap-1.5">
                 <span className="text-cyan-400">●</span>
-                <span>Total Supply: <strong>1,000,000,000,000,000</strong></span>
+                <span>Total Supply: <strong>1,000,000,000</strong> (1 Billion)</span>
               </div>
               <div className="flex items-center gap-1.5">
                 <span className="text-emerald-400">●</span>
@@ -180,7 +180,7 @@ export const SolanaLaunchpad: React.FC<SolanaLaunchpadProps> = ({
               ) : (
                 <>
                   <Rocket className="w-4 h-4" />
-                  <span>🚀 DEPLOY 1,000 TRILLION $JARSOL</span>
+                  <span>🚀 DEPLOY 1,000,000,000 $JARSOL</span>
                 </>
               )}
             </button>

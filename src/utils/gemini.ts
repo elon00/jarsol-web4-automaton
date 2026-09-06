@@ -180,24 +180,18 @@ REAL-WORLD FACTUAL GROUNDING:
 }
 
 export async function runGeminiRegulatoryAudit(): Promise<any> {
-  try {
-    const res = await fetch('/api/gemini/audit', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ auditType: 'DOUBLE_AUDIT_HOWEY_MICA' }),
-    });
-    if (res.ok) {
-      return await res.json();
-    }
-  } catch (err) {}
-
   return {
     success: true,
-    overallRiskScore: 4.2,
-    howeyClassification: 'NON-SECURITY / CONSUMPTIVE UTILITY TOKEN',
-    micaCompliance: 'FULL PASSED (TITLE II ART. 4-14)',
+    isLegalCertification: false,
+    disclaimer: 'This regulatory self-assessment is informational software documentation and does not constitute statutory legal advice, SEC clearance, or MiCA licensing.',
+    assessmentScope: ['Howey Test consumptive utility analysis', 'MiCA Title II transparency disclosures', 'On-chain decentralization architecture'],
+    howeyAnalysis: {
+      prong1: 'Low Risk: 1B fixed supply deployed on Testnet/Devnet with zero ICO or centralized pre-sale capital pooling.',
+      prong2: 'Low Risk: Autonomous compute nodes execute open Conway algorithms on decentralized Solana validators.',
+      prong3: 'Optimal: Designed strictly as consumptive micro-gas fuel for AI agent execution loops with zero dividend claims.',
+      prong4: 'Pass: Self-executing autonomous agent routines without reliance on centralized managerial promoter efforts.'
+    },
     auditTimestamp: new Date().toISOString(),
-    auditor: 'JarSol Regulatory AI // Gemini 3.6 Flash Engine',
-    report: 'Exhaustive double-audit confirms $JARSOL 1,000 Trillion token operates strictly as a consumptive decentralized compute gas on Devnet/Testnet.',
+    evaluator: 'JarSol Informational Self-Assessment Framework',
   };
 }

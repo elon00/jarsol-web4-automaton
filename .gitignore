@@ -20,7 +20,12 @@ alchemy-demo/
 server.ts.backup
 
 id.json
+*id.json
 *.keypair.json
+*.secret.json
 *.key
+.env
+.env.*
+!.env.example
 secrets/
 wallets/

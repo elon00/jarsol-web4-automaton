@@ -68,13 +68,13 @@ export const CyberHeader: React.FC<CyberHeaderProps> = ({
     { id: 'videos', label: '🎬 Sci-Fi 4K Videos', badge: '60FPS' },
     { id: 'kingdom', label: '👑 Sci-Fi Kingdom', badge: 'King/Genie' },
     { id: 'jarvis', label: '🎙️ Humanoid Jarvis', badge: 'Face-to-Face' },
-    { id: 'dex', label: '🔄 Real DEX Swap', badge: 'Raydium' },
-    { id: 'launchpad', label: '🚀 Launchpad', badge: '1,000T' },
+    { id: 'dex', label: '🔄 DEX Swap', badge: 'Preview' },
+    { id: 'launchpad', label: '🚀 Launchpad', badge: '1B Fixed' },
     { id: 'conway', label: '🧬 Conway Matrix', badge: 'B3/S23' },
     { id: 'terminal', label: '🤖 Gemini Brain', badge: '3.6 Flash' },
-    { id: 'pqc', label: '🛡️ PQC Shield', badge: 'FIPS 204' },
+    { id: 'pqc', label: '🛡️ PQC Shield', badge: 'Lattice Demo' },
     { id: 'tokenomics', label: '📊 Tokenomics', badge: 'Global Mkt' },
-    { id: 'audit', label: '⚖️ Legal Double-Audit', badge: 'SEC/MiCA' },
+    { id: 'audit', label: '⚖️ Legal & Utility', badge: 'Compliance' },
     { id: 'workflow', label: '⚡ Workflow', badge: 'Web 4.0' },
     { id: 'whitepaper', label: '📄 Whitepaper', badge: '6 Ch' },
     { id: 'readme', label: '📖 Readme', badge: 'Docs' },
@@ -91,7 +91,7 @@ export const CyberHeader: React.FC<CyberHeaderProps> = ({
           </div>
           <span className="text-slate-400 hidden sm:inline">| Real-Time Speech & 60FPS Video Streaming</span>
           <span className="text-emerald-400 px-1.5 py-0.5 rounded bg-emerald-950/40 border border-emerald-500/20 font-mono text-[10px]">
-            1,000 Trillion $JARSOL SPL-2022
+            1,000,000,000 $JARSOL (100% Fixed Supply)
           </span>
         </div>
 
@@ -200,7 +200,7 @@ export const CyberHeader: React.FC<CyberHeaderProps> = ({
               >
                 <div className="text-right">
                   <div className="text-[10px] text-slate-400">
-                    {wallet.solBalance.toFixed(3)} SOL
+                    {wallet.solBalance.toFixed(3)} SOL {wallet.jarsolBalance > 0 ? `| ${wallet.jarsolBalance.toLocaleString()} $JARSOL` : ''}
                   </div>
                   <div className="font-bold">
                     {wallet.address?.substring(0, 4)}...{wallet.address?.substring(wallet.address.length - 4)}

@@ -66,6 +66,8 @@ jobs:
         run: npm ci
       - name: Audit production dependencies
         run: npm audit --omit=dev --audit-level=high
+      - name: Verify repository secrets and fail-closed mainnet boundary
+        run: npm run verify:secrets
 
   final-gate:
     name: Final Reality Gate

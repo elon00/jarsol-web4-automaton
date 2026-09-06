@@ -79,9 +79,9 @@ export const LegalAuditor: React.FC<LegalAuditorProps> = ({ onToast }) => {
       const res = await runGeminiRegulatoryAudit();
       setAuditReport(res);
       playSuccessChime();
-      onToast('Legal Double-Audit complete! Risk score: 4.2/100 (Ultra Low)', 'success');
+      onToast('Regulatory self-assessment analysis loaded (Informational)', 'info');
     } catch (err: any) {
-      onToast('Double audit failed: ' + err.message, 'error');
+      onToast('Evaluation failed: ' + err.message, 'error');
     } finally {
       setRunningAudit(false);
     }
@@ -96,19 +96,19 @@ export const LegalAuditor: React.FC<LegalAuditorProps> = ({ onToast }) => {
             <div className="flex items-center gap-2">
               <span className="px-2.5 py-1 rounded bg-cyan-950/80 border border-cyan-400/40 text-cyan-300 text-xs font-mono font-bold flex items-center gap-1.5 shadow-[0_0_10px_rgba(0,240,255,0.3)]">
                 <Scale className="w-3.5 h-3.5 text-cyan-400" />
-                <span>GLOBAL SECURITIES LAWS & COMPLIANCE DOUBLE-AUDIT</span>
+                <span>REGULATORY COMPLIANCE & CONSUMPTIVE UTILITY</span>
               </span>
-              <span className="px-2 py-0.5 rounded bg-emerald-950/60 border border-emerald-500/30 text-emerald-400 text-xs font-mono">
-                US SEC & EU MiCA Certified
+              <span className="px-2 py-0.5 rounded bg-cyan-950/60 border border-cyan-500/30 text-cyan-400 text-xs font-mono">
+                Self-Assessment Framework
               </span>
             </div>
 
             <h1 className="font-cyber font-black text-2xl md:text-3xl text-slate-100 tracking-wide">
-              Regulatory Double-Audit & <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-emerald-400">Consumptive Utility Proof</span>
+              Regulatory Self-Assessment & <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-emerald-400">Consumptive Utility Proof</span>
             </h1>
 
             <p className="text-sm text-slate-400 leading-relaxed font-mono">
-              Comprehensive legal analysis confirming $JARSOL’s status as a Non-Security Consumptive Commodity. Evaluated against the US SEC Howey Test, Reves Test, and EU MiCA Title II regulations.
+              Factual evaluation of $JARSOL architecture against US SEC Howey criteria and EU MiCA Title II transparency guidelines. Notice: This analysis is informational software documentation and does not constitute statutory legal advice or government clearance.
             </p>
           </div>
 
@@ -122,12 +122,12 @@ export const LegalAuditor: React.FC<LegalAuditorProps> = ({ onToast }) => {
               {runningAudit ? (
                 <>
                   <RefreshCw className="w-4 h-4 animate-spin text-slate-950" />
-                  <span>RUNNING GEMINI AUDIT...</span>
+                  <span>ANALYZING UTILITY SCOPE...</span>
                 </>
               ) : (
                 <>
                   <ShieldCheck className="w-4 h-4" />
-                  <span>EXECUTE AI DOUBLE-AUDIT</span>
+                  <span>RUN REGULATORY SELF-ASSESSMENT</span>
                 </>
               )}
             </button>

@@ -115,26 +115,26 @@ export const RealDexExchange: React.FC<RealDexExchangeProps> = ({
           <div className="flex items-center gap-2">
             <span className="px-2.5 py-1 rounded bg-cyan-950/80 border border-cyan-400/40 text-cyan-300 text-xs font-mono font-bold flex items-center gap-1.5 shadow-[0_0_10px_rgba(0,240,255,0.3)]">
               <ArrowDownUp className="w-3.5 h-3.5 text-cyan-400" />
-              <span>REAL RAYDIUM / ORCA DEX INTERFACE</span>
+              <span>RAYDIUM / ORCA AMM ENGINE (PREVIEW)</span>
             </span>
-            <span className="px-2 py-0.5 rounded bg-emerald-950/60 border border-emerald-500/30 text-emerald-400 text-xs font-mono">
-              Solana Devnet & Testnet Active
+            <span className="px-2 py-0.5 rounded bg-amber-950/60 border border-amber-500/30 text-amber-400 text-xs font-mono">
+              Mainnet LP Deployment Pending
             </span>
           </div>
 
           <h1 className="font-cyber font-black text-2xl md:text-3xl text-slate-100 tracking-wide">
-            Real On-Chain Swap & <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-emerald-400">Liquidity Engine</span>
+            Automated Market Maker & <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-emerald-400">Liquidity Engine</span>
           </h1>
 
           <p className="text-sm text-slate-400 leading-relaxed font-mono">
-            Zero simulations: execute real on-chain automated market maker swaps between SOL and $JARSOL with sub-second finality, 100% burned LP pools, and automatic 1% compute gas burning.
+            Interactive constant-product AMM simulator (x * y = k) for $JARSOL liquidity planning. Live pool creation on Raydium/Orca will be executed with locked LP tokens upon explicit Mainnet authorization.
           </p>
         </div>
 
         <div className="p-4 rounded-xl bg-slate-900/90 border border-slate-800 text-xs font-mono space-y-1">
-          <div className="text-slate-500 text-[10px]">Raydium Pool Liquidity Depth</div>
-          <div className="text-cyan-300 font-bold">50,000 SOL / 450T $JARSOL</div>
-          <div className="text-emerald-400 text-[11px]">100% LP Tokens Permanently Burned 🔥</div>
+          <div className="text-slate-500 text-[10px]">Planned Raydium Initial Pair</div>
+          <div className="text-cyan-300 font-bold">SOL / $JARSOL (1,000,000,000 Total)</div>
+          <div className="text-amber-400 text-[11px]">100% LP Burn on Mainnet Launch 🔥</div>
         </div>
       </div>
 
@@ -235,23 +235,20 @@ export const RealDexExchange: React.FC<RealDexExchangeProps> = ({
             </div>
           </div>
 
-          {/* Execute Swap Button */}
+          {/* AMM Roadmap Notice & Preview Button */}
+          <div className="p-3 rounded-lg bg-amber-950/40 border border-amber-500/30 text-xs font-mono text-amber-300">
+            ℹ️ <strong>Roadmap Notice:</strong> Live Raydium/Orca pool execution will be enabled upon explicit Mainnet launch with dedicated LP pair allocation and locked LP tokens.
+          </div>
+
           <button
-            onClick={executeRealSwap}
-            disabled={isSwapping || numInput <= 0}
-            className="w-full py-4 rounded-xl bg-gradient-to-r from-cyan-500 via-teal-500 to-emerald-500 hover:from-cyan-400 hover:to-emerald-400 text-slate-950 font-cyber font-black text-sm flex items-center justify-center gap-2 shadow-[0_0_20px_rgba(0,240,255,0.4)] transition-all disabled:opacity-50"
+            onClick={() => {
+              playCyberClick();
+              onToast('AMM swap curve calculated. Live pool broadcast disabled pending Mainnet LP funding.', 'info');
+            }}
+            className="w-full py-3.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-cyber font-bold text-xs flex items-center justify-center gap-2 border border-slate-700 transition-all cursor-pointer"
           >
-            {isSwapping ? (
-              <>
-                <RefreshCw className="w-4 h-4 animate-spin text-slate-950" />
-                <span>SETTLING ON SOLANA DEVNET...</span>
-              </>
-            ) : (
-              <>
-                <ArrowDownUp className="w-4 h-4" />
-                <span>EXECUTE REAL SWAP ON RAYDIUM</span>
-              </>
-            )}
+            <ArrowDownUp className="w-4 h-4 text-cyan-400" />
+            <span>CALCULATE AMM CURVE (ROADMAP PREVIEW)</span>
           </button>
         </div>
 

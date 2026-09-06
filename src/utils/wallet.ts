@@ -39,7 +39,7 @@ export async function connectPhantomWallet(network: NetworkType = 'devnet'): Pro
         address: pubkey,
         publicKey: pubkey,
         solBalance: balances.sol,
-        jarsolBalance: 0,
+        jarsolBalance: balances.tokens.find(t => t.mint)?.amount ? parseFloat(balances.tokens[0].amount) : 0,
         walletType: 'phantom',
         network,
       };
@@ -48,16 +48,16 @@ export async function connectPhantomWallet(network: NetworkType = 'devnet'): Pro
       throw new Error(err.message || 'User rejected Phantom connection.');
     }
   } else {
-    // Graceful fallback to primary connected user address
-    return connectUserWallet(network);
+    throw new Error('Phantom wallet extension not detected. Please install Phantom from https://phantom.app to connect.');
   }
 }
 
 export async function connectSolflareWallet(network: NetworkType = 'devnet'): Promise<WalletState> {
-  if (typeof window !== 'undefined' && window.solflare) {
+  if (typeof window !== 'undefined' && (window.solflare || (window.solana && window.solana.isSolflare))) {
     try {
-      await window.solflare.connect();
-      const pubkey = window.solflare.publicKey.toString();
+      const provider = window.solflare || window.solana;
+      await provider.connect();
+      const pubkey = provider.publicKey.toString();
       const balances = await fetchWalletBalance(pubkey, network);
 
       return {
@@ -65,7 +65,7 @@ export async function connectSolflareWallet(network: NetworkType = 'devnet'): Pr
         address: pubkey,
         publicKey: pubkey,
         solBalance: balances.sol,
-        jarsolBalance: 0,
+        jarsolBalance: balances.tokens.find(t => t.mint)?.amount ? parseFloat(balances.tokens[0].amount) : 0,
         walletType: 'solflare',
         network,
       };
@@ -74,7 +74,7 @@ export async function connectSolflareWallet(network: NetworkType = 'devnet'): Pr
       throw new Error(err.message || 'User rejected Solflare connection.');
     }
   } else {
-    return connectUserWallet(network);
+    throw new Error('Solflare wallet extension not detected. Please install Solflare from https://solflare.com to connect.');
   }
 }
 
@@ -95,7 +95,7 @@ export async function connectInstantDevnetKeypair(network: NetworkType = 'devnet
     sessionStorage.setItem('jarsol_devnet_secret', JSON.stringify(Array.from(keypair.secretKey)));
   }
 
-  const pubkey = PRIMARY_USER_WALLET_ADDRESS;
+  const pubkey = keypair.publicKey.toBase58();
   const balances = await fetchWalletBalance(pubkey, network);
 
   return {
@@ -105,7 +105,7 @@ export async function connectInstantDevnetKeypair(network: NetworkType = 'devnet
       publicKey: pubkey,
       solBalance: balances.sol,
       jarsolBalance: 0,
-      walletType: 'phantom',
+      walletType: 'keypair',
       network,
     },
     keypair,

@@ -18,7 +18,7 @@ import { WhitepaperReader } from './components/WhitepaperReader';
 import { ReadmeViewer } from './components/ReadmeViewer';
 
 import { WalletState, NetworkType } from './types';
-import { fetchWalletBalance } from './utils/solana';
+import { fetchWalletBalance, CANONICAL_DEPLOYMENTS } from './utils/solana';
 import { CheckCircle2, AlertCircle, Info, AlertTriangle, X } from 'lucide-react';
 
 export interface ToastMessage {
@@ -65,9 +65,12 @@ export function App() {
   const refreshBalance = useCallback(async () => {
     if (wallet.address) {
       const b = await fetchWalletBalance(wallet.address, wallet.network);
+      const canonicalMint = CANONICAL_DEPLOYMENTS[wallet.network]?.mintAddress;
+      const matchingToken = b.tokens.find((t) => t.mint === canonicalMint);
       setWallet((prev) => ({
         ...prev,
         solBalance: b.sol,
+        jarsolBalance: matchingToken?.amount ? parseFloat(matchingToken.amount) : 0,
       }));
     }
   }, [wallet.address, wallet.network]);

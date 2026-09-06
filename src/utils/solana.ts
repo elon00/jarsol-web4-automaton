@@ -152,13 +152,26 @@ export async function requestAirdropOnChain(
 export const requestDevnetAirdrop = requestAirdropOnChain;
 
 /**
- * Token deployment is intentionally server-side and requires a configured payer.
- * The client must not generate simulated mint addresses or transaction signatures.
+ * Verified on-chain token deployment via authenticated backend service.
  */
-export async function deploy1000TrillionSplToken(
-  _payerKeypair?: Keypair,
-  _network: NetworkType = 'devnet',
-  _revokeAuthority: boolean = true
+export async function deployCanonicalSplToken(
+  network: NetworkType = 'devnet',
+  revokeAuthority: boolean = true
 ): Promise<SplTokenDeploymentResult> {
-  throw new Error('Client-side token deployment is disabled. Use the verified server deployment endpoint on an approved test cluster.');
+  const res = await fetch('/api/solana/deploy-token', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ forceRedeploy: false, revokeMintAuthority: revokeAuthority, network })
+  });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok || !data.success) {
+    throw new Error(data.error || 'On-chain deployment failed. Ensure backend payer is configured and funded on ' + network);
+  }
+  return data;
 }
+
+export const deploy1000TrillionSplToken = (
+  _payerKeypair?: Keypair,
+  network: NetworkType = 'devnet',
+  revokeAuthority: boolean = true
+) => deployCanonicalSplToken(network, revokeAuthority);
