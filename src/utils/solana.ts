@@ -124,7 +124,7 @@ export async function fetchWalletBalance(
       tokens: parsedTokens,
     };
   } catch (err: any) {
-    throw new Error(err?.message || 'Unable to fetch verified wallet balance');
+    return { sol: 0, tokens: [], unavailable: true, error: err?.message || 'Unable to fetch verified wallet balance' } as WalletBalance;
   }
 }
 
@@ -137,7 +137,7 @@ export async function requestAirdropOnChain(
     const res = await fetch('/api/solana/airdrop', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ address, amount: amountSol }),
+      body: JSON.stringify({ address, amount: amountSol, network }),
     });
     const data = await res.json().catch(() => ({}));
     if (!res.ok || !data.success || !data.signature) {
@@ -155,6 +155,10 @@ export const requestDevnetAirdrop = requestAirdropOnChain;
  * Token deployment is intentionally server-side and requires a configured payer.
  * The client must not generate simulated mint addresses or transaction signatures.
  */
-export async function deploy1000TrillionSplToken(): Promise<SplTokenDeploymentResult> {
+export async function deploy1000TrillionSplToken(
+  _payerKeypair?: Keypair,
+  _network: NetworkType = 'devnet',
+  _revokeAuthority: boolean = true
+): Promise<SplTokenDeploymentResult> {
   throw new Error('Client-side token deployment is disabled. Use the verified server deployment endpoint on an approved test cluster.');
 }
