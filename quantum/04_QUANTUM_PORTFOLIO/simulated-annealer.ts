@@ -68,7 +68,7 @@ export class SimulatedAnnealer {
 
     for (let shot = 0; shot < this.config.numShots; shot++) {
       // Random initial state
-      let x = Array.from({ length: this.n }, () => (Math.random() > 0.5 ? 1 : 0));
+      let x: number[] = Array.from({ length: this.n }, () => (Math.random() > 0.5 ? 1 : 0));
       let currentEnergy = this.computeEnergy(x);
 
       let T = this.config.initialTemperature;

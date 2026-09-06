@@ -59,7 +59,20 @@ async function verifyTestnet() {
   console.log(`🔗 Explorer: https://explorer.solana.com/address/${mintAddress}?cluster=testnet`);
 }
 
-verifyTestnet().catch(err => {
-  console.error('Audit failed with error:', err);
-  process.exit(1);
-});
+async function runWithRetry(maxRetries = 3) {
+  for (let attempt = 1; attempt <= maxRetries; attempt++) {
+    try {
+      await verifyTestnet();
+      return;
+    } catch (err: any) {
+      console.warn(`⚠️ [RETRY ${attempt}/${maxRetries}] Testnet RPC call failed: ${err.message || err}`);
+      if (attempt === maxRetries) {
+        console.error('Audit failed with error:', err);
+        process.exit(1);
+      }
+      await new Promise(res => setTimeout(res, 2500));
+    }
+  }
+}
+
+runWithRetry();

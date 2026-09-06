@@ -12,11 +12,16 @@ import {
   Sliders, 
   Zap,
   Lock,
-  FileCheck
+  FileCheck,
+  TrendingUp,
+  BarChart3,
+  Activity
 } from 'lucide-react';
 import { PqcKeyPair } from '../types';
 import { generatePqcLatticeKeyPair, calculateQuantumVulnerability, signHybridMessage } from '../utils/pqc';
 import { playCyberClick, playCyberBeep, playSuccessChime } from '../utils/audio';
+import { runPortfolioBenchmark, BenchmarkComparisonResult } from '../../quantum/04_QUANTUM_PORTFOLIO/benchmark-runner';
+import { signAgentTradeIntent, SignedTradeEnvelope } from '../utils/pqc-trade-envelope';
 
 interface PqcSecurityModuleProps {
   onToast: (msg: string, type?: 'info' | 'success' | 'warning' | 'error') => void;
@@ -32,6 +37,13 @@ export const PqcSecurityModule: React.FC<PqcSecurityModuleProps> = ({ onToast })
   const [signMessageInput, setSignMessageInput] = useState('Authorize 1,000,000 $JARSOL Transfer on Solana Testnet');
   const [signatureResult, setSignatureResult] = useState<any | null>(null);
   const [verifyingSig, setVerifyingSig] = useState(false);
+
+  // Quantum Portfolio Benchmark State
+  const [benchResult, setBenchResult] = useState<BenchmarkComparisonResult | null>(null);
+  const [benchmarking, setBenchmarking] = useState(false);
+
+  // Autonomous Agent Trade Intent State
+  const [signedTrade, setSignedTrade] = useState<SignedTradeEnvelope | null>(null);
 
   const vulnStats = calculateQuantumVulnerability(qubits);
 
@@ -63,6 +75,37 @@ export const PqcSecurityModule: React.FC<PqcSecurityModuleProps> = ({ onToast })
       playSuccessChime();
       onToast('Dual-Signature (Ed25519 + ML-DSA-65) verified!', 'success');
     }, 400);
+  };
+
+  const handleRunBenchmark = () => {
+    playCyberClick();
+    setBenchmarking(true);
+    playCyberBeep();
+    setTimeout(() => {
+      const res = runPortfolioBenchmark();
+      setBenchResult(res);
+      setBenchmarking(false);
+      playSuccessChime();
+      onToast('QUBO vs. Classical Portfolio Benchmark Solved!', 'success');
+    }, 300);
+  };
+
+  const handleSignTradeIntent = () => {
+    playCyberClick();
+    playCyberBeep();
+    const res = signAgentTradeIntent({
+      agentId: 'JARVIS-AUTONOMOUS-AGENT-01',
+      action: 'REBALANCE',
+      baseToken: 'JARSOL',
+      quoteToken: 'USDC',
+      amount: 100000,
+      maxSlippageBps: 50,
+      nonce: Date.now(),
+      timestamp: Date.now(),
+    });
+    setSignedTrade(res);
+    playSuccessChime();
+    onToast('Autonomous Trade Intent signed with Ed25519 + ML-DSA-65 envelope!', 'success');
   };
 
   return (
@@ -309,6 +352,153 @@ export const PqcSecurityModule: React.FC<PqcSecurityModuleProps> = ({ onToast })
             </div>
           )}
         </div>
+      </div>
+
+      {/* Interactive Quantum Portfolio Optimizer Benchmark */}
+      <div className="p-6 rounded-2xl bg-[#081215] border border-purple-900/40 space-y-4">
+        <div className="flex flex-wrap items-center justify-between gap-2 border-b border-purple-950/80 pb-3">
+          <div className="flex items-center gap-2 text-purple-400 font-cyber font-bold text-sm">
+            <BarChart3 className="w-4 h-4 text-purple-400" />
+            <span>QUANTUM PORTFOLIO OPTIMIZER (MARKOWITZ VS. QUBO ANNEALING)</span>
+          </div>
+          <span className="text-[10px] font-mono text-purple-300/80 px-2 py-0.5 rounded bg-purple-950/60 border border-purple-500/30">
+            Real Mathematical Solver
+          </span>
+        </div>
+
+        <p className="text-xs font-mono text-slate-400 leading-relaxed">
+          Benchmarks continuous classical quadratic programming against Quadratic Unconstrained Binary Optimization (QUBO) simulated annealing across a 5-token Solana asset basket (<span className="text-cyan-300">SOL</span>, <span className="text-emerald-300">JARSOL</span>, <span className="text-blue-300">USDC</span>, <span className="text-amber-300">JUP</span>, <span className="text-pink-300">RAY</span>). Note: Solvers run locally via classical CPU emulation.
+        </p>
+
+        <button
+          onClick={handleRunBenchmark}
+          disabled={benchmarking}
+          className="py-2.5 px-5 rounded-lg bg-gradient-to-r from-purple-600 to-cyan-600 hover:from-purple-500 hover:to-cyan-500 text-white font-cyber font-bold text-xs flex items-center gap-2 transition-all shadow-[0_0_15px_rgba(168,85,247,0.3)]"
+        >
+          {benchmarking ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : <Activity className="w-3.5 h-3.5" />}
+          <span>{benchmarking ? 'SOLVING ISING HAMILTONIAN...' : 'EXECUTE LIVE PORTFOLIO BENCHMARK'}</span>
+        </button>
+
+        {benchResult && (
+          <div className="space-y-4 animate-in fade-in">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs font-mono">
+              {/* Method 1: Classical Markowitz */}
+              <div className="p-4 rounded-xl bg-slate-900/90 border border-cyan-500/30 space-y-3">
+                <div className="flex items-center justify-between text-cyan-300 font-bold border-b border-slate-800 pb-2">
+                  <span>CLASSICAL MARKOWITZ SOLVER</span>
+                  <span className="text-[10px] text-slate-400">{benchResult.classical.solveTimeMs} ms</span>
+                </div>
+                <div className="space-y-1.5 text-[11px]">
+                  <div className="flex justify-between text-slate-300">
+                    <span>Expected Return:</span>
+                    <span className="text-emerald-400 font-bold">{(benchResult.classical.expectedReturn * 100).toFixed(2)}%</span>
+                  </div>
+                  <div className="flex justify-between text-slate-300">
+                    <span>Volatility:</span>
+                    <span className="text-amber-400 font-bold">{(benchResult.classical.volatility * 100).toFixed(2)}%</span>
+                  </div>
+                  <div className="flex justify-between text-slate-300">
+                    <span>Sharpe Ratio:</span>
+                    <span className="text-cyan-400 font-bold">{benchResult.classical.sharpeRatio}</span>
+                  </div>
+                </div>
+                <div className="pt-2 border-t border-slate-800 space-y-1">
+                  <div className="text-[10px] text-slate-400">Optimal Weights:</div>
+                  <div className="flex flex-wrap gap-1.5">
+                    {Object.entries(benchResult.classical.weights).map(([sym, w]) => (
+                      <span key={sym} className="px-2 py-0.5 rounded bg-black/50 border border-slate-700 text-[10px] text-slate-300">
+                        {sym}: {(w * 100).toFixed(1)}%
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              {/* Method 2: QUBO Simulated Annealing */}
+              <div className="p-4 rounded-xl bg-slate-900/90 border border-purple-500/40 space-y-3 shadow-[0_0_15px_rgba(168,85,247,0.1)]">
+                <div className="flex items-center justify-between text-purple-300 font-bold border-b border-slate-800 pb-2">
+                  <span>QUBO SIMULATED ANNEALING</span>
+                  <span className="text-[10px] text-slate-400">{benchResult.quboAnnealing.solveTimeMs} ms</span>
+                </div>
+                <div className="space-y-1.5 text-[11px]">
+                  <div className="flex justify-between text-slate-300">
+                    <span>Expected Return:</span>
+                    <span className="text-emerald-400 font-bold">{(benchResult.quboAnnealing.expectedReturn * 100).toFixed(2)}%</span>
+                  </div>
+                  <div className="flex justify-between text-slate-300">
+                    <span>Volatility:</span>
+                    <span className="text-purple-400 font-bold">{(benchResult.quboAnnealing.volatility * 100).toFixed(2)}%</span>
+                  </div>
+                  <div className="flex justify-between text-slate-300">
+                    <span>Sharpe Ratio:</span>
+                    <span className="text-purple-300 font-bold">{benchResult.quboAnnealing.sharpeRatio}</span>
+                  </div>
+                </div>
+                <div className="pt-2 border-t border-slate-800 space-y-1">
+                  <div className="text-[10px] text-slate-400">Discrete Lot Allocations (15 Qubits Emulated):</div>
+                  <div className="flex flex-wrap gap-1.5">
+                    {Object.entries(benchResult.quboAnnealing.weights).map(([sym, w]) => (
+                      <span key={sym} className="px-2 py-0.5 rounded bg-purple-950/40 border border-purple-800/40 text-[10px] text-purple-200">
+                        {sym}: {(w * 100).toFixed(1)}%
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="p-3 rounded-lg bg-black/40 border border-slate-800 text-[11px] font-mono text-slate-400 flex items-center justify-between">
+              <span>Truth in Labeling: {benchResult.analysis.notes}</span>
+              <span className="text-cyan-400 font-bold">Parity: {benchResult.analysis.higherSharpeMethod}</span>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Autonomous Agent PQC Trade Intent Generator */}
+      <div className="p-6 rounded-2xl bg-[#081215] border border-emerald-900/40 space-y-4">
+        <div className="flex items-center justify-between border-b border-emerald-950/80 pb-3">
+          <div className="flex items-center gap-2 text-emerald-400 font-cyber font-bold text-sm">
+            <TrendingUp className="w-4 h-4 text-emerald-400" />
+            <span>AUTONOMOUS AGENT PQC TRADE ENVELOPE GENERATOR</span>
+          </div>
+          <span className="text-[10px] font-mono text-emerald-300/80 px-2 py-0.5 rounded bg-emerald-950/60 border border-emerald-500/30">
+            Dual Ed25519 + ML-DSA-65
+          </span>
+        </div>
+
+        <p className="text-xs font-mono text-slate-400 leading-relaxed">
+          Demonstrates how the JarSol Web4 Automaton secures off-chain trade intents (rebalancing, swap arbitrage) with a dual signature envelope to resist quantum retro-forgery while maintaining Solana L1 compatibility.
+        </p>
+
+        <button
+          onClick={handleSignTradeIntent}
+          className="py-2.5 px-5 rounded-lg bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-cyber font-bold text-xs flex items-center gap-2 transition-all shadow-[0_0_12px_rgba(16,185,129,0.3)]"
+        >
+          <Lock className="w-3.5 h-3.5" />
+          <span>SIGN SAMPLE AGENT REBALANCE INTENT</span>
+        </button>
+
+        {signedTrade && (
+          <div className="p-4 rounded-xl bg-slate-900/90 border border-emerald-500/40 space-y-2 text-xs font-mono animate-in fade-in">
+            <div className="flex items-center justify-between text-emerald-400 font-bold">
+              <span>ENVELOPE VERIFIED (DUAL AUTHENTICATED)</span>
+              <span className="text-slate-500">{new Date(signedTrade.intent.timestamp).toLocaleTimeString()}</span>
+            </div>
+            <div className="text-slate-300 text-[11px]">Agent Action: <span className="text-cyan-300 font-bold">{signedTrade.intent.action} {signedTrade.intent.amount.toLocaleString()} {signedTrade.intent.baseToken} for {signedTrade.intent.quoteToken}</span></div>
+            <div className="text-slate-400 text-[10px] break-all">Payload SHA-256: <span className="text-slate-300">{signedTrade.envelope.payloadHash}</span></div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-[10px] pt-1">
+              <div className="p-2 rounded bg-black/40 border border-slate-800">
+                <span className="text-slate-400">Classical Ed25519 (64B):</span>
+                <div className="text-cyan-300 truncate font-mono">{signedTrade.envelope.signatures.classical.signature}</div>
+              </div>
+              <div className="p-2 rounded bg-black/40 border border-slate-800">
+                <span className="text-slate-400">Post-Quantum ML-DSA-65 (3,309B):</span>
+                <div className="text-emerald-300 truncate font-mono">{signedTrade.envelope.signatures.pqc.signature}</div>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
