@@ -29,7 +29,9 @@
     "finish:all": "tsx scripts/finish-all.ts",
     "production:ready": "tsx scripts/production-ready.ts",
     "reality:universal": "tsx scripts/reality-universal.ts",
-    "reality:certify": "tsx scripts/generate-urs-certificate.ts"
+    "reality:certify": "tsx scripts/generate-urs-certificate.ts",
+    "test:charms": "tsx src/services/tests/charms-pqc.test.ts",
+    "demo:charms": "tsx scripts/charms-pqc-demo.ts"
   },
   "dependencies": {
     "@google/generative-ai": "^0.24.0",
