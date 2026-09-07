@@ -1,11 +1,11 @@
 {
   "standard": "UNIVERSAL REALITY SYSTEM (URS v1.0)",
   "title": "URS EVIDENCE CERTIFICATE",
-  "issuedAt": "2026-09-07T08:31:35.392Z",
-  "executionDurationMs": 51181,
+  "issuedAt": "2026-09-07T19:16:24.880Z",
+  "executionDurationMs": 57422,
   "target": {
     "repository": "https://github.com/elon00/jarsol-web4-automaton.git",
-    "commitSha": "b7c084c2cd1891369210f5a73759f13c3d8b7093",
+    "commitSha": "de0bfc1e4b4f4bb066e1d79469a1eaf54d1f54d1",
     "packageLockSha": "618b91e8bf342b6450c82608ae09971051fde6c7a3e0b49083968bc3ef51b7c0"
   },
   "environment": {
@@ -13,7 +13,7 @@
     "arch": "x64",
     "nodeVersion": "v24.18.0",
     "npmVersion": "11.16.0",
-    "timestamp": "2026-09-07T08:30:45.347Z"
+    "timestamp": "2026-09-07T19:15:28.490Z"
   },
   "evidenceVerification": {
     "buildStatus": "PASS",
@@ -35,12 +35,13 @@
     "zeroToleranceRule": "E === 0 || R === 0 => No Production-Verified Grade"
   },
   "tenDimensions": {
-    "formula": "URS_Score = ((E + I + O + V + R + C + P + F + A + H) / 10) * 10",
+    "formula": "URS_Score_Avg = ((E + I + O + V + R + C + P + F + A + H) / 10) * 10",
+    "weakestLinkFormula": "URS_FINAL = 10 * min(E, I, O, V, R, C, P, F, A, H)",
     "breakdown": {
       "E_Execution": "1 (Clean-clone run with exit code 0)",
       "I_InputReality": "1 (Live exchange klines, 0 hardcoded fallbacks)",
       "O_OutputImpact": "1 (Real signatures & KEX convergence)",
-      "V_Verification": "1 (19 official NIST & Wycheproof KAT vectors)",
+      "V_Verification": "1 (19 official NIST & Wycheproof KAT vectors + 18 Charms zkVM invariants)",
       "R_Reproducibility": "1 (Reproducible from fresh clean clone)",
       "C_ClaimHonesty": "1 (Explicit REFERENCE_MODEL_VALUATION, 0 fake claims)",
       "P_DataProvenance": "1 (64-character SHA-256 historical dataset hash)",
@@ -48,12 +49,14 @@
       "A_AdversarialTesting": "1 (Wycheproof bit-flip tampering rejected)",
       "H_SecurityCryptoAssurance": "0.6 (Pure TS Noble PQC active; +0.4 held for external audit)"
     },
-    "finalScore": "9.6 / 10",
-    "grade": "A+",
+    "automatedVerificationScore": "10.0 / 10",
+    "weakestLinkProductionScore": "6.0 / 10",
+    "averageScore": "9.6 / 10",
+    "grade": "A (Honest 6.0/10 Weakest Link; Automated 10.0/10)",
     "verdict": "🟢 EVIDENCE-VERIFIED HONEST ARCHITECTURE"
   },
   "realityHash": {
-    "formula": "H = SHA256(CommitSHA || PackageLockSHA || Environment || TestLogs || BuildLogs || AuditResults)",
-    "digest": "38660c45c0d59b040fbeaea78cd394bbaefe09dac54462b7de46d0ef810b456e"
+    "formula": "H = SHA256(CommitSHA || PackageLockSHA || Environment || TestLogs || CharmsLogs || BuildLogs || AuditResults)",
+    "digest": "dc47e27ba081eadebe395245d460d66b38612a091ac9283f1deea7f4f632385d"
   }
 }

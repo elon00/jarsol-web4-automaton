@@ -1,8 +1,8 @@
 {
   "standard": "UNIVERSAL REALITY SYSTEM v1.0",
-  "auditedAt": "2026-09-07T08:31:35.293Z",
+  "auditedAt": "2026-09-07T19:16:24.755Z",
   "commitSha": "LOCAL_INSPECTED_REFORM",
-  "durationMs": 2547,
+  "durationMs": 2505,
   "totalGates": 9,
   "passedGates": 9,
   "ursScore": "90/90 (100%)",
@@ -48,14 +48,14 @@
       "name": "Data Provenance & Dataset Hashing",
       "status": "PASS",
       "score": 10,
-      "details": "SHA-256: f8707efe995d1807..."
+      "details": "SHA-256: 703560c619291ba3..."
     },
     {
       "gate": 7,
       "name": "Solana RPC & Mainnet Safety",
       "status": "PASS",
       "score": 10,
-      "details": "Devnet slot 494497703 verified; Mainnet fail-closed locked"
+      "details": "Devnet slot 494730785 verified; Mainnet fail-closed locked"
     },
     {
       "gate": 8,
