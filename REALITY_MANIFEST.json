@@ -1,0 +1,310 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "name": "JARSOL_REALITY_MANIFEST",
+  "version": "1.0.0",
+  "standard": "Zero-Trust Evidence-Based Truth in Engineering",
+  "last_updated": "2026-09-07T09:10:00.000Z",
+  "truth_principle": "Doodh ka doodh, paani ka paani — jo real hai sirf wahi production claim hoga. Jo simulation hai use ya to REAL banaya jayega, ya clearly experimental/simulation rakha jayega.",
+  "categories": {
+    "REAL": {
+      "symbol": "🟢",
+      "meaning": "Actually executes and is independently verifiable",
+      "production_claim_allowed": true
+    },
+    "EXPERIMENTAL": {
+      "symbol": "🧪",
+      "meaning": "Real technology, prototype/sandbox stage",
+      "production_claim_allowed": false,
+      "disclaimer_required": true
+    },
+    "SIMULATION": {
+      "symbol": "🟡",
+      "meaning": "Mathematical or software simulation on classical CPU",
+      "production_claim_allowed": false,
+      "disclaimer_required": true
+    },
+    "ROADMAP": {
+      "symbol": "🔵",
+      "meaning": "Future target, not yet built or ratified",
+      "production_claim_allowed": false,
+      "disclaimer_required": true
+    }
+  },
+  "features": [
+    {
+      "id": "repo-integrity-lock",
+      "name": "Repository Integrity & Dependency Lock",
+      "category": "REAL",
+      "real_inputs": true,
+      "algorithm": "npm ci lockfile checksum matching",
+      "reproducibility": "100% reproducible via npm ci --dry-run",
+      "external_verification": "Independent git clone + npm ci",
+      "production_allowed": true,
+      "notes": "Ensures dependencies are immutable and reproducible."
+    },
+    {
+      "id": "production-security-audit",
+      "name": "Production Vulnerability Audit (0 High / 0 Critical)",
+      "category": "REAL",
+      "real_inputs": true,
+      "algorithm": "npm audit vulnerability database query",
+      "reproducibility": "100% reproducible via npm audit --omit=dev --audit-level=high",
+      "external_verification": "GitHub Advisory Database",
+      "production_allowed": true,
+      "notes": "Strict 0 High and 0 Critical production dependencies."
+    },
+    {
+      "id": "secret-leak-scanner",
+      "name": "Secret Leak Scanner & Keypair Isolation",
+      "category": "REAL",
+      "real_inputs": true,
+      "algorithm": "Git tracked file regex pattern scanning",
+      "reproducibility": "100% reproducible via npx tsx scripts/verify-secrets.ts",
+      "external_verification": "git ls-files inspection",
+      "production_allowed": true,
+      "notes": "Zero private keys, secrets, or .env files tracked."
+    },
+    {
+      "id": "typescript-build",
+      "name": "TypeScript Compilation & Vite Production Bundle",
+      "category": "REAL",
+      "real_inputs": true,
+      "algorithm": "tsc AST validation + Vite Rollup bundling",
+      "reproducibility": "100% reproducible via tsc --noEmit && npm run build",
+      "external_verification": "dist/ artifact hash comparison",
+      "production_allowed": true,
+      "notes": "Strict 0 typecheck errors across all modules."
+    },
+    {
+      "id": "solana-devnet-token",
+      "name": "Solana Devnet Token Mint & Authority Revocation",
+      "category": "REAL",
+      "real_inputs": true,
+      "algorithm": "SPL Token Program v2 mint initialization",
+      "reproducibility": "100% reproducible via npm run verify:devnet",
+      "external_verification": "Solana Devnet RPC (224P34UfTWzQvi7VfDyY3rP4ayKKMuYR2KYXfpxUzxdn)",
+      "production_allowed": true,
+      "notes": "Mint authority verified as null (revoked) on-chain."
+    },
+    {
+      "id": "solana-testnet-token",
+      "name": "Solana Testnet Canonical Token & Immutability",
+      "category": "REAL",
+      "real_inputs": true,
+      "algorithm": "SPL Token Program v2 with 1B fixed supply",
+      "reproducibility": "100% reproducible via npm run verify:testnet",
+      "external_verification": "Solana Testnet RPC (AeZcfycXZvgjt1Rkyee8w34tApSrLnzL7nJoH2P6EQxG)",
+      "production_allowed": true,
+      "notes": "Both Mint Authority and Freeze Authority verified as null on-chain."
+    },
+    {
+      "id": "mainnet-fail-closed-gate",
+      "name": "Mainnet Deployment Fail-Closed Safety Gate",
+      "category": "REAL",
+      "real_inputs": true,
+      "algorithm": "Double environment variable cryptographic assertion",
+      "reproducibility": "100% reproducible via scripts/deploy-mainnet.ts",
+      "external_verification": "Zero SOL spent on Mainnet-Beta",
+      "production_allowed": true,
+      "notes": "Prevents accidental or unauthorized mainnet deployment."
+    },
+    {
+      "id": "real-wallet-detection",
+      "name": "Real Browser Wallet Connection",
+      "category": "REAL",
+      "real_inputs": true,
+      "algorithm": "window.solana injection detection (Phantom/Solflare)",
+      "reproducibility": "100% reproducible in browser environment",
+      "external_verification": "Standard Solana wallet adapter protocol",
+      "production_allowed": true,
+      "notes": "Hardcoded mock wallet fallbacks completely eliminated."
+    },
+    {
+      "id": "classical-ed25519",
+      "name": "Classical Ed25519 Digital Signatures",
+      "category": "REAL",
+      "real_inputs": true,
+      "algorithm": "Node crypto / WebCrypto Ed25519 signing",
+      "reproducibility": "100% reproducible via Node crypto.sign",
+      "external_verification": "RFC 8032 test vectors",
+      "production_allowed": true,
+      "notes": "Genuine cryptographic signatures used for Solana transaction authorization."
+    },
+    {
+      "id": "classical-x25519",
+      "name": "Classical X25519 Diffie-Hellman Key Exchange",
+      "category": "REAL",
+      "real_inputs": true,
+      "algorithm": "Node crypto ECDH over Curve25519",
+      "reproducibility": "100% reproducible via crypto.createECDH",
+      "external_verification": "RFC 7748 test vectors",
+      "production_allowed": true,
+      "notes": "Provides classical key agreement."
+    },
+    {
+      "id": "classical-hkdf",
+      "name": "Deterministic HKDF-SHA256 Key Derivation",
+      "category": "REAL",
+      "real_inputs": true,
+      "algorithm": "@noble/hashes HKDF-SHA256 extraction and expansion",
+      "reproducibility": "100% reproducible via quantum/06_TESTS/known-answer.test.ts",
+      "external_verification": "RFC 5869 Test Case 1 byte-for-byte matching",
+      "production_allowed": true,
+      "notes": "Conforms exactly to RFC 5869."
+    },
+    {
+      "id": "classical-markowitz",
+      "name": "Classical Markowitz Mean-Variance Portfolio Solver",
+      "category": "REAL",
+      "real_inputs": true,
+      "algorithm": "Projected gradient descent over continuous simplex",
+      "reproducibility": "100% reproducible in 6.5 ms (Sharpe: 0.6868)",
+      "external_verification": "Convex quadratic programming math validation",
+      "production_allowed": true,
+      "notes": "Accurate continuous QP optimization baseline."
+    },
+    {
+      "id": "qubo-formulation",
+      "name": "QUBO Matrix Formulation Engine",
+      "category": "REAL",
+      "real_inputs": true,
+      "algorithm": "Upper-triangular Ising Hamiltonian with budget penalty",
+      "reproducibility": "100% reproducible 15-bit discrete matrix generation",
+      "external_verification": "Quadratic binary optimization mathematical equivalence",
+      "production_allowed": true,
+      "notes": "Accurate mathematical problem mapping from portfolio to QUBO."
+    },
+    {
+      "id": "ai-policy-engine",
+      "name": "Autonomous Agent Policy Enforcement Engine",
+      "category": "REAL",
+      "real_inputs": true,
+      "algorithm": "Deterministic guardrails: amount limits, allowlist, slippage limits",
+      "reproducibility": "100% reproducible via PolicyEngine.validateIntent()",
+      "external_verification": "Unit tests rejecting out-of-bounds orders",
+      "production_allowed": true,
+      "notes": "Ensures AI proposes, Policy verifies, and Human authorizes."
+    },
+    {
+      "id": "hybrid-pqc-envelope",
+      "name": "Hybrid Signature Envelope (Ed25519 + ML-DSA-65)",
+      "category": "EXPERIMENTAL",
+      "real_inputs": true,
+      "algorithm": "Dual-signature envelope with crypto agility and fallback protection",
+      "reproducibility": "100% reproducible via quantum/06_TESTS/pqc-smoke.test.ts",
+      "external_verification": "Off-chain agent envelope validator",
+      "production_allowed": false,
+      "notes": "Operates at the off-chain application layer; NOT native on Solana L1."
+    },
+    {
+      "id": "hybrid-pqc-kex",
+      "name": "Hybrid Key Exchange (X25519 + ML-KEM-768)",
+      "category": "EXPERIMENTAL",
+      "real_inputs": true,
+      "algorithm": "Dual shared secret combiner via HKDF-SHA256",
+      "reproducibility": "100% reproducible 256-bit secret derivation",
+      "external_verification": "NIST FIPS 203 wire format invariants",
+      "production_allowed": false,
+      "notes": "Protects off-chain agent sessions from harvest-now-decrypt-later attacks."
+    },
+    {
+      "id": "nist-fips203-wire-format",
+      "name": "NIST FIPS 203 ML-KEM-768 Wire Layout & Prototype",
+      "category": "EXPERIMENTAL",
+      "real_inputs": true,
+      "algorithm": "1184B public key, 1088B ciphertext parameter alignment",
+      "reproducibility": "100% reproducible wire length validation",
+      "external_verification": "NIST FIPS 203 parameter tables",
+      "production_allowed": false,
+      "notes": "Architectural prototype; does not execute native AVX-512 C NTT lattice multiplications."
+    },
+    {
+      "id": "nist-fips204-wire-format",
+      "name": "NIST FIPS 204 ML-DSA-65 Wire Layout & Prototype",
+      "category": "EXPERIMENTAL",
+      "real_inputs": true,
+      "algorithm": "1952B public key, 3309B signature parameter alignment",
+      "reproducibility": "100% reproducible wire length validation",
+      "external_verification": "NIST FIPS 204 parameter tables",
+      "production_allowed": false,
+      "notes": "Architectural prototype; awaiting Solana SVM SIMD precompile ratification."
+    },
+    {
+      "id": "simulated-quantum-annealing",
+      "name": "Quantum Portfolio Simulated Annealing",
+      "category": "SIMULATION",
+      "real_inputs": true,
+      "algorithm": "Monte Carlo Metropolis-Hastings temperature cooling on CPU",
+      "reproducibility": "100% reproducible in 16.4 ms (Sharpe: 0.6631)",
+      "external_verification": "Statistical thermodynamics physics simulation",
+      "production_allowed": false,
+      "notes": "Runs strictly on classical x86/ARM CPU threads. Zero hardware quantum supremacy claimed."
+    },
+    {
+      "id": "dex-swap-preview",
+      "name": "Raydium / Orca AMM Interactive Swap Preview",
+      "category": "SIMULATION",
+      "real_inputs": false,
+      "algorithm": "Constant-product x*y=k pricing preview with slippage curve",
+      "reproducibility": "Interactive in browser UI",
+      "external_verification": "AMM formula comparison",
+      "production_allowed": false,
+      "notes": "Live swap execution is intentionally disabled with transparent user notice."
+    },
+    {
+      "id": "legal-compliance-auditor",
+      "name": "AI Regulatory & Legal Self-Assessment",
+      "category": "SIMULATION",
+      "real_inputs": true,
+      "algorithm": "Heuristic software configuration audit",
+      "reproducibility": "Repeatable prompt evaluations",
+      "external_verification": "Disclaimer: Not formal legal advice or legal certification",
+      "production_allowed": false,
+      "notes": "Informational self-assessment only; disclaims formal legal opinion."
+    },
+    {
+      "id": "solana-svm-pqc-precompiles",
+      "name": "Solana SVM Native SIMD PQC Precompiles",
+      "category": "ROADMAP",
+      "real_inputs": false,
+      "algorithm": "sol_ml_dsa_65_verify precompile proposal (25k Compute Units)",
+      "reproducibility": "Proposed in docs/SOLANA_SIMD_PQC_RFC.md",
+      "external_verification": "Solana SIMD community review",
+      "production_allowed": false,
+      "notes": "Requires Solana validator node hard fork ratification."
+    },
+    {
+      "id": "hardware-qpu-annealing",
+      "name": "Hardware Quantum QPU Annealing (D-Wave / IBM Quantum)",
+      "category": "ROADMAP",
+      "real_inputs": false,
+      "algorithm": "Quantum flux qubit tunneling solver",
+      "reproducibility": "Requires cloud QPU API credentials",
+      "external_verification": "Qiskit / Ocean SDK QPU execution telemetry",
+      "production_allowed": false,
+      "notes": "Planned future hardware adapter; currently emulated via classical Monte Carlo."
+    },
+    {
+      "id": "multisig-treasury-governance",
+      "name": "Mainnet Multi-Sig Council Treasury Governance",
+      "category": "ROADMAP",
+      "real_inputs": false,
+      "algorithm": "Squads / Realms multi-signature threshold approval",
+      "reproducibility": "To be configured prior to mainnet liquidity seeding",
+      "external_verification": "On-chain multi-sig account inspection",
+      "production_allowed": false,
+      "notes": "Required operational control before mainnet launch."
+    },
+    {
+      "id": "live-mainnet-swaps",
+      "name": "Live Autonomous Mainnet DEX Swaps",
+      "category": "ROADMAP",
+      "real_inputs": false,
+      "algorithm": "Jupiter DEX routing & atomic on-chain swap execution",
+      "reproducibility": "Disabled until audited liquidity pools exist on Mainnet",
+      "external_verification": "Solana Mainnet block explorer",
+      "production_allowed": false,
+      "notes": "Strictly disabled in current release."
+    }
+  ]
+}

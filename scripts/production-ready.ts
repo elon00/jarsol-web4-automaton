@@ -82,7 +82,8 @@ async function runPipeline() {
       'docs/SYSTEM_REALITY_AUDIT_REPORT.md',
       'docs/INCIDENT_RESPONSE_RUNBOOK.md',
       'docs/MONITORING_AND_LOGGING_SPEC.md',
-      'docs/COMPETITION_READINESS.md'
+      'docs/COMPETITION_READINESS.md',
+      'REALITY_MANIFEST.json'
     ];
 
     const missing = requiredFiles.filter(f => !fs.existsSync(path.join(ROOT_DIR, f)));
@@ -199,13 +200,16 @@ async function runPipeline() {
     execSync('npx tsx quantum/06_TESTS/portfolio-benchmark.test.ts', { cwd: ROOT_DIR, stdio: 'pipe' });
     console.log('  ✅ Portfolio Benchmarks: 4/4 passed (Markowitz continuous simplex, QUBO discrete, anti-hype assertion)');
 
+    execSync('npx tsx quantum/06_TESTS/policy-engine.test.ts', { cwd: ROOT_DIR, stdio: 'pipe' });
+    console.log('  ✅ Policy Engine Guardrails: 5/5 passed (Amount limits, token allowlist, human signature invariant)');
+
     results.push({
       gateNumber: 5,
       name: 'Unit & Integration Tests',
       category: 'CRYPTO',
       status: 'PASS',
       durationMs: Date.now() - g5Start,
-      evidence: '13/13 quantum & portfolio tests passed cleanly.'
+      evidence: '18/18 quantum, portfolio & policy tests passed cleanly.'
     });
   } catch (err: any) {
     console.error(`  ❌ GATE 5 FAILED: ${err.message}`);
@@ -560,6 +564,23 @@ async function runPipeline() {
       }
     }
 
+    // Validate REALITY_MANIFEST.json
+    const manifestPath = path.join(ROOT_DIR, 'REALITY_MANIFEST.json');
+    if (!fs.existsSync(manifestPath)) throw new Error('REALITY_MANIFEST.json missing at root');
+    const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf-8'));
+    if (!Array.isArray(manifest.features) || manifest.features.length === 0) {
+      throw new Error('REALITY_MANIFEST.json features array is empty');
+    }
+    const validCategories = ['REAL', 'EXPERIMENTAL', 'SIMULATION', 'ROADMAP'];
+    for (const f of manifest.features) {
+      if (!validCategories.includes(f.category)) {
+        throw new Error(`Invalid category in REALITY_MANIFEST.json for feature "${f.id}": "${f.category}"`);
+      }
+      if (['SIMULATION', 'ROADMAP', 'EXPERIMENTAL'].includes(f.category) && f.production_allowed === true) {
+        throw new Error(`Truth violation: Feature "${f.id}" categorized as "${f.category}" cannot have production_allowed: true!`);
+      }
+    }
+    console.log(`  ✅ REALITY_MANIFEST.json: ${manifest.features.length} features audited. Zero unauthorized production claims.`);
     console.log('  ✅ Market Taxonomy: Classified into REAL ✅ | EXPERIMENTAL 🧪 | SIMULATION 🟡 | ROADMAP 🔵');
     console.log('  ✅ Product Positioning: Positioned as "Quantum-Ready Security & Portfolio Intelligence Platform"');
 
