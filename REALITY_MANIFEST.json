@@ -208,6 +208,17 @@
       "notes": "Replaces hardcoded synthetic asset matrices with empirical statistical derivation."
     },
     {
+      "id": "historical-data-pipeline",
+      "name": "Automated Historical Data & Provenance Pipeline",
+      "category": "REAL",
+      "real_inputs": true,
+      "algorithm": "Binance & Coinbase public klines ingestion, monotonic timestamp validation, and SHA-256 cryptographic dataset hashing",
+      "reproducibility": "100% reproducible via src/services/tests/historical-data.test.ts",
+      "external_verification": "Live exchange historical candles compared against SHA-256 digest",
+      "production_allowed": true,
+      "notes": "Ensures automated daily historical return derivation without synthetic or hardcoded seeds."
+    },
+    {
       "id": "hybrid-pqc-envelope",
       "name": "Hybrid Signature Envelope (Ed25519 + ML-DSA-65)",
       "category": "EXPERIMENTAL",

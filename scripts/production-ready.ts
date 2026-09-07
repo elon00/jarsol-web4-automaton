@@ -215,13 +215,16 @@ async function runPipeline() {
     execSync('npx tsx src/services/tests/market-data.test.ts', { cwd: ROOT_DIR, stdio: 'pipe' });
     console.log('  ✅ Market Data & Anomaly Tests: 4/4 passed (Multi-source consensus, outlier rejection, covariance derivation)');
 
+    execSync('npx tsx src/services/tests/historical-data.test.ts', { cwd: ROOT_DIR, stdio: 'pipe' });
+    console.log('  ✅ Historical Data & Provenance Tests: 4/4 passed (Binance/Coinbase klines, monotonic ordering, SHA-256 hash)');
+
     results.push({
       gateNumber: 5,
       name: 'Unit & Integration Tests',
       category: 'CRYPTO',
       status: 'PASS',
       durationMs: Date.now() - g5Start,
-      evidence: '34/34 quantum, crypto, portfolio, policy & market data tests passed cleanly.'
+      evidence: '38/38 quantum, crypto, portfolio, policy, market & historical data tests passed cleanly.'
     });
   } catch (err: any) {
     console.error(`  ❌ GATE 5 FAILED: ${err.message}`);

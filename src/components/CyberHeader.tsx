@@ -113,7 +113,7 @@ export const CyberHeader: React.FC<CyberHeaderProps> = ({
           >
             <Layers className="w-3.5 h-3.5 text-cyan-400" />
             <span className="hidden md:inline">REALITY:</span>
-            <span className="text-emerald-400 font-mono text-[10px]">16 Real</span>
+            <span className="text-emerald-400 font-mono text-[10px]">17 Real</span>
             <span className="text-slate-500">•</span>
             <span className="text-purple-400 font-mono text-[10px]">4 Exp</span>
             <span className="text-slate-500">•</span>

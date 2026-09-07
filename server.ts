@@ -15,6 +15,7 @@ import {
 } from './scripts/spl-helper.js';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import { marketDataService } from './src/services/MarketDataService.ts';
+import { historicalDataService } from './src/services/HistoricalDataService.ts';
 
 dotenv.config();
 
@@ -193,12 +194,32 @@ app.get('/api/market/consensus/:symbol?', async (req, res) => {
   }
 });
 
-app.get('/api/market/statistics', (_req, res) => {
+app.get('/api/market/statistics', async (req, res) => {
   try {
-    const stats = marketDataService.calculateEmpiricalStatistics();
+    const forceRefresh = req.query.refresh === 'true';
+    const stats = await marketDataService.getAutomatedEmpiricalStatistics(forceRefresh);
     return res.json({ success: true, verified: true, ...stats });
   } catch (error: any) {
     return res.status(500).json({ success: false, verified: false, error: error?.message || 'Statistical derivation failed' });
+  }
+});
+
+app.get('/api/market/historical', async (req, res) => {
+  try {
+    const forceRefresh = req.query.refresh === 'true';
+    const dataset = await historicalDataService.getHistoricalDataset(forceRefresh);
+    return res.json({ success: true, verified: dataset.status === 'LIVE_VERIFIED', ...dataset });
+  } catch (error: any) {
+    return res.status(500).json({ success: false, verified: false, status: 'DATA_UNAVAILABLE', error: error?.message || 'Historical data fetch failed' });
+  }
+});
+
+app.post('/api/market/historical/sync', async (_req, res) => {
+  try {
+    const dataset = await historicalDataService.getHistoricalDataset(true);
+    return res.json({ success: true, verified: dataset.status === 'LIVE_VERIFIED', syncedAt: dataset.fetchedAt, ...dataset });
+  } catch (error: any) {
+    return res.status(500).json({ success: false, verified: false, status: 'DATA_UNAVAILABLE', error: error?.message || 'Historical sync failed' });
   }
 });
 

@@ -8,6 +8,7 @@
  */
 
 import historicalData from '../data/historical-returns.json';
+import { historicalDataService, DailyReturnEntry, HistoricalDatasetProvenance } from './HistoricalDataService.ts';
 
 export interface PriceQuote {
   source: 'COINBASE' | 'KRAKEN' | 'BINANCE' | 'COINGECKO';
@@ -44,6 +45,9 @@ export interface EmpiricalMarketStatistics {
   covarianceMatrix: number[][];
   correlationMatrix: number[][];
   derivedAt: string;
+  datasetSha256?: string;
+  provenanceStatus?: 'LIVE_VERIFIED' | 'STALE_CACHED' | 'DATA_UNAVAILABLE';
+  sources?: string[];
 }
 
 export class MarketDataService {
@@ -244,10 +248,12 @@ export class MarketDataService {
   // -------------------------------------------------------------------
   // Dynamic Empirical Covariance & Statistical Estimation Engine
   // -------------------------------------------------------------------
-  public calculateEmpiricalStatistics(): EmpiricalMarketStatistics {
-    const rawData = historicalData;
-    const assets = rawData.assets;
-    const series = rawData.dailyReturns;
+  public calculateEmpiricalStatistics(
+    customSeries?: DailyReturnEntry[],
+    provenanceMeta?: { datasetSha256?: string; status?: 'LIVE_VERIFIED' | 'STALE_CACHED' | 'DATA_UNAVAILABLE'; sources?: string[] }
+  ): EmpiricalMarketStatistics {
+    const assets = ['SOL', 'USDC', 'JUP', 'RAY', 'JARSOL'];
+    const series = (customSeries && customSeries.length > 0) ? customSeries : (historicalData.dailyReturns as DailyReturnEntry[]);
     const T = series.length;
 
     // 1. Calculate Mean Daily Returns
@@ -308,7 +314,19 @@ export class MarketDataService {
       covarianceMatrix,
       correlationMatrix,
       derivedAt: new Date().toISOString(),
+      datasetSha256: provenanceMeta?.datasetSha256,
+      provenanceStatus: provenanceMeta?.status,
+      sources: provenanceMeta?.sources,
     };
+  }
+
+  public async getAutomatedEmpiricalStatistics(forceRefresh = false): Promise<EmpiricalMarketStatistics> {
+    const dataset = await historicalDataService.getHistoricalDataset(forceRefresh);
+    return this.calculateEmpiricalStatistics(dataset.dailyReturns, {
+      datasetSha256: dataset.datasetSha256,
+      status: dataset.status,
+      sources: dataset.source,
+    });
   }
 }
 
