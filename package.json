@@ -28,7 +28,8 @@
     "benchmark:quantum": "tsx quantum/04_QUANTUM_PORTFOLIO/benchmark-runner.ts",
     "finish:all": "tsx scripts/finish-all.ts",
     "production:ready": "tsx scripts/production-ready.ts",
-    "reality:universal": "tsx scripts/reality-universal.ts"
+    "reality:universal": "tsx scripts/reality-universal.ts",
+    "reality:certify": "tsx scripts/generate-urs-certificate.ts"
   },
   "dependencies": {
     "@google/generative-ai": "^0.24.0",
