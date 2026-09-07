@@ -22,10 +22,13 @@
     "test:market": "tsx src/services/tests/market-data.test.ts",
     "test:manifest": "tsx src/services/tests/reality-manifest.test.ts",
     "test:historical": "tsx src/services/tests/historical-data.test.ts",
-    "test:quantum": "tsx quantum/06_TESTS/pqc-smoke.test.ts && tsx quantum/06_TESTS/known-answer.test.ts && tsx quantum/06_TESTS/portfolio-benchmark.test.ts && tsx quantum/06_TESTS/policy-engine.test.ts && tsx src/crypto/tests/cross-interop.test.ts && tsx src/crypto/tests/negative-tests.test.ts && tsx src/crypto/tests/downgrade-defense.test.ts && tsx src/services/tests/market-data.test.ts && tsx src/services/tests/reality-manifest.test.ts && tsx src/services/tests/historical-data.test.ts",
+    "test:nist": "tsx src/crypto/tests/official-nist-vectors.test.ts",
+    "audit:crypto": "node scripts/audit-crypto.mjs",
+    "test:quantum": "tsx quantum/06_TESTS/pqc-smoke.test.ts && tsx quantum/06_TESTS/known-answer.test.ts && tsx quantum/06_TESTS/portfolio-benchmark.test.ts && tsx quantum/06_TESTS/policy-engine.test.ts && tsx src/crypto/tests/cross-interop.test.ts && tsx src/crypto/tests/negative-tests.test.ts && tsx src/crypto/tests/downgrade-defense.test.ts && tsx src/services/tests/market-data.test.ts && tsx src/services/tests/reality-manifest.test.ts && tsx src/services/tests/historical-data.test.ts && tsx src/crypto/tests/official-nist-vectors.test.ts",
     "benchmark:quantum": "tsx quantum/04_QUANTUM_PORTFOLIO/benchmark-runner.ts",
     "finish:all": "tsx scripts/finish-all.ts",
-    "production:ready": "tsx scripts/production-ready.ts"
+    "production:ready": "tsx scripts/production-ready.ts",
+    "reality:universal": "tsx scripts/reality-universal.ts"
   },
   "dependencies": {
     "@google/generative-ai": "^0.24.0",

@@ -23,16 +23,19 @@ async function runMarketDataTests() {
   console.log('[TEST 1] Live Multi-Source Consensus Pricing (SOL):');
   const solConsensus = await marketDataService.getConsensusPrice('SOL', true);
   console.log(`  📊 Price: $${solConsensus.consensusPriceUsd} | Sources: ${solConsensus.activeSources.join(', ')} | Deviation: ${solConsensus.deviationPct}%`);
-  assert(solConsensus.consensusPriceUsd > 10, 'Live SOL price is reasonable (> $10)');
+  assert(solConsensus.consensusPriceUsd !== null && solConsensus.consensusPriceUsd > 10, 'Live SOL price is reasonable (> $10)');
   assert(solConsensus.sourcesCount >= 1, 'At least one live Tier-1 source responded');
   assert(solConsensus.isStale === false, 'Freshness check: Live price is not stale');
+  assert(solConsensus.tradingAllowed === true, 'Trading allowed when live feeds are valid');
 
   // Test 2: Derived JARSOL Token Pricing
   console.log('\n[TEST 2] Canonical JARSOL Token Pricing Derived from SOL:');
   const jarsolConsensus = await marketDataService.getConsensusPrice('JARSOL');
-  console.log(`  📊 $JARSOL Price: $${jarsolConsensus.consensusPriceUsd.toFixed(12)} (Pegged via 9B:1 SOL ratio)`);
-  assert(jarsolConsensus.consensusPriceUsd > 0, 'JARSOL price derived successfully');
-  assert(jarsolConsensus.consensusPriceUsd < solConsensus.consensusPriceUsd, 'JARSOL price is fractional relative to SOL');
+  console.log(`  📊 $JARSOL Price: $${jarsolConsensus.consensusPriceUsd?.toFixed(12)} (Pegged via 9B:1 SOL ratio)`);
+  assert(jarsolConsensus.consensusPriceUsd !== null && jarsolConsensus.consensusPriceUsd > 0, 'JARSOL price derived successfully');
+  assert(solConsensus.consensusPriceUsd !== null && jarsolConsensus.consensusPriceUsd !== null && jarsolConsensus.consensusPriceUsd < solConsensus.consensusPriceUsd, 'JARSOL price is fractional relative to SOL');
+  assert(jarsolConsensus.status === 'REFERENCE_MODEL_VALUATION', 'JARSOL status is explicitly REFERENCE_MODEL_VALUATION');
+  assert(jarsolConsensus.tradingAllowed === false, 'JARSOL direct trading disallowed as reference valuation model');
 
   // Test 3: Outlier Rejection Test (Simulated Math Verification)
   console.log('\n[TEST 3] Outlier Rejection Engine Logic:');
@@ -86,8 +89,16 @@ async function runMarketDataTests() {
   }
   assert(validCorr === true, 'Correlation matrix strictly normalized between -1.0 and +1.0 with 1.0 diagonal');
 
+  // Test 5: URS Fail-Closed Invariant (Zero Fake Fallback on Missing Data)
+  console.log('\n[TEST 5] URS Fail-Closed Invariant on Network Failure:');
+  // Querying a non-existent token must return DATA_UNAVAILABLE and null price
+  const nonExistent = await marketDataService.getConsensusPrice('NON_EXISTENT_TOKEN_XYZ', true);
+  assert(nonExistent.status === 'DATA_UNAVAILABLE', 'Missing token returns DATA_UNAVAILABLE');
+  assert(nonExistent.consensusPriceUsd === null, 'Missing token consensusPriceUsd is strictly null (Zero fake fallback numbers)');
+  assert(nonExistent.tradingAllowed === false, 'Trading is strictly blocked (tradingAllowed === false)');
+
   console.log('\n=====================================================================');
-  console.log('🏆 ALL DATA REALITY & ANOMALY TESTS PASSED (4/4)');
+  console.log('🏆 ALL DATA REALITY & ANOMALY TESTS PASSED (5/5)');
   console.log('=====================================================================\n');
 }
 

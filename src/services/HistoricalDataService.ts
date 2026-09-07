@@ -113,16 +113,19 @@ export class HistoricalDataService {
       let solSeries: { timestamp: number; close: number }[] = [];
       let jupSeries: { timestamp: number; close: number }[] = [];
       let raySeries: { timestamp: number; close: number }[] = [];
+      let usdcSeries: { timestamp: number; close: number }[] = [];
 
       try {
-        const [solKlines, jupKlines, rayKlines] = await Promise.all([
+        const [solKlines, jupKlines, rayKlines, usdcKlines] = await Promise.all([
           this.fetchBinanceKlines('SOLUSDT', 31),
           this.fetchBinanceKlines('JUPUSDT', 31),
           this.fetchBinanceKlines('RAYUSDT', 31),
+          this.fetchBinanceKlines('USDCUSDT', 31),
         ]);
         solSeries = solKlines;
         jupSeries = jupKlines;
         raySeries = rayKlines;
+        usdcSeries = usdcKlines;
         contributingSources.push('BINANCE_PUBLIC_KLINES');
       } catch (binanceErr) {
         // Fallback to Coinbase for SOL
@@ -133,9 +136,16 @@ export class HistoricalDataService {
         } catch {}
       }
 
-      // 3. If live exchange series is valid (>= 2 points to compute daily returns)
+      // 3. Check for genuine observed data across assets (>= 2 points to compute daily returns)
+      // URS Invariant: Zero synthetic multipliers allowed.
+      const minLen = Math.min(
+        solSeries.length,
+        jupSeries.length || solSeries.length,
+        raySeries.length || solSeries.length,
+        usdcSeries.length || solSeries.length
+      );
+
       if (solSeries.length >= 2) {
-        const minLen = Math.min(solSeries.length, jupSeries.length || 31, raySeries.length || 31);
         const dailyReturns: DailyReturnEntry[] = [];
 
         for (let i = 1; i < solSeries.length; i++) {
@@ -143,27 +153,32 @@ export class HistoricalDataService {
           const currSol = solSeries[i].close;
           const rSol = prevSol > 0 ? (currSol - prevSol) / prevSol : 0;
 
-          // JUP return (or peg correlated to SOL if pair not responding)
+          // JUP: Genuine observed exchange return
           let rJup = 0;
           if (jupSeries.length > i && jupSeries[i - 1]?.close > 0) {
             rJup = (jupSeries[i].close - jupSeries[i - 1].close) / jupSeries[i - 1].close;
           } else {
-            rJup = rSol * 1.15;
+            rJup = 0; // Unobserved: Zero return, NOT synthetic multiplier
           }
 
-          // RAY return
+          // RAY: Genuine observed exchange return
           let rRay = 0;
           if (raySeries.length > i && raySeries[i - 1]?.close > 0) {
             rRay = (raySeries[i].close - raySeries[i - 1].close) / raySeries[i - 1].close;
           } else {
-            rRay = rSol * 1.25;
+            rRay = 0; // Unobserved: Zero return, NOT synthetic multiplier
           }
 
-          // USDC: stable peg micro-variance
-          const rUsdc = ((i % 3) - 1) * 0.0001;
+          // USDC: Genuine observed stablecoin pair return from exchange
+          let rUsdc = 0;
+          if (usdcSeries.length > i && usdcSeries[i - 1]?.close > 0) {
+            rUsdc = (usdcSeries[i].close - usdcSeries[i - 1].close) / usdcSeries[i - 1].close;
+          } else {
+            rUsdc = 0; // 0 return for stable peg
+          }
 
-          // $JARSOL: 9,000,000,000 per SOL pool peg invariant with AMM fee slippage
-          const rJarsol = rSol * 1.10;
+          // $JARSOL: 9,000,000,000 per SOL pool peg invariant (REFERENCE MODEL: rJarsol === rSol)
+          const rJarsol = rSol;
 
           const dateStr = new Date(solSeries[i].timestamp).toISOString().split('T')[0];
 
@@ -245,6 +260,10 @@ export class HistoricalDataService {
 
     this.cache = cachedFallback;
     return cachedFallback;
+  }
+
+  public async fetchLiveExchangeDataset(forceRefresh = true): Promise<HistoricalDatasetProvenance> {
+    return this.getHistoricalDataset(forceRefresh);
   }
 
   // -------------------------------------------------------------------

@@ -19,7 +19,8 @@ export interface PriceQuote {
 
 export interface ConsensusPriceResult {
   symbol: string;
-  consensusPriceUsd: number;
+  consensusPriceUsd: number | null;
+  tradingAllowed: boolean;
   sourcesCount: number;
   activeSources: string[];
   outliersRejected: { source: string; price: number; deviationPct: number }[];
@@ -27,7 +28,9 @@ export interface ConsensusPriceResult {
   timestamp: number;
   isStale: boolean;
   circuitBreakerActive: boolean;
-  status: 'OPTIMAL' | 'DEGRADED_FEW_SOURCES' | 'STALE' | 'CIRCUIT_BREAKER_TRIGGERED';
+  status: 'OPTIMAL' | 'DEGRADED_FEW_SOURCES' | 'STALE' | 'CIRCUIT_BREAKER_TRIGGERED' | 'DATA_UNAVAILABLE' | 'REFERENCE_MODEL_VALUATION';
+  valuationModel?: 'OPEN_MARKET_CONSENSUS' | 'REFERENCE_RATIO_9B_PER_SOL';
+  reason?: string;
 }
 
 export interface EmpiricalAssetStats {
@@ -135,14 +138,35 @@ export class MarketDataService {
       return cached.result;
     }
 
-    // Special case for JARSOL (Canonical Token peg calculation based on fair launch pool)
+    // Special case for JARSOL (Reference Model peg calculation based on fair launch pool ratio)
     if (symbol.toUpperCase() === 'JARSOL') {
       const solConsensus = await this.getConsensusPrice('SOL', forceRefresh);
-      // Fixed ratio: 1 SOL = 9,000,000,000 JARSOL
+      if (solConsensus.consensusPriceUsd === null || solConsensus.status === 'DATA_UNAVAILABLE') {
+        const unavailableResult: ConsensusPriceResult = {
+          symbol: 'JARSOL',
+          consensusPriceUsd: null,
+          tradingAllowed: false,
+          sourcesCount: 0,
+          activeSources: [],
+          outliersRejected: [],
+          deviationPct: 0,
+          timestamp: now,
+          isStale: true,
+          circuitBreakerActive: true,
+          status: 'DATA_UNAVAILABLE',
+          valuationModel: 'REFERENCE_RATIO_9B_PER_SOL',
+          reason: 'Underlying SOL consensus price is unavailable; reference valuation cannot be computed',
+        };
+        this.cache.set('JARSOL', { result: unavailableResult, cachedAt: now });
+        return unavailableResult;
+      }
+
+      // Fixed ratio: 1 SOL = 9,000,000,000 JARSOL (SIMULATION / REFERENCE MODEL)
       const jarsolPrice = solConsensus.consensusPriceUsd / 9000000000;
       const result: ConsensusPriceResult = {
         symbol: 'JARSOL',
         consensusPriceUsd: jarsolPrice,
+        tradingAllowed: false, // REFERENCE MODEL ONLY: NOT OPEN-MARKET DISCOVERED
         sourcesCount: solConsensus.sourcesCount,
         activeSources: solConsensus.activeSources.map(s => `${s}_POOLED`),
         outliersRejected: [],
@@ -150,7 +174,9 @@ export class MarketDataService {
         timestamp: now,
         isStale: solConsensus.isStale,
         circuitBreakerActive: solConsensus.circuitBreakerActive,
-        status: solConsensus.status,
+        status: 'REFERENCE_MODEL_VALUATION',
+        valuationModel: 'REFERENCE_RATIO_9B_PER_SOL',
+        reason: 'Valuation derived via 9B:1 SOL pool invariant (SIMULATION/REFERENCE MODEL, NOT OPEN MARKET PRICE)',
       };
       this.cache.set('JARSOL', { result, cachedAt: now });
       return result;
@@ -166,24 +192,25 @@ export class MarketDataService {
       ])
     ).filter((q): q is PriceQuote => q !== null);
 
-    // Fallback baseline if public network requests are unavailable
+    // FAIL-CLOSED: Zero valid quotes from live Tier-1 feeds => DATA_UNAVAILABLE. Zero fake fallback!
     if (quotes.length === 0) {
-      const fallbackPrices: Record<string, number> = { SOL: 104.85, USDC: 1.0, JUP: 0.85, RAY: 2.15 };
-      const fallbackPrice = fallbackPrices[symbol.toUpperCase()] || 1.0;
-      const fallbackResult: ConsensusPriceResult = {
+      const unavailableResult: ConsensusPriceResult = {
         symbol,
-        consensusPriceUsd: fallbackPrice,
+        consensusPriceUsd: null, // STRICTLY NULL - ZERO FAKE NUMBERS
+        tradingAllowed: false,
         sourcesCount: 0,
-        activeSources: ['FALLBACK_CACHE'],
+        activeSources: [],
         outliersRejected: [],
         deviationPct: 0,
         timestamp: now,
         isStale: true,
         circuitBreakerActive: true,
-        status: 'CIRCUIT_BREAKER_TRIGGERED',
+        status: 'DATA_UNAVAILABLE',
+        valuationModel: 'OPEN_MARKET_CONSENSUS',
+        reason: 'Zero valid exchange quotes from public Tier-1 feeds. Trading blocked (Fail-Closed).',
       };
-      this.cache.set(symbol, { result: fallbackResult, cachedAt: now });
-      return fallbackResult;
+      this.cache.set(symbol, { result: unavailableResult, cachedAt: now });
+      return unavailableResult;
     }
 
     // 1. Calculate raw median
@@ -228,9 +255,12 @@ export class MarketDataService {
       ? 'DEGRADED_FEW_SOURCES'
       : 'OPTIMAL';
 
+    const tradingAllowed = !circuitBreakerActive && !isStale && validQuotes.length >= 2;
+
     const result: ConsensusPriceResult = {
       symbol,
       consensusPriceUsd: Number(consensusPriceUsd.toFixed(4)),
+      tradingAllowed,
       sourcesCount: validQuotes.length,
       activeSources: validQuotes.map(q => q.source),
       outliersRejected,
@@ -239,6 +269,8 @@ export class MarketDataService {
       isStale,
       circuitBreakerActive,
       status,
+      valuationModel: 'OPEN_MARKET_CONSENSUS',
+      reason: tradingAllowed ? 'Consensus established across active Tier-1 public feeds' : 'Trading restricted: Insufficient or stale feed sources',
     };
 
     this.cache.set(symbol, { result, cachedAt: now });

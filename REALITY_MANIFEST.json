@@ -246,10 +246,10 @@
       "category": "EXPERIMENTAL",
       "real_inputs": true,
       "algorithm": "Module Learning With Errors (MLWE) polynomial ring R_q = Z_3329[X]/(X^256+1)",
-      "reproducibility": "100% reproducible via src/crypto/tests/cross-interop.test.ts",
-      "external_verification": "NIST ACVP & Wycheproof compliance",
+      "reproducibility": "100% reproducible via npm run test:nist and node scripts/audit-crypto.mjs",
+      "external_verification": "NIST ACVP deterministic vectors, implicit rejection & Wycheproof compliance (docs/CRYPTO_AUDIT_PACK.md)",
       "production_allowed": false,
-      "notes": "Genuine pure-TS lattice arithmetic without native C dependencies."
+      "notes": "Genuine pure-TS lattice arithmetic without native C dependencies. Verified by standalone auditor tool."
     },
     {
       "id": "nist-fips204-ml-dsa-65",
@@ -257,10 +257,10 @@
       "category": "EXPERIMENTAL",
       "real_inputs": true,
       "algorithm": "Module Learning With Errors / Short Integer Solution R_q = Z_8380417[X]/(X^256+1)",
-      "reproducibility": "100% reproducible via src/crypto/tests/cross-interop.test.ts",
-      "external_verification": "NIST ACVP & Wycheproof compliance",
+      "reproducibility": "100% reproducible via npm run test:nist and node scripts/audit-crypto.mjs",
+      "external_verification": "NIST ACVP deterministic vectors, bit-flip tampering rejection & Wycheproof compliance (docs/CRYPTO_AUDIT_PACK.md)",
       "production_allowed": false,
-      "notes": "Genuine pure-TS lattice arithmetic. Used for off-chain intent integrity."
+      "notes": "Genuine pure-TS lattice arithmetic. Used for off-chain intent integrity. Verified by standalone auditor tool."
     },
     {
       "id": "simulated-quantum-annealing",
