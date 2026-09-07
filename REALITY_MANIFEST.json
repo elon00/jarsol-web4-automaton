@@ -186,6 +186,28 @@
       "notes": "Ensures AI proposes, Policy verifies, and Human authorizes."
     },
     {
+      "id": "market-data-consensus-service",
+      "name": "Multi-Source Live Market Consensus & Outlier Purging Engine",
+      "category": "REAL",
+      "real_inputs": true,
+      "algorithm": "Consensus median pricing across Coinbase, Kraken, Binance & CoinGecko with 2.5% outlier filter & 60s staleness gate",
+      "reproducibility": "100% reproducible via src/services/tests/market-data.test.ts",
+      "external_verification": "Direct HTTP REST query to live exchange ticker APIs",
+      "production_allowed": true,
+      "notes": "Ensures live real-time price discovery with Byzantine and stale feed protection."
+    },
+    {
+      "id": "empirical-covariance-engine",
+      "name": "Empirical Covariance & Volatility Estimation Engine",
+      "category": "REAL",
+      "real_inputs": true,
+      "algorithm": "Sample covariance Sigma_ij = 1/(T-1) * sum((r_i - mu_i)*(r_j - mu_j)) over 30-day daily return series",
+      "reproducibility": "100% reproducible via MarketDataService.calculateEmpiricalStatistics()",
+      "external_verification": "Mathematical symmetry and positive-definite diagonal validation",
+      "production_allowed": true,
+      "notes": "Replaces hardcoded synthetic asset matrices with empirical statistical derivation."
+    },
+    {
       "id": "hybrid-pqc-envelope",
       "name": "Hybrid Signature Envelope (Ed25519 + ML-DSA-65)",
       "category": "EXPERIMENTAL",

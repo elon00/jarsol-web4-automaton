@@ -212,13 +212,16 @@ async function runPipeline() {
     execSync('npx tsx src/crypto/tests/downgrade-defense.test.ts', { cwd: ROOT_DIR, stdio: 'pipe' });
     console.log('  ✅ Downgrade Defense Tests: 2/2 passed (Stripped PQC rejected, strict hybrid mode)');
 
+    execSync('npx tsx src/services/tests/market-data.test.ts', { cwd: ROOT_DIR, stdio: 'pipe' });
+    console.log('  ✅ Market Data & Anomaly Tests: 4/4 passed (Multi-source consensus, outlier rejection, covariance derivation)');
+
     results.push({
       gateNumber: 5,
       name: 'Unit & Integration Tests',
       category: 'CRYPTO',
       status: 'PASS',
       durationMs: Date.now() - g5Start,
-      evidence: '29/29 quantum, crypto, portfolio & policy tests passed cleanly.'
+      evidence: '34/34 quantum, crypto, portfolio, policy & market data tests passed cleanly.'
     });
   } catch (err: any) {
     console.error(`  ❌ GATE 5 FAILED: ${err.message}`);

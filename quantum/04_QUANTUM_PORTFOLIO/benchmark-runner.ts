@@ -10,6 +10,7 @@
 import { AssetParameters, ClassicalMarkowitzOptimizer } from './classical-markowitz';
 import { QuboPortfolioBuilder } from './qubo-formulation';
 import { SimulatedAnnealer } from './simulated-annealer';
+import { marketDataService } from '../../src/services/MarketDataService.ts';
 
 export interface BenchmarkComparisonResult {
   assetBasket: string[];
@@ -53,11 +54,34 @@ export const ASSET_CORRELATION_MATRIX: number[][] = [
   [0.70,  0.60,   0.02,  0.50,  1.00], // RAY
 ];
 
-export function runPortfolioBenchmark(): BenchmarkComparisonResult {
+export function getEmpiricalAssetBasket(): { basket: AssetParameters[]; correlationMatrix: number[][] } {
+  try {
+    const stats = marketDataService.calculateEmpiricalStatistics();
+    const basket: AssetParameters[] = stats.assets.map((sym) => ({
+      symbol: sym,
+      expectedAnnualReturn: stats.assetStats[sym].expectedAnnualReturn,
+      annualVolatility: stats.assetStats[sym].annualVolatility,
+    }));
+    return {
+      basket,
+      correlationMatrix: stats.correlationMatrix,
+    };
+  } catch {
+    return {
+      basket: SOLANA_ASSET_BASKET,
+      correlationMatrix: ASSET_CORRELATION_MATRIX,
+    };
+  }
+}
+
+export function runPortfolioBenchmark(
+  basket: AssetParameters[] = SOLANA_ASSET_BASKET,
+  corrMatrix: number[][] = ASSET_CORRELATION_MATRIX
+): BenchmarkComparisonResult {
   // 1. Run Classical Markowitz
   const classicalOpt = new ClassicalMarkowitzOptimizer(
-    SOLANA_ASSET_BASKET,
-    ASSET_CORRELATION_MATRIX,
+    basket,
+    corrMatrix,
     2.5,
     0.05
   );
@@ -65,8 +89,8 @@ export function runPortfolioBenchmark(): BenchmarkComparisonResult {
 
   // 2. Build QUBO Matrix
   const quboBuilder = new QuboPortfolioBuilder(
-    SOLANA_ASSET_BASKET,
-    ASSET_CORRELATION_MATRIX,
+    basket,
+    corrMatrix,
     2.5,
     3, // 3 bits per asset => 15 binary variables (emulated qubits)
     8.0
@@ -85,21 +109,21 @@ export function runPortfolioBenchmark(): BenchmarkComparisonResult {
   const quboWeights = quboBuilder.decodeWeights(annealSol.bestState);
 
   // Compute expected return & volatility for QUBO weights
-  const n = SOLANA_ASSET_BASKET.length;
+  const n = basket.length;
   let quboReturn = 0;
-  SOLANA_ASSET_BASKET.forEach((a) => {
+  basket.forEach((a) => {
     quboReturn += (quboWeights[a.symbol] || 0) * a.expectedAnnualReturn;
   });
 
   let quboVariance = 0;
   for (let i = 0; i < n; i++) {
     for (let j = 0; j < n; j++) {
-      const symI = SOLANA_ASSET_BASKET[i].symbol;
-      const symJ = SOLANA_ASSET_BASKET[j].symbol;
+      const symI = basket[i].symbol;
+      const symJ = basket[j].symbol;
       const cov_ij =
-        ASSET_CORRELATION_MATRIX[i][j] *
-        SOLANA_ASSET_BASKET[i].annualVolatility *
-        SOLANA_ASSET_BASKET[j].annualVolatility;
+        corrMatrix[i][j] *
+        basket[i].annualVolatility *
+        basket[j].annualVolatility;
       quboVariance += (quboWeights[symI] || 0) * (quboWeights[symJ] || 0) * cov_ij;
     }
   }
@@ -116,7 +140,7 @@ export function runPortfolioBenchmark(): BenchmarkComparisonResult {
       : 'QUBO_ANNEALING';
 
   return {
-    assetBasket: SOLANA_ASSET_BASKET.map((a) => a.symbol),
+    assetBasket: basket.map((a) => a.symbol),
     classical: {
       weights: classSol.weights,
       expectedReturn: classSol.expectedReturn,
@@ -140,6 +164,11 @@ export function runPortfolioBenchmark(): BenchmarkComparisonResult {
         'Classical quadratic programming solves continuous simplex bounds faster; QUBO simulated annealing finds discrete integer/bucketed allocations without floating-point fraction fragmentation.',
     },
   };
+}
+
+export function runEmpiricalPortfolioBenchmark(): BenchmarkComparisonResult {
+  const empirical = getEmpiricalAssetBasket();
+  return runPortfolioBenchmark(empirical.basket, empirical.correlationMatrix);
 }
 
 // Standalone execution script

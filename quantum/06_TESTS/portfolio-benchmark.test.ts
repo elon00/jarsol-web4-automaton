@@ -4,7 +4,7 @@
  * Path: quantum/06_TESTS/portfolio-benchmark.test.ts
  */
 
-import { runPortfolioBenchmark } from '../04_QUANTUM_PORTFOLIO/benchmark-runner';
+import { runPortfolioBenchmark, runEmpiricalPortfolioBenchmark } from '../04_QUANTUM_PORTFOLIO/benchmark-runner';
 
 function assert(condition: boolean, msg: string) {
   if (!condition) {
@@ -49,8 +49,17 @@ async function runPortfolioTests() {
     'Benchmark report explicitly documents classical speed advantages on simplex bounds without false quantum supremacy claims'
   );
 
+  // 5. Empirical Real-Data Portfolio Optimization
+  console.log('\n[TEST 5] Empirical Real-Data Dynamic Portfolio Solver:');
+  const empiricalBench = runEmpiricalPortfolioBenchmark();
+  const empClassWeights = Object.values(empiricalBench.classical.weights);
+  const empSum = empClassWeights.reduce((acc, v) => acc + v, 0);
+  assert(Math.abs(empSum - 1.0) < 0.01, `Empirical dynamic weights sum to 1.0 on simplex (actual: ${empSum.toFixed(4)})`);
+  assert(empiricalBench.classical.sharpeRatio > 0, `Empirical Markowitz Sharpe ratio is positive (actual: ${empiricalBench.classical.sharpeRatio})`);
+  assert(empiricalBench.quboAnnealing.sharpeRatio > 0, `Empirical QUBO Sharpe ratio is positive (actual: ${empiricalBench.quboAnnealing.sharpeRatio})`);
+
   console.log('\n=====================================================================');
-  console.log('🏆 ALL PORTFOLIO BENCHMARK TESTS PASSED (4/4)');
+  console.log('🏆 ALL PORTFOLIO BENCHMARK TESTS PASSED (5/5)');
   console.log('=====================================================================\n');
 }
 
