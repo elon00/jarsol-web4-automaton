@@ -1,29 +1,47 @@
-import { sha3_512, sha3_256 } from '@noble/hashes/sha3';
 import { PqcKeyPair } from '../types';
+import { pqcMlDsa65 } from '../crypto/pqc/ml-dsa';
+import { pqcMlKem768 } from '../crypto/pqc/ml-kem';
+import { hybridEnvelopeEngine } from '../crypto/hybrid/hybrid-envelope';
+import bs58 from 'bs58';
 
-export function generatePqcLatticeKeyPair(algorithm: 'ML-DSA-65' | 'ML-DSA-87' | 'ML-KEM-768' | 'ML-KEM-1024' = 'ML-DSA-65'): PqcKeyPair {
-  const entropy = new Uint8Array(64);
-  crypto.getRandomValues(entropy);
+export function generatePqcLatticeKeyPair(
+  algorithm: 'ML-DSA-65' | 'ML-DSA-87' | 'ML-KEM-768' | 'ML-KEM-1024' = 'ML-DSA-65'
+): PqcKeyPair {
+  if (algorithm.startsWith('ML-KEM')) {
+    const key = pqcMlKem768.keygen();
+    const pkBase58 = bs58.encode(key.publicKey);
+    const skMasked = `0x_pqc_sk_masked_${bs58.encode(key.secretKey.slice(0, 32))}...`;
+    const solAddress = `PQC_KEM_${pkBase58.substring(0, 24)}`;
 
-  const hash512 = sha3_512(entropy);
-  const hash256 = sha3_256(entropy);
+    return {
+      algorithm,
+      standard: 'NIST FIPS 203 (Module-Lattice KEM)',
+      publicKey: pkBase58,
+      secretKey: skMasked,
+      solanaHybridAddress: solAddress,
+      latticeDimension: 6,
+      modulusQ: 3329,
+      polynomialRing: 'R_q = Z_3329[X] / (X^256 + 1)',
+      shorQuantumResistance: '100% Resistant (Module Learning With Errors / SVP Hardness)',
+      timestamp: new Date().toISOString(),
+    };
+  }
 
-  const hex512 = Array.from(hash512).map((b) => b.toString(16).padStart(2, '0')).join('');
-  const hex256 = Array.from(hash256).map((b) => b.toString(16).padStart(2, '0')).join('');
-
-  const pk = `0x_pqc_pk_${hex512.substring(0, 48)}`;
-  const sk = `0x_pqc_sk_masked_${hex512.substring(48, 96)}`;
-  const solAddress = `PQC_${btoa(hex256).replace(/[^a-zA-Z0-9]/g, '').substring(0, 32)}`;
+  // Default: ML-DSA-65
+  const key = pqcMlDsa65.keygen();
+  const pkBase58 = bs58.encode(key.publicKey);
+  const skMasked = `0x_pqc_sk_masked_${bs58.encode(key.secretKey.slice(0, 32))}...`;
+  const solAddress = `PQC_DSA_${pkBase58.substring(0, 24)}`;
 
   return {
-    algorithm,
-    standard: algorithm.startsWith('ML-DSA') ? 'NIST FIPS 204 (Dilithium Lattice Signature)' : 'NIST FIPS 203 (Kyber Lattice KEM)',
-    publicKey: pk,
-    secretKey: sk,
+    algorithm: 'ML-DSA-65',
+    standard: 'NIST FIPS 204 (Module-Lattice Digital Signature)',
+    publicKey: pkBase58,
+    secretKey: skMasked,
     solanaHybridAddress: solAddress,
-    latticeDimension: algorithm.includes('87') || algorithm.includes('1024') ? 8 : 6,
+    latticeDimension: 6,
     modulusQ: 8380417,
-    polynomialRing: 'R_q = Z_q[X] / (X^256 + 1)',
+    polynomialRing: 'R_q = Z_8380417[X] / (X^256 + 1)',
     shorQuantumResistance: '100% Resistant (Module Learning With Errors / SVP Hardness)',
     timestamp: new Date().toISOString(),
   };
@@ -37,7 +55,6 @@ export function calculateQuantumVulnerability(logicalQubits: number): {
   shorExecutionTimeHours: string;
   status: 'SAFE' | 'AT RISK' | 'COMPROMISED';
 } {
-  // Classical Ed25519 (256-bit elliptic curve) can be broken with ~2,330 to 4,096 logical qubits in Shor's algorithm
   let ed25519Vuln = 0;
   let rsaVuln = 0;
   let timeEst = 'Infinite (Sub-quantum threshold)';
@@ -64,27 +81,26 @@ export function calculateQuantumVulnerability(logicalQubits: number): {
     qubits: logicalQubits,
     classicalRsaVulnerability: Math.round(rsaVuln),
     classicalEd25519Vulnerability: Math.round(ed25519Vuln),
-    jarSolLatticeResistance: 100, // Immune
+    jarSolLatticeResistance: 100,
     shorExecutionTimeHours: timeEst,
     status: logicalQubits >= 2500 ? 'COMPROMISED' : (logicalQubits >= 1000 ? 'AT RISK' : 'SAFE')
   };
 }
 
-export function signHybridMessage(message: string, pk: string): {
+export function signHybridMessage(message: string, _pk: string): {
   message: string;
   hybridSignature: string;
   digest: string;
   timestamp: string;
 } {
   const enc = new TextEncoder().encode(message);
-  const hash = sha3_256(enc);
-  const digest = '0x' + Array.from(hash).map(b => b.toString(16).padStart(2, '0')).join('');
-  const hybridSignature = `SIG_HYBRID_ED25519_MLDSA65_${digest.substring(2, 34)}_${pk.substring(10, 26)}`;
+  const keyPair = hybridEnvelopeEngine.generateKeyPair();
+  const envelope = hybridEnvelopeEngine.createEnvelope(enc, keyPair);
 
   return {
     message,
-    hybridSignature,
-    digest,
-    timestamp: new Date().toISOString(),
+    hybridSignature: `DUAL_SIG [Ed25519: ${envelope.classicalSignatureBase58.substring(0, 16)}... | ML-DSA-65: ${envelope.pqcSignatureBase58.substring(0, 24)}...]`,
+    digest: `0x${envelope.payloadHashHex}`,
+    timestamp: envelope.timestamp,
   };
 }

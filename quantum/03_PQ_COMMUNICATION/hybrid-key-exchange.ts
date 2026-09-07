@@ -3,14 +3,15 @@
  * Module: Hybrid Key Exchange (X25519 + ML-KEM-768)
  * Path: quantum/03_PQ_COMMUNICATION/hybrid-key-exchange.ts
  *
- * Implements dual-KEM key establishment combining classical X25519 with
- * NIST FIPS 203 (ML-KEM-768). Produces a 256-bit symmetric key immune to
- * "Harvest Now, Decrypt Later" quantum attacks.
+ * Implements genuine dual-KEM key establishment combining classical X25519 with
+ * NIST FIPS 203 (ML-KEM-768) using canonical @noble/post-quantum.
+ * Produces a 256-bit symmetric key immune to "Harvest Now, Decrypt Later" attacks.
  */
 
 import * as crypto from 'crypto';
 import { hkdf } from '@noble/hashes/hkdf';
 import { sha256 } from '@noble/hashes/sha256';
+import { ml_kem768 } from '@noble/post-quantum/ml-kem.js';
 
 export interface AliceKeyExchangeState {
   x25519KeyPair: crypto.KeyPairSyncResult<Buffer, Buffer>;
@@ -34,19 +35,13 @@ export interface HybridKeyExchangeResult {
 }
 
 /**
- * Step 1: Alice generates ephemeral classical X25519 and ML-KEM-768 keypairs.
+ * Step 1: Alice generates genuine ephemeral classical X25519 and ML-KEM-768 keypairs.
  */
 export function aliceInit(): AliceKeyExchangeState {
   const x25519KeyPair = crypto.generateKeyPairSync('x25519');
 
-  // Allocate NIST FIPS 203 ML-KEM-768 buffers
-  const mlKemSecretKey = crypto.randomBytes(2400);
-  const mlKemPublicKey = new Uint8Array(1184);
-
-  // Expand public key seed
-  const pubSeed = sha256(mlKemSecretKey.subarray(0, 32));
-  mlKemPublicKey.set(pubSeed, 0);
-  mlKemPublicKey.fill(0xa5, 32, 1184); // Ring polynomial coefficient seed
+  // Genuine NIST FIPS 203 ML-KEM-768 lattice keypair
+  const { publicKey: mlKemPublicKey, secretKey: mlKemSecretKey } = ml_kem768.keygen();
 
   return {
     x25519KeyPair,
@@ -58,105 +53,68 @@ export function aliceInit(): AliceKeyExchangeState {
 /**
  * Step 2: Bob encapsulates a shared secret using Alice's public keys.
  */
-export function bobEncapsulate(
-  aliceX25519Pub: Buffer,
-  aliceMlKemPub: Uint8Array
-): BobEncapsulationResult {
-  // 1. Classical X25519 Diffie-Hellman
+export function bobEncapsulate(aliceState: AliceKeyExchangeState): BobEncapsulationResult {
+  // Classical X25519 Diffie-Hellman
   const bobX25519 = crypto.generateKeyPairSync('x25519');
   const classicalSecret = crypto.diffieHellman({
     privateKey: bobX25519.privateKey,
-    publicKey: aliceX25519Pub,
+    publicKey: aliceState.x25519KeyPair.publicKey,
   });
 
-  // 2. Post-Quantum ML-KEM-768 Encapsulation
-  // Generates 1088-byte ciphertext and 32-byte PQC secret
-  const pqcSecret = crypto.randomBytes(32);
-  const mlKemCiphertext = new Uint8Array(1088);
-  const ctSeed = sha256(Buffer.concat([pqcSecret, aliceMlKemPub.subarray(0, 32)]));
-  mlKemCiphertext.set(ctSeed, 0);
-  mlKemCiphertext.fill(0x5a, 32, 1088);
+  // Genuine NIST FIPS 203 ML-KEM-768 encapsulation
+  const { cipherText: mlKemCiphertext, sharedSecret: pqcSecret } = ml_kem768.encapsulate(aliceState.mlKemPublicKey);
 
-  // 3. Combine classical and PQC secrets via HKDF-SHA256
-  // IKM = ClassicalSecret (32B) || PqcSecret (32B)
-  const ikm = Buffer.concat([classicalSecret, pqcSecret]);
-  const salt = Buffer.from('JARSOL-HYBRID-KEM-SALT-V1', 'utf-8');
-  const info = Buffer.from('X25519-ML-KEM-768-AES-256-SESSION', 'utf-8');
-
-  const sharedSecret256 = hkdf(sha256, ikm, salt, info, 32);
+  // Combine secrets via RFC 5869 HKDF-SHA256
+  const combinedSecret = Buffer.concat([classicalSecret, Buffer.from(pqcSecret)]);
+  const salt = Buffer.alloc(32, 0); // Zero-salt per standard RFC 5869
+  const info = Buffer.from('JARSOL_HYBRID_KEX_V1', 'utf-8');
+  const derivedKey = hkdf(sha256, combinedSecret, salt, info, 32);
 
   return {
     x25519PublicKeyHex: bobX25519.publicKey.export({ type: 'spki', format: 'der' }).toString('hex'),
     mlKemCiphertext,
-    sharedSecret256,
+    sharedSecret256: derivedKey,
   };
 }
 
 /**
- * Step 3: Alice decapsulates using her secret keys to recover the identical shared secret.
+ * Step 3: Alice decapsulates Bob's ciphertext and derives the identical shared key.
  */
 export function aliceDecapsulate(
   aliceState: AliceKeyExchangeState,
-  bobX25519PubDerHex: string,
-  bobMlKemCiphertext: Uint8Array,
-  simulatedPqcSecret: Uint8Array
+  bobResult: BobEncapsulationResult
 ): Uint8Array {
-  // 1. Recover classical X25519 secret
-  const bobPubDer = Buffer.from(bobX25519PubDerHex, 'hex');
-  const bobPubKeyObj = crypto.createPublicKey({ key: bobPubDer, format: 'der', type: 'spki' });
+  // Classical X25519 Diffie-Hellman
+  const bobPubDer = Buffer.from(bobResult.x25519PublicKeyHex, 'hex');
+  const bobPublicKey = crypto.createPublicKey({ key: bobPubDer, format: 'der', type: 'spki' });
   const classicalSecret = crypto.diffieHellman({
     privateKey: aliceState.x25519KeyPair.privateKey,
-    publicKey: bobPubKeyObj,
+    publicKey: bobPublicKey,
   });
 
-  // 2. Recover PQC secret from ML-KEM decapsulation
-  // In pure TS reference, verify ciphertext pattern
-  const pqcSecret = simulatedPqcSecret;
+  // Genuine NIST FIPS 203 ML-KEM-768 decapsulation
+  const pqcSecret = ml_kem768.decapsulate(bobResult.mlKemCiphertext, aliceState.mlKemSecretKey);
 
-  // 3. HKDF derivation
-  const ikm = Buffer.concat([classicalSecret, pqcSecret]);
-  const salt = Buffer.from('JARSOL-HYBRID-KEM-SALT-V1', 'utf-8');
-  const info = Buffer.from('X25519-ML-KEM-768-AES-256-SESSION', 'utf-8');
-
-  return hkdf(sha256, ikm, salt, info, 32);
+  // Combine secrets via RFC 5869 HKDF-SHA256
+  const combinedSecret = Buffer.concat([classicalSecret, Buffer.from(pqcSecret)]);
+  const salt = Buffer.alloc(32, 0);
+  const info = Buffer.from('JARSOL_HYBRID_KEX_V1', 'utf-8');
+  return hkdf(sha256, combinedSecret, salt, info, 32);
 }
 
 /**
- * High-level orchestration helper for tests and benchmarks.
+ * Convenience runner executing full end-to-end handshake.
  */
 export function runHybridKeyExchange(): HybridKeyExchangeResult {
   const alice = aliceInit();
-  const aliceX25519PubDer = alice.x25519KeyPair.publicKey;
+  const bob = bobEncapsulate(alice);
+  const aliceDerived = aliceDecapsulate(alice, bob);
 
-  // Extract raw Bob encapsulation
-  const bobX25519 = crypto.generateKeyPairSync('x25519');
-  const classicalSecret = crypto.diffieHellman({
-    privateKey: bobX25519.privateKey,
-    publicKey: aliceX25519PubDer,
-  });
-
-  const pqcSecret = crypto.randomBytes(32);
-  const mlKemCiphertext = new Uint8Array(1088);
-  const ctSeed = sha256(Buffer.concat([pqcSecret, alice.mlKemPublicKey.subarray(0, 32)]));
-  mlKemCiphertext.set(ctSeed, 0);
-
-  const ikm = Buffer.concat([classicalSecret, pqcSecret]);
-  const salt = Buffer.from('JARSOL-HYBRID-KEM-SALT-V1', 'utf-8');
-  const info = Buffer.from('X25519-ML-KEM-768-AES-256-SESSION', 'utf-8');
-
-  const bobSharedSecret = hkdf(sha256, ikm, salt, info, 32);
-  const aliceSharedSecret = aliceDecapsulate(
-    alice,
-    bobX25519.publicKey.export({ type: 'spki', format: 'der' }).toString('hex'),
-    mlKemCiphertext,
-    pqcSecret
-  );
-
-  const keysMatch = Buffer.from(bobSharedSecret).equals(Buffer.from(aliceSharedSecret));
+  const keysMatch = Buffer.from(aliceDerived).equals(Buffer.from(bob.sharedSecret256));
 
   return {
-    aliceSharedSecret,
-    bobSharedSecret,
+    aliceSharedSecret: aliceDerived,
+    bobSharedSecret: bob.sharedSecret256,
     keysMatch,
     algorithm: 'HYBRID-X25519-ML-KEM-768',
     fipsStandard: 'NIST FIPS 203',

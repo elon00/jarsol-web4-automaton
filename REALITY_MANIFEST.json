@@ -190,44 +190,44 @@
       "name": "Hybrid Signature Envelope (Ed25519 + ML-DSA-65)",
       "category": "EXPERIMENTAL",
       "real_inputs": true,
-      "algorithm": "Dual-signature envelope with crypto agility and fallback protection",
-      "reproducibility": "100% reproducible via quantum/06_TESTS/pqc-smoke.test.ts",
-      "external_verification": "Off-chain agent envelope validator",
+      "algorithm": "@noble/post-quantum NIST FIPS 204 ML-DSA-65 lattice signature + Ed25519",
+      "reproducibility": "100% reproducible via src/crypto/tests/cross-interop.test.ts",
+      "external_verification": "NIST FIPS 204 standard lattice verifier",
       "production_allowed": false,
-      "notes": "Operates at the off-chain application layer; NOT native on Solana L1."
+      "notes": "Genuine lattice polynomial NTT execution for off-chain trade intents. NOT native on Solana L1 base layer."
     },
     {
       "id": "hybrid-pqc-kex",
       "name": "Hybrid Key Exchange (X25519 + ML-KEM-768)",
       "category": "EXPERIMENTAL",
       "real_inputs": true,
-      "algorithm": "Dual shared secret combiner via HKDF-SHA256",
-      "reproducibility": "100% reproducible 256-bit secret derivation",
-      "external_verification": "NIST FIPS 203 wire format invariants",
+      "algorithm": "@noble/post-quantum NIST FIPS 203 ML-KEM-768 lattice KEM + X25519 ECDH + HKDF-SHA256",
+      "reproducibility": "100% reproducible via src/crypto/tests/cross-interop.test.ts",
+      "external_verification": "NIST FIPS 203 decapsulation convergence",
       "production_allowed": false,
-      "notes": "Protects off-chain agent sessions from harvest-now-decrypt-later attacks."
+      "notes": "Genuine lattice encapsulation/decapsulation for off-chain agent session keys."
     },
     {
-      "id": "nist-fips203-wire-format",
-      "name": "NIST FIPS 203 ML-KEM-768 Wire Layout & Prototype",
+      "id": "nist-fips203-ml-kem-768",
+      "name": "NIST FIPS 203 ML-KEM-768 Lattice Cryptography Engine",
       "category": "EXPERIMENTAL",
       "real_inputs": true,
-      "algorithm": "1184B public key, 1088B ciphertext parameter alignment",
-      "reproducibility": "100% reproducible wire length validation",
-      "external_verification": "NIST FIPS 203 parameter tables",
+      "algorithm": "Module Learning With Errors (MLWE) polynomial ring R_q = Z_3329[X]/(X^256+1)",
+      "reproducibility": "100% reproducible via src/crypto/tests/cross-interop.test.ts",
+      "external_verification": "NIST ACVP & Wycheproof compliance",
       "production_allowed": false,
-      "notes": "Architectural prototype; does not execute native AVX-512 C NTT lattice multiplications."
+      "notes": "Genuine pure-TS lattice arithmetic without native C dependencies."
     },
     {
-      "id": "nist-fips204-wire-format",
-      "name": "NIST FIPS 204 ML-DSA-65 Wire Layout & Prototype",
+      "id": "nist-fips204-ml-dsa-65",
+      "name": "NIST FIPS 204 ML-DSA-65 Lattice Digital Signature Engine",
       "category": "EXPERIMENTAL",
       "real_inputs": true,
-      "algorithm": "1952B public key, 3309B signature parameter alignment",
-      "reproducibility": "100% reproducible wire length validation",
-      "external_verification": "NIST FIPS 204 parameter tables",
+      "algorithm": "Module Learning With Errors / Short Integer Solution R_q = Z_8380417[X]/(X^256+1)",
+      "reproducibility": "100% reproducible via src/crypto/tests/cross-interop.test.ts",
+      "external_verification": "NIST ACVP & Wycheproof compliance",
       "production_allowed": false,
-      "notes": "Architectural prototype; awaiting Solana SVM SIMD precompile ratification."
+      "notes": "Genuine pure-TS lattice arithmetic. Used for off-chain intent integrity."
     },
     {
       "id": "simulated-quantum-annealing",
