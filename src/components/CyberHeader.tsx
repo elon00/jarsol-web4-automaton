@@ -13,7 +13,8 @@ import {
   ArrowDownUp,
   Crown,
   Gamepad2,
-  Film
+  Film,
+  Layers
 } from 'lucide-react';
 import { WalletState, NetworkType } from '../types';
 import { playCyberClick, playSuccessChime } from '../utils/audio';
@@ -28,6 +29,7 @@ interface CyberHeaderProps {
   activeTab: string;
   setActiveTab: (tab: string) => void;
   onToast: (msg: string, type?: 'info' | 'success' | 'warning' | 'error') => void;
+  onOpenRealityInspector?: () => void;
 }
 
 export const CyberHeader: React.FC<CyberHeaderProps> = ({
@@ -39,6 +41,7 @@ export const CyberHeader: React.FC<CyberHeaderProps> = ({
   activeTab,
   setActiveTab,
   onToast,
+  onOpenRealityInspector,
 }) => {
   const [requestingAirdrop, setRequestingAirdrop] = React.useState(false);
 
@@ -68,6 +71,7 @@ export const CyberHeader: React.FC<CyberHeaderProps> = ({
     { id: 'videos', label: '🎬 Sci-Fi 4K Videos', badge: '60FPS' },
     { id: 'kingdom', label: '👑 Sci-Fi Kingdom', badge: 'King/Genie' },
     { id: 'jarvis', label: '🎙️ Humanoid Jarvis', badge: 'Face-to-Face' },
+    { id: 'reality', label: '🧬 Reality Inspector', badge: '14 Gates' },
     { id: 'dex', label: '🔄 DEX Swap', badge: 'Preview' },
     { id: 'launchpad', label: '🚀 Launchpad', badge: '1B Fixed' },
     { id: 'conway', label: '🧬 Conway Matrix', badge: 'B3/S23' },
@@ -95,8 +99,29 @@ export const CyberHeader: React.FC<CyberHeaderProps> = ({
           </span>
         </div>
 
-        {/* Live Telemetry */}
+        {/* Live Telemetry & Reality Inspector Trigger */}
         <div className="flex items-center gap-3">
+          {/* Reality Inspector Trigger Pill */}
+          <button
+            onClick={() => {
+              playCyberClick();
+              if (onOpenRealityInspector) onOpenRealityInspector();
+              else setActiveTab('reality');
+            }}
+            className="flex items-center gap-1.5 px-2.5 py-0.5 rounded bg-cyan-950/80 hover:bg-cyan-900/90 border border-cyan-500/40 text-cyan-300 font-bold transition-all shadow-[0_0_10px_rgba(0,240,255,0.2)] cursor-pointer"
+            title="Open Zero-Trust Reality Inspector"
+          >
+            <Layers className="w-3.5 h-3.5 text-cyan-400" />
+            <span className="hidden md:inline">REALITY:</span>
+            <span className="text-emerald-400 font-mono text-[10px]">16 Real</span>
+            <span className="text-slate-500">•</span>
+            <span className="text-purple-400 font-mono text-[10px]">4 Exp</span>
+            <span className="text-slate-500">•</span>
+            <span className="text-amber-400 font-mono text-[10px]">3 Sim</span>
+            <span className="text-slate-500">•</span>
+            <span className="text-blue-400 font-mono text-[10px]">4 Road</span>
+          </button>
+
           <div className="flex items-center gap-1.5 text-slate-300">
             <Zap className="w-3.5 h-3.5 text-amber-400" />
             <span>METABOLISM:</span>

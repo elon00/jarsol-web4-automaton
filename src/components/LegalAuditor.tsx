@@ -94,12 +94,12 @@ export const LegalAuditor: React.FC<LegalAuditorProps> = ({ onToast }) => {
         <div className="flex flex-wrap items-center justify-between gap-4">
           <div className="space-y-2 max-w-2xl">
             <div className="flex items-center gap-2">
-              <span className="px-2.5 py-1 rounded bg-cyan-950/80 border border-cyan-400/40 text-cyan-300 text-xs font-mono font-bold flex items-center gap-1.5 shadow-[0_0_10px_rgba(0,240,255,0.3)]">
-                <Scale className="w-3.5 h-3.5 text-cyan-400" />
-                <span>REGULATORY COMPLIANCE & CONSUMPTIVE UTILITY</span>
+              <span className="px-2.5 py-1 rounded bg-amber-950/80 border border-amber-400/50 text-amber-300 text-xs font-mono font-bold flex items-center gap-1.5 shadow-[0_0_10px_rgba(245,158,11,0.3)]">
+                <Scale className="w-3.5 h-3.5 text-amber-400" />
+                <span>🟡 SIMULATION: INFORMATIONAL SELF-ASSESSMENT</span>
               </span>
-              <span className="px-2 py-0.5 rounded bg-cyan-950/60 border border-cyan-500/30 text-cyan-400 text-xs font-mono">
-                Self-Assessment Framework
+              <span className="px-2 py-0.5 rounded bg-slate-900 border border-slate-700 text-slate-400 text-xs font-mono">
+                Not Statutory Legal Advice
               </span>
             </div>
 

@@ -115,22 +115,29 @@ export const PqcSecurityModule: React.FC<PqcSecurityModuleProps> = ({ onToast })
         <div className="flex flex-wrap items-center justify-between gap-4">
           <div className="space-y-2 max-w-2xl">
             <div className="flex items-center gap-2">
-              <span className="px-2.5 py-1 rounded bg-cyan-950/80 border border-cyan-400/40 text-cyan-300 text-xs font-mono font-bold flex items-center gap-1.5 shadow-[0_0_10px_rgba(0,240,255,0.3)]">
-                <ShieldCheck className="w-3.5 h-3.5 text-cyan-400" />
-                <span>PQC RESEARCH & QUANTUM HARDNESS PROTOTYPE</span>
+              <span className="px-2.5 py-1 rounded bg-purple-950/80 border border-purple-400/50 text-purple-300 text-xs font-mono font-bold flex items-center gap-1.5 shadow-[0_0_10px_rgba(168,85,247,0.3)]">
+                <ShieldCheck className="w-3.5 h-3.5 text-purple-400" />
+                <span>🧪 EXPERIMENTAL: OFF-CHAIN PQC PROTOCOL</span>
               </span>
-              <span className="px-2 py-0.5 rounded bg-amber-950/60 border border-amber-500/30 text-amber-400 text-xs font-mono">
-                SIMD Protocol Roadmap
+              <span className="px-2 py-0.5 rounded bg-blue-950/60 border border-blue-500/30 text-blue-300 text-xs font-mono">
+                🔵 Solana L1 SIMD Roadmap
               </span>
             </div>
 
             <h1 className="font-cyber font-black text-2xl md:text-3xl text-slate-100 tracking-wide">
-              Lattice-Based Quantum Threat Modeling for <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-emerald-400">$JARSOL</span>
+              Lattice-Based Quantum Threat Modeling for <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 via-cyan-400 to-emerald-400">$JARSOL</span>
             </h1>
 
             <p className="text-sm text-slate-400 leading-relaxed font-mono">
-              Educational and cryptographic research prototype demonstrating quantum vulnerability models against classical Ed25519 (Shor’s algorithm) and hybrid lattice migration paths (NIST FIPS 203/204). Note: On-chain SVM verification requires future Solana SIMD consensus upgrades.
+              Pure TypeScript NTT lattice arithmetic (NIST FIPS 203/204 via <code>@noble/post-quantum</code>) protecting off-chain autonomous agent trade envelopes and session handshakes.
             </p>
+
+            <div className="p-3 rounded-xl bg-purple-950/40 border border-purple-500/30 text-xs text-purple-200 leading-relaxed flex items-start gap-2">
+              <span className="text-purple-400 text-sm">ℹ️</span>
+              <div>
+                <strong>Truth-in-Engineering Boundary:</strong> ML-KEM-768 and ML-DSA-65 run genuinely in software for Layer-A off-chain intent authorization. Solana L1 base consensus (Layer-B) currently uses classical Ed25519 until native SIMD PQC precompiles are ratified on-chain.
+              </div>
+            </div>
           </div>
 
           {/* Key Generator Controls */}

@@ -16,6 +16,7 @@ import { LegalAuditor } from './components/LegalAuditor';
 import { WorkflowViewer } from './components/WorkflowViewer';
 import { WhitepaperReader } from './components/WhitepaperReader';
 import { ReadmeViewer } from './components/ReadmeViewer';
+import { RealityInspectorModal } from './components/RealityInspectorModal';
 
 import { WalletState, NetworkType } from './types';
 import { fetchWalletBalance, CANONICAL_DEPLOYMENTS } from './utils/solana';
@@ -30,6 +31,7 @@ export interface ToastMessage {
 export function App() {
   const [activeTab, setActiveTab] = useState<string>('jarvis'); // Default to Face-to-Face Humanoid Jarvis
   const [isWalletModalOpen, setIsWalletModalOpen] = useState<boolean>(false);
+  const [isRealityInspectorOpen, setIsRealityInspectorOpen] = useState<boolean>(false);
   const [metabolismScore, setMetabolismScore] = useState<number>(98.4);
   const [toasts, setToasts] = useState<ToastMessage[]>([]);
   const [globalBg, setGlobalBg] = useState<string>('/sci_fi_throne_king.jpg');
@@ -142,6 +144,17 @@ export function App() {
         metabolismScore={metabolismScore}
         activeTab={activeTab}
         setActiveTab={setActiveTab}
+        onToast={addToast}
+        onOpenRealityInspector={() => setIsRealityInspectorOpen(true)}
+      />
+
+      {/* Reality Inspector Modal */}
+      <RealityInspectorModal
+        isOpen={isRealityInspectorOpen || activeTab === 'reality'}
+        onClose={() => {
+          setIsRealityInspectorOpen(false);
+          if (activeTab === 'reality') setActiveTab('jarvis');
+        }}
         onToast={addToast}
       />
 

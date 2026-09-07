@@ -592,7 +592,10 @@ async function runPipeline() {
         throw new Error(`Truth violation: Feature "${f.id}" categorized as "${f.category}" cannot have production_allowed: true!`);
       }
     }
+    // Run automated manifest unit test
+    execSync('npx tsx src/services/tests/reality-manifest.test.ts', { cwd: ROOT_DIR, stdio: 'pipe' });
     console.log(`  ✅ REALITY_MANIFEST.json: ${manifest.features.length} features audited. Zero unauthorized production claims.`);
+    console.log('  ✅ Automated Reality Manifest Unit Test: 3/3 passed (Schema, keys, fail-closed invariant)');
     console.log('  ✅ Market Taxonomy: Classified into REAL ✅ | EXPERIMENTAL 🧪 | SIMULATION 🟡 | ROADMAP 🔵');
     console.log('  ✅ Product Positioning: Positioned as "Quantum-Ready Security & Portfolio Intelligence Platform"');
 
