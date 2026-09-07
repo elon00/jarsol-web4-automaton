@@ -1,31 +1,27 @@
 node_modules
 dist
-.env
-*.log
-New Text Document.txt
-__pycache__/
-*.pyc
-test_*.ts
-jarvis_core/objects/
-jarvis_core/hooks/
-jarvis_core/logs/
-jarvis_core/refs/
-jarvis_core/HEAD
-jarvis_core/index
-jarvis_core/packed-refs
-jarvis_core/description
-jarvis_core/config
-*.zip
-alchemy-demo/
-server.ts.backup
+dist-ssr
+*.local
 
+# Environment Variables & Private Secrets
+.env
+.env.*
+!.env.example
 id.json
 *id.json
 *.keypair.json
 *.secret.json
 *.key
-.env
-.env.*
-!.env.example
 secrets/
 wallets/
+
+# Logs & Temporary Files
+*.log
+npm-debug.log*
+
+# OS & Editor Files
+.DS_Store
+Thumbs.db
+*.bak
+*.swp
+

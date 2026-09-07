@@ -23,11 +23,11 @@ function generateLocalElonPolymathResponse(query: string, timeStr: string, dateS
   }
 
   if (q.includes('quantum') || q.includes('pqc') || q.includes('lattice') || q.includes('fips') || q.includes('shor') || q.includes('dilithium') || q.includes('kyber')) {
-    return `From first principles, Shor's algorithm breaks elliptic curve crypto, so we engineered NIST FIPS 204 ML-DSA and ML-KEM lattice cryptography. It relies on the hardness of the Shortest Vector Problem in high-dimensional polynomial rings, ensuring 100% quantum-proof immunity.`;
+    return `From first principles, Shor's algorithm threatens elliptic curve crypto, so we engineered NIST FIPS 203 ML-KEM and FIPS 204 ML-DSA lattice cryptography. It relies on the hardness of Module Learning With Errors (M-LWE) over high-dimensional polynomial rings for off-chain agent communication.`;
   }
 
   if (q.includes('solana') || q.includes('jarsol') || q.includes('tokenomics') || q.includes('token') || q.includes('supply') || q.includes('spl-2022') || q.includes('raydium') || q.includes('mint')) {
-    return `We fixed $JARSOL at exactly 1,000 Trillion units under Solana SPL Token-2022 with zero mint inflation and burned LP on Raydium. It operates as the consumptive gas token for decentralized neural compute across the entire Conway metaverse.`;
+    return `The canonical testnet $JARSOL mint is fixed at exactly 1,000,000,000 units with 9 decimals, featuring fully revoked mint and freeze authorities for verifiable immutable supply on Solana.`;
   }
 
   if (q.includes('algo') || q.includes('trading') || q.includes('arbitrage') || q.includes('market maker') || q.includes('dex')) {

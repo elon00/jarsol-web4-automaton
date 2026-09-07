@@ -1,11 +1,11 @@
 {
   "standard": "UNIVERSAL REALITY SYSTEM (URS v1.0)",
   "title": "URS EVIDENCE CERTIFICATE",
-  "issuedAt": "2026-09-07T08:12:51.068Z",
-  "executionDurationMs": 74147,
+  "issuedAt": "2026-09-07T08:31:35.392Z",
+  "executionDurationMs": 51181,
   "target": {
     "repository": "https://github.com/elon00/jarsol-web4-automaton.git",
-    "commitSha": "c980947b83c39bac2496f4cbf79e741b003494ac",
+    "commitSha": "b7c084c2cd1891369210f5a73759f13c3d8b7093",
     "packageLockSha": "618b91e8bf342b6450c82608ae09971051fde6c7a3e0b49083968bc3ef51b7c0"
   },
   "environment": {
@@ -13,7 +13,7 @@
     "arch": "x64",
     "nodeVersion": "v24.18.0",
     "npmVersion": "11.16.0",
-    "timestamp": "2026-09-07T08:11:39.223Z"
+    "timestamp": "2026-09-07T08:30:45.347Z"
   },
   "evidenceVerification": {
     "buildStatus": "PASS",
@@ -54,6 +54,6 @@
   },
   "realityHash": {
     "formula": "H = SHA256(CommitSHA || PackageLockSHA || Environment || TestLogs || BuildLogs || AuditResults)",
-    "digest": "afc793b2b6263db2846ca30d7d1fbf2138e8bb04e937d09734a15a16195877ff"
+    "digest": "38660c45c0d59b040fbeaea78cd394bbaefe09dac54462b7de46d0ef810b456e"
   }
 }
