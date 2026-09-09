@@ -5,6 +5,8 @@ on:
     branches: [main, reality-hardening-v2, reality-next-steps-v2]
   pull_request:
     branches: [main]
+  schedule:
+    - cron: '0 6 * * *' # Daily autonomous health & reality audit
   workflow_dispatch:
 
 permissions:
