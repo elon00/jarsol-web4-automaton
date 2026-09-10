@@ -4,19 +4,26 @@
 
 JarSol is an experimental Web4/autonomous-agent project with Solana integration. This repository follows a **Reality-First / URS (Universal Reality System)** policy: every important claim should be traceable to code, reproducible tests, CI evidence, or independently verifiable public evidence.
 
-## 🚦 Current Reality Status
+## 🚦 Current Reality Status — September 2026
 
 | Area | Status | What this means |
 |---|---|---|
-| Repository code & local logic | 🟢 Real software | Implemented code exists and can be inspected/tested |
-| Devnet/Testnet verification | 🟢 Evidence-based | Automated verification commands are provided |
-| Post-quantum cryptography | 🧪 Experimental | Software implementation/integration; not a claim of Solana L1-native PQC security |
-| DEX/AMM modelling | 🟡 Simulation/preview where modeled | Mathematical previews must not be represented as live liquidity or execution |
-| Mainnet | 🔒 Not deployed | Explicit approval and additional evidence are required |
+| Repository code & local logic | 🟢 **REAL** | Implemented code exists and can be inspected/tested. |
+| Devnet/Testnet | 🟡 **EVIDENCE-BASED / VERIFY ON RPC** | Verification commands exist; public-chain state should be independently rechecked before claiming current live status. |
+| JARSOL mint | 🟡 **REPOSITORY-RECORDED** | Canonical mint `AeZcfycXZvgjt1Rkyee8w34tApSrLnzL7nJoH2P6EQxG` and reported supply/authority state are documented by the repository verification flow. |
+| Post-quantum cryptography | 🧪 **EXPERIMENTAL** | Software implementation/integration; **not** a claim of Solana L1-native PQC security. |
+| DEX/AMM | 🟡 **SIMULATION / PREVIEW WHERE MODELED** | Mathematical previews must not be represented as live liquidity or successful execution. |
+| Mainnet | 🔒 **NOT DEPLOYED / NOT CLAIMED** | Mainnet requires separate evidence and explicit approval. |
+| Production | 🟡 **NOT CERTIFIED** | CI/local verification is not an independent production security audit. |
+| Market readiness | 🟡 **NOT PROVEN** | Real users, sustained liquidity/usage, operational history and applicable review gates are separate evidence requirements. |
 
-**Important:** Passing CI, local tests, or internal gates does **not** by itself mean “production certified,” independently audited, or mainnet-ready.
+### Reality Scorecard
 
----
+**PQC:** 🟡 Experimental / software-verified — **not L1-native PQC security**.  
+**Production:** 🟡 Prototype / verification stage — **not independently production-certified**.  
+**Market:** 🟡 Not proven — **no claim of sustained real-market liquidity or adoption**.
+
+**Bottom line:** JarSol is a real software project with Solana integration and verification tooling, but this README deliberately does **not** label it as a mainnet-live, independently audited, or market-ready product.
 
 ## ⛓️ Solana Evidence
 
@@ -24,7 +31,7 @@ JarSol is an experimental Web4/autonomous-agent project with Solana integration.
 
 - **Mint:** `AeZcfycXZvgjt1Rkyee8w34tApSrLnzL7nJoH2P6EQxG`
 - **Decimals:** `9`
-- **Supply:** `1,000,000,000 JARSOL`
+- **Supply:** `1,000,000,000 JARSOL` (repository-recorded)
 - **Mint authority:** Reported as revoked by the repository verification flow
 - **Freeze authority:** Reported as revoked by the repository verification flow
 
@@ -55,27 +62,10 @@ A successful build, CI run, or testnet verification does **not** automatically a
 
 ## 🧪 Local Development
 
-### Install
-
 ```bash
 npm ci
-```
-
-### Run
-
-```bash
 npm start
-```
-
-### Build
-
-```bash
 npm run build
-```
-
-### Full Repository Verification
-
-```bash
 npm run verify:all
 ```
 
@@ -84,8 +74,6 @@ If a command fails, treat the failure as evidence that the corresponding claim i
 ---
 
 ## 🧬 Universal Reality System Principles
-
-JarSol follows these engineering rules:
 
 - **No proof = no production claim.**
 - **No live data = no fake live value.**
@@ -106,8 +94,6 @@ JarSol follows these engineering rules:
 | 🔵 **ROADMAP** | Planned or future capability |
 | 🔒 **BLOCKED** | Deliberately prevented from production execution until conditions are met |
 
----
-
 ## ⚠️ Claim Honesty
 
 This repository must not describe the following as live production infrastructure unless current evidence proves it:
@@ -120,32 +106,13 @@ This repository must not describe the following as live production infrastructur
 - native Solana L1 post-quantum consensus/security,
 - future roadmap features.
 
-When evidence is missing, the correct state is **unverified, experimental, simulated, unavailable, or blocked**—not “production ready.”
-
----
-
-## 🎯 Product Direction
-
-The practical path toward production readiness is:
-
-1. **Reproducible clean-clone verification**
-2. **Evidence-backed CI and runtime testing**
-3. **Clear separation of real features, experiments, simulations, and roadmap items**
-4. **Independent security/cryptographic review where appropriate**
-5. **Production UX and operational monitoring**
-6. **Mainnet preflight only after all required evidence exists**
-
----
+When evidence is missing, the correct state is **unverified, experimental, simulated, unavailable, or blocked** — not “production ready.”
 
 ## 🤝 How to Audit JarSol
 
-Do not trust this README blindly.
-
-Clone the repository, inspect the code, run the documented commands, review CI evidence, and independently verify any public Solana state.
+Do not trust this README blindly. Clone the repository, inspect the code, run the documented commands, review CI evidence, and independently verify any public Solana state.
 
 > **Truth over hype. Evidence over claims.**
-
----
 
 ## License
 
