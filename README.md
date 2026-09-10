@@ -25,6 +25,14 @@ JarSol is an experimental Web4/autonomous-agent project with Solana integration.
 
 **Bottom line:** JarSol is a real software project with Solana integration and verification tooling, but this README deliberately does **not** label it as a mainnet-live, independently audited, or market-ready product.
 
+## 📄 Whitepaper
+
+The complete English technical whitepaper is maintained in the repository:
+
+**[JarSol Whitepaper](docs/WHITEPAPER.md)**
+
+It documents the Web4/autonomous-agent architecture, JARSOL asset layer, Solana verification model, experimental PQC, DEX/AMM boundaries, fail-closed mainnet policy, reality taxonomy, security model, roadmap, and product-reality requirements.
+
 ## ⛓️ Solana Evidence
 
 ### Canonical Testnet Mint
