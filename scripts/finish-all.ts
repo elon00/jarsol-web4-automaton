@@ -61,7 +61,7 @@ async function finishAll() {
     { num: 8, name: 'Solana Testnet Safe Fresh Template Verification', cmd: 'npm run verify:testnet:fresh' },
     { num: 9, name: 'Documentation & Competition Package Reality Check', cmd: 'node -e "if (!fs.existsSync(\'docs/COMPETITION_READINESS.md\') || !fs.existsSync(\'SECURITY.md\')) process.exit(1);"' },
     { num: 10, name: 'Quantum-Ready PQC & Portfolio Optimization Verification', cmd: 'npm run test:quantum' },
-    { num: 11, name: 'Reality Classification Contract', cmd: \"node -e \\\"const fs=require('fs'); const p='docs/REALITY_CLASSIFICATION.md'; if(!fs.existsSync(p)) process.exit(1); const s=fs.readFileSync(p,'utf8'); for(const x of ['REAL','SIMULATION','MOCK','UNVERIFIED']) if(!s.includes(x)) process.exit(1);\\\"\" }
+    { num: 11, name: 'Reality Classification Contract', cmd: 'npm run test:manifest' }
   ];
 
   let anyFailed = false;
