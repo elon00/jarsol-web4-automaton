@@ -38,15 +38,15 @@ function generateLocalElonPolymathResponse(query: string, timeStr: string, dateS
     return `RevenueCat integration allows seamless bridging between Web 4.0 crypto micro-transactions and enterprise subscription tiers. Users unlock high-compute agent swarms via recurring entitlements mapped directly to on-chain wallet tiers.`;
   }
 
-  if (q.includes('time') || q.includes('date') || q.includes('aaj') || q.includes('waqt') || q.includes('ghadi') || q.includes('samay') || q.includes('din')) {
+  if (q.includes('time') || q.includes('date') || q.includes('today') || q.includes('clock') || q.includes('current time')) {
     return `Right now, the exact real-world time is ${timeStr} and today is ${dateStr}. All systems across Solana Devnet, Quantum Lattice, and Conway AI are 100% operational.`;
   }
 
-  if (q.includes('hello') || q.includes('hi') || q.includes('hey') || q.includes('kaise ho') || q.includes('namaste') || q.includes('who are you') || q.includes('elon')) {
-    return `Hey! Main Elon-Jarvis hoon. First-principles engineering, Agentic AI, Quantum Lattice, aur Solana Crypto 100% online hain. Bataiye, aaj kya naya create ya scale karein?`;
+  if (q.includes('hello') || q.includes('hi') || q.includes('hey') || q.includes('who are you') || q.includes('elon')) {
+    return `Greetings! I am Elon-Jarvis. First-principles engineering, Agentic AI, Quantum Lattice, and Solana Cryptography are 100% online. What shall we design, scale, or optimize today?`;
   }
 
-  return `Look, from a first-principles perspective, we need to scale this compute matrix 100x. Abhi exact time ho raha hai ${timeStr}. Bataiye, is architecture me aage kya optimize karein?`;
+  return `From a first-principles perspective, we need to scale this compute matrix 100x. The exact current time is ${timeStr}. How would you like to optimize this architecture next?`;
 }
 
 export async function askGeminiAgent(

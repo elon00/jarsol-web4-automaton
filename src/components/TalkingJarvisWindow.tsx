@@ -276,7 +276,7 @@ DIRECTIVES:
 
     } catch (err: any) {
       console.error('Dialogue error:', err);
-      const fallbackReply = `Look, from a first-principles perspective, we need to scale this 100x. Abhi time ho raha hai ${currentTime}. Conway automaton compute, quantum lattice security, aur Solana DEX pools primed hain—let's ship it!`;
+      const fallbackReply = `From a first-principles perspective, we need to scale this compute matrix 100x. The current time is ${currentTime}. Conway automaton compute, quantum lattice security, and Solana DEX pools are fully primed—let's ship it!`;
       setMessages((prev) => [
         ...prev,
         {
@@ -337,7 +337,7 @@ DIRECTIVES:
     playCyberClick();
     setSelectedLang(lang);
     pipelineRef.current?.setLanguage(lang);
-    onToast(`Language set to ${lang === 'en-IN' ? 'Hinglish / Indian English' : lang === 'hi-IN' ? 'Hindi (हिन्दी)' : 'US English'}`, 'info');
+    onToast(`Language set to ${lang === 'en-IN' ? 'English (India)' : lang === 'hi-IN' ? 'Hindi' : 'English (US)'}`, 'info');
   };
 
   // Connect/Start Live Call with explicit user gesture & audio unlock
@@ -499,7 +499,7 @@ DIRECTIVES:
                     : 'text-slate-400 hover:text-white'
                 }`}
               >
-                {lang === 'en-IN' ? 'Hinglish' : lang === 'hi-IN' ? 'हिन्दी' : 'US-EN'}
+                {lang === 'en-IN' ? 'EN (IN)' : lang === 'hi-IN' ? 'Hindi (IN)' : 'EN (US)'}
               </button>
             ))}
           </div>
@@ -747,7 +747,7 @@ DIRECTIVES:
             {[
               "Elon, what's our 1000T tokenomics strategy?",
               "Explain Conway cellular automaton compute gas.",
-              "Aaj ki exact date aur time kya hai?",
+              "What is today's exact real-world date and time?",
               "How does NIST FIPS 204 quantum shield work?",
             ].map((prompt, idx) => (
               <button

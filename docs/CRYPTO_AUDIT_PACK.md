@@ -12,7 +12,7 @@
 
 JarSol implements a **Defense-in-Depth Hybrid Cryptographic Architecture** designed to safeguard off-chain agent communication, cross-node consensus, and transaction intents against both classical compromise and future quantum decryption (**Store-Now-Decrypt-Later / SNDL** attacks).
 
-### 🔍 Truth-in-Engineering Invariants ("Doodh ka doodh, paani ka paani")
+### 🔍 Truth-in-Engineering Invariants (Strict Empirical Grounding)
 
 1. **Off-Chain Scope:** Post-Quantum Cryptography (PQC) in JarSol currently protects **Layer A (Off-Chain)** workloads:
    - Node-to-node intent communication.

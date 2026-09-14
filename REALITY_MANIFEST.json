@@ -4,7 +4,7 @@
   "version": "1.0.0",
   "standard": "Zero-Trust Evidence-Based Truth in Engineering",
   "last_updated": "2026-09-07T09:10:00.000Z",
-  "truth_principle": "Doodh ka doodh, paani ka paani — jo real hai sirf wahi production claim hoga. Jo simulation hai use ya to REAL banaya jayega, ya clearly experimental/simulation rakha jayega.",
+  "truth_principle": "Truth in Engineering: Only verified, empirical components are claimed as production-grade. Simulated or experimental components are rigorously classified and separated from production invariants.",
   "categories": {
     "REAL": {
       "symbol": "🟢",
