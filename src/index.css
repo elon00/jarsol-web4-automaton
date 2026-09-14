@@ -39,19 +39,27 @@
   scrollbar-width: none;
 }
 
-/* Horizontal Jarvis tab navigator */
+/* Scientific navigation layout: identity/actions row + full-width tab rail */
 .jarvis-tabs-scroll {
-  overflow-x: auto;
-  overflow-y: hidden;
-  flex-wrap: nowrap;
+  order: 3;
+  flex: 1 1 100%;
+  width: 100%;
   max-width: 100%;
   min-width: 0;
+  overflow-x: auto;
+  overflow-y: hidden;
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: center;
+  gap: 0.25rem;
   scrollbar-width: thin;
   scrollbar-color: #0d6878 #04080a;
   -webkit-overflow-scrolling: touch;
   overscroll-behavior-x: contain;
   scroll-behavior: smooth;
-  padding-bottom: 5px;
+  padding: 0.35rem 0.1rem 0.45rem;
+  border-top: 1px solid rgba(0, 240, 255, 0.08);
+  background: linear-gradient(180deg, rgba(3, 12, 16, 0.35), rgba(3, 7, 8, 0.15));
 }
 
 .jarvis-tabs-scroll::-webkit-scrollbar {
@@ -62,6 +70,7 @@
 .jarvis-tabs-scroll::-webkit-scrollbar-track {
   background: rgba(4, 8, 10, 0.9);
   border-radius: 999px;
+  border: 1px solid rgba(0, 240, 255, 0.08);
 }
 
 .jarvis-tabs-scroll::-webkit-scrollbar-thumb {
@@ -78,6 +87,13 @@
 
 .jarvis-tabs-scroll > button {
   flex: 0 0 auto;
+}
+
+/* Mobile: keep the same information hierarchy while allowing clean wrapping */
+@media (max-width: 768px) {
+  .jarvis-tabs-scroll {
+    flex-basis: 100%;
+  }
 }
 
 /* Cyber Glow Utilities */
