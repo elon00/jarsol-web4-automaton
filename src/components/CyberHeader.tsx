@@ -1,15 +1,5 @@
 import React from 'react';
-import {
-  ShieldCheck,
-  Coins,
-  Wallet,
-  Zap,
-  Globe,
-  Terminal,
-  Layers,
-  Activity,
-  Command,
-} from 'lucide-react';
+import { ShieldCheck, Coins, Wallet, Zap, Globe, Terminal, Layers, Activity, Command } from 'lucide-react';
 import { WalletState, NetworkType } from '../types';
 import { playCyberClick, playSuccessChime } from '../utils/audio';
 import { requestDevnetAirdrop } from '../utils/solana';
@@ -26,199 +16,69 @@ interface CyberHeaderProps {
   onOpenRealityInspector?: () => void;
 }
 
-export const CyberHeader: React.FC<CyberHeaderProps> = ({
-  wallet,
-  onOpenWalletModal,
-  onNetworkChange,
-  onRefreshBalance,
-  metabolismScore,
-  activeTab,
-  setActiveTab,
-  onToast,
-  onOpenRealityInspector,
-}) => {
+export const CyberHeader: React.FC<CyberHeaderProps> = ({ wallet, onOpenWalletModal, onNetworkChange, onRefreshBalance, metabolismScore, activeTab, setActiveTab, onToast, onOpenRealityInspector }) => {
   const [requestingAirdrop, setRequestingAirdrop] = React.useState(false);
 
   const handleAirdrop = async () => {
-    if (!wallet.address) {
-      onToast('Please connect a wallet first to receive Devnet SOL.', 'warning');
-      return;
-    }
-    playCyberClick();
-    setRequestingAirdrop(true);
+    if (!wallet.address) { onToast('Please connect a wallet first to receive Devnet SOL.', 'warning'); return; }
+    playCyberClick(); setRequestingAirdrop(true);
     onToast('Requesting 2.0 Devnet SOL airdrop from Solana RPC...', 'info');
-
     const res = await requestDevnetAirdrop(wallet.address, 2, wallet.network as 'devnet' | 'testnet');
     setRequestingAirdrop(false);
-
-    if (res.success) {
-      playSuccessChime();
-      onToast(`Airdrop of 2.0 SOL confirmed!`, 'success');
-      onRefreshBalance();
-    } else {
-      onToast(res.error || 'Airdrop rate limit reached. Try https://faucet.solana.com', 'error');
-    }
+    if (res.success) { playSuccessChime(); onToast('Airdrop of 2.0 SOL confirmed!', 'success'); onRefreshBalance(); }
+    else onToast(res.error || 'Airdrop rate limit reached. Try https://faucet.solana.com', 'error');
   };
 
   const navItems = [
-    { id: 'metaverse', label: '🎮 24/7 Metaverse Game', badge: 'Dual-World' },
-    { id: 'videos', label: '🎬 Sci-Fi 4K Videos', badge: '60FPS' },
-    { id: 'kingdom', label: '👑 Sci-Fi Kingdom', badge: 'King/Genie' },
-    { id: 'jarvis', label: '🎙️ Humanoid Jarvis', badge: 'Face-to-Face' },
-    { id: 'reality', label: '🧬 Reality Inspector', badge: '14 Gates' },
-    { id: 'dex', label: '🔄 DEX Swap', badge: 'Preview' },
-    { id: 'launchpad', label: '🚀 Launchpad', badge: '1B Fixed' },
-    { id: 'conway', label: '🧬 Conway Matrix', badge: 'B3/S23' },
-    { id: 'terminal', label: '🤖 Gemini Brain', badge: '3.6 Flash' },
-    { id: 'pqc', label: '🛡️ PQC Shield', badge: 'Lattice Demo' },
-    { id: 'tokenomics', label: '📊 Tokenomics', badge: 'Global Mkt' },
-    { id: 'audit', label: '⚖️ Legal & Utility', badge: 'Compliance' },
-    { id: 'workflow', label: '⚡ Workflow', badge: 'Web 4.0' },
-    { id: 'whitepaper', label: '📄 Whitepaper', badge: '6 Ch' },
-    { id: 'readme', label: '📖 Readme', badge: 'Docs' },
+    { id: 'metaverse', label: '🎮 24/7 Metaverse Game', badge: 'Dual-World' }, { id: 'videos', label: '🎬 Sci-Fi 4K Videos', badge: '60FPS' },
+    { id: 'kingdom', label: '👑 Sci-Fi Kingdom', badge: 'King/Genie' }, { id: 'jarvis', label: '🎙️ Humanoid Jarvis', badge: 'Face-to-Face' },
+    { id: 'reality', label: '🧬 Reality Inspector', badge: '14 Gates' }, { id: 'dex', label: '🔄 DEX Swap', badge: 'Preview' },
+    { id: 'launchpad', label: '🚀 Launchpad', badge: '1B Fixed' }, { id: 'conway', label: '🧬 Conway Matrix', badge: 'B3/S23' },
+    { id: 'terminal', label: '🤖 Gemini Brain', badge: '3.6 Flash' }, { id: 'pqc', label: '🛡️ PQC Shield', badge: 'Lattice Demo' },
+    { id: 'tokenomics', label: '📊 Tokenomics', badge: 'Global Mkt' }, { id: 'audit', label: '⚖️ Legal & Utility', badge: 'Compliance' },
+    { id: 'workflow', label: '⚡ Workflow', badge: 'Web 4.0' }, { id: 'whitepaper', label: '📄 Whitepaper', badge: '6 Ch' }, { id: 'readme', label: '📖 Readme', badge: 'Docs' },
   ];
 
-  const openCommandCenter = () => {
-    playCyberClick();
-    setActiveTab('terminal');
-    onToast('Command Center opened — Gemini Brain terminal active.', 'info');
-  };
+  const openCommandCenter = () => { playCyberClick(); setActiveTab('terminal'); onToast('Command Center opened — Gemini Brain terminal active.', 'info'); };
 
   return (
     <header className="border-b border-cyan-900/60 bg-[#040a0e]/95 backdrop-blur-md sticky top-0 z-50 shadow-lg shadow-cyan-950/20">
-      {/* Top Telemetry — balanced 50/50 so neither side dominates */}
-      <div className="max-w-7xl mx-auto px-3 py-2 flex flex-col lg:flex-row items-stretch lg:items-center gap-2 lg:gap-4 text-xs border-b border-cyan-950/40">
-        <div className="flex items-center gap-2 min-w-0 lg:w-1/2 lg:max-w-[50%] overflow-hidden">
-          <div className="flex items-center gap-1.5 px-2 py-0.5 rounded bg-emerald-950/60 border border-emerald-500/40 text-emerald-300 font-bold shrink-0">
+      {/* Balanced telemetry grid: left information cluster is constrained to half, right controls occupy the other half. */}
+      <div className="max-w-7xl mx-auto px-3 py-2 grid grid-cols-1 lg:grid-cols-2 gap-3 text-xs border-b border-cyan-950/40">
+        <div className="min-w-0 flex items-center gap-2 overflow-hidden lg:border-r lg:border-cyan-950/40 lg:pr-3">
+          <div className="flex items-center gap-1.5 px-2 py-1 rounded bg-emerald-950/60 border border-emerald-500/40 text-emerald-300 font-bold shrink-0">
             <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
-            <span>24/7 METAVERSE ACTIVE</span>
+            <span className="truncate">24/7 METAVERSE DUAL-WORLD ACTIVE</span>
           </div>
-          <span className="text-slate-400 hidden xl:inline truncate">Real-Time Speech & 60FPS</span>
-          <span className="text-emerald-400 px-1.5 py-0.5 rounded bg-emerald-950/40 border border-emerald-500/20 font-mono text-[10px] truncate">
-            1B $JARSOL · FIXED
-          </span>
+          <span className="text-slate-400 hidden xl:inline truncate">Real-Time Speech & 60FPS Video</span>
+          <span className="text-emerald-400 px-1.5 py-1 rounded bg-emerald-950/40 border border-emerald-500/20 font-mono text-[10px] shrink-0">1B $JARSOL · FIXED</span>
         </div>
 
-        <div className="flex items-center justify-start lg:justify-end gap-2 min-w-0 lg:w-1/2 lg:max-w-[50%] overflow-x-auto">
-          <button
-            onClick={() => {
-              playCyberClick();
-              if (onOpenRealityInspector) onOpenRealityInspector();
-              else setActiveTab('reality');
-            }}
-            className="flex items-center gap-1.5 px-2.5 py-0.5 rounded bg-cyan-950/80 hover:bg-cyan-900/90 border border-cyan-500/40 text-cyan-300 font-bold transition-all shadow-[0_0_10px_rgba(0,240,255,0.2)] cursor-pointer shrink-0"
-            title="Open Zero-Trust Reality Inspector"
-          >
-            <Layers className="w-3.5 h-3.5 text-cyan-400" />
-            <span className="hidden md:inline">REALITY:</span>
-            <span className="text-emerald-400 font-mono text-[10px]">17 Real</span>
-            <span className="text-slate-500">•</span>
-            <span className="text-purple-400 font-mono text-[10px]">4 Exp</span>
-            <span className="text-slate-500">•</span>
-            <span className="text-amber-400 font-mono text-[10px]">3 Sim</span>
-            <span className="text-slate-500">•</span>
-            <span className="text-blue-400 font-mono text-[10px]">4 Road</span>
+        <div className="min-w-0 flex items-center justify-start lg:justify-end gap-2 overflow-x-auto lg:pl-3">
+          <button onClick={() => { playCyberClick(); if (onOpenRealityInspector) onOpenRealityInspector(); else setActiveTab('reality'); }} className="flex items-center gap-1.5 px-2 py-1 rounded bg-cyan-950/80 hover:bg-cyan-900/90 border border-cyan-500/40 text-cyan-300 font-bold shrink-0" title="Open Zero-Trust Reality Inspector">
+            <Layers className="w-3.5 h-3.5 text-cyan-400" /><span>REALITY:</span><span className="text-emerald-400 font-mono text-[10px]">17 Real</span><span className="text-slate-500">•</span><span className="text-purple-400 font-mono text-[10px]">4 Exp</span><span className="text-slate-500">•</span><span className="text-amber-400 font-mono text-[10px]">3 Sim</span><span className="text-slate-500">•</span><span className="text-blue-400 font-mono text-[10px]">4 Road</span>
           </button>
-
-          <div className="flex items-center gap-1.5 text-slate-300 shrink-0">
-            <Zap className="w-3.5 h-3.5 text-amber-400" />
-            <span>METABOLISM:</span>
-            <span className={`font-bold ${metabolismScore > 50 ? 'text-emerald-400' : 'text-amber-400'}`}>
-              {metabolismScore.toFixed(1)}%
-            </span>
-          </div>
-
-          <div className="flex items-center gap-1.5 text-slate-300 shrink-0">
-            <ShieldCheck className="w-3.5 h-3.5 text-cyan-400" />
-            <span className="hidden md:inline">PQC:</span>
-            <span className="text-cyan-400 font-bold">FIPS 204</span>
-          </div>
-
-          <div className="flex items-center gap-1 bg-slate-900 border border-slate-700/60 rounded px-2 py-0.5 text-[11px] shrink-0">
-            <Globe className="w-3 h-3 text-cyan-400" />
-            <select
-              value={wallet.network}
-              onChange={(e) => {
-                playCyberClick();
-                onNetworkChange(e.target.value as NetworkType);
-              }}
-              className="bg-transparent text-cyan-300 font-mono focus:outline-none cursor-pointer"
-            >
-              <option value="devnet" className="bg-slate-900 text-slate-100">Solana Devnet</option>
-              <option value="testnet" className="bg-slate-900 text-slate-100">Solana Testnet</option>
-            </select>
-          </div>
+          <div className="flex items-center gap-1.5 text-slate-300 shrink-0"><Zap className="w-3.5 h-3.5 text-amber-400" /><span>METABOLISM:</span><span className={`font-bold ${metabolismScore > 50 ? 'text-emerald-400' : 'text-amber-400'}`}>{metabolismScore.toFixed(1)}%</span></div>
+          <div className="flex items-center gap-1.5 text-slate-300 shrink-0"><ShieldCheck className="w-3.5 h-3.5 text-cyan-400" /><span>PQC:</span><span className="text-cyan-400 font-bold">FIPS 204</span></div>
+          <div className="flex items-center gap-1 bg-slate-900 border border-slate-700/60 rounded px-2 py-1 text-[11px] shrink-0"><Globe className="w-3 h-3 text-cyan-400" /><select value={wallet.network} onChange={(e) => { playCyberClick(); onNetworkChange(e.target.value as NetworkType); }} className="bg-transparent text-cyan-300 font-mono focus:outline-none cursor-pointer"><option value="devnet" className="bg-slate-900 text-slate-100">Solana Devnet</option><option value="testnet" className="bg-slate-900 text-slate-100">Solana Testnet</option></select></div>
         </div>
       </div>
 
-      {/* Main Identity / System / Actions Row */}
-      <div className="max-w-7xl mx-auto px-3 py-2 flex flex-wrap items-center gap-3">
-        <div onClick={() => { playCyberClick(); setActiveTab('metaverse'); }} className="flex items-center gap-2.5 cursor-pointer group shrink-0">
-          <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-emerald-500/20 via-cyan-500/20 to-purple-500/20 border border-emerald-400/60 flex items-center justify-center text-emerald-300 font-black text-lg group-hover:border-emerald-300 transition-all shadow-[0_0_15px_rgba(0,255,120,0.3)]">🎮</div>
-          <div>
-            <div className="flex items-center gap-1.5">
-              <span className="font-black tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-emerald-300 via-cyan-300 to-purple-300 text-base">Jarvis Metaverse</span>
-              <span className="text-[10px] text-emerald-400 px-1 py-0.2 rounded border border-emerald-500/40 bg-emerald-950/40 font-mono">24/7 World</span>
-            </div>
-            <p className="text-[10px] text-slate-400 font-mono leading-none">Real World ↔ Virtual Game & Video Matrix</p>
-          </div>
+      {/* Identity row: brand stays left; operational controls are deliberately anchored right. */}
+      <div className="max-w-7xl mx-auto px-3 py-2 grid grid-cols-1 lg:grid-cols-2 gap-3 items-center">
+        <div onClick={() => { playCyberClick(); setActiveTab('metaverse'); }} className="flex items-center gap-2.5 cursor-pointer group min-w-0 lg:max-w-[50%]">
+          <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-emerald-500/20 via-cyan-500/20 to-purple-500/20 border border-emerald-400/60 flex items-center justify-center text-emerald-300 font-black text-lg shrink-0 group-hover:border-emerald-300 transition-all shadow-[0_0_15px_rgba(0,255,120,0.3)]">🎮</div>
+          <div className="min-w-0"><div className="flex items-center gap-1.5"><span className="font-black tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-emerald-300 via-cyan-300 to-purple-300 text-base truncate">Jarvis Metaverse</span><span className="text-[10px] text-emerald-400 px-1 py-0.2 rounded border border-emerald-500/40 bg-emerald-950/40 font-mono shrink-0">24/7 World</span></div><p className="text-[10px] text-slate-400 font-mono leading-none truncate">Real World ↔ Virtual Game & Video Matrix</p></div>
         </div>
 
-        <div className="ml-auto flex items-center gap-2">
-          <div className="hidden lg:flex items-center gap-2 px-2.5 py-1.5 rounded-md bg-slate-950/80 border border-cyan-900/70 font-mono text-[9px] leading-tight">
-            <Activity className="w-3.5 h-3.5 text-emerald-400" />
-            <div>
-              <div className="text-cyan-400 font-bold tracking-wider">SYSTEM STATUS</div>
-              <div className="text-slate-400"><span className="text-emerald-400">ONLINE</span> · PQC READY · {wallet.network.toUpperCase()}</div>
-            </div>
-          </div>
-
-          <button
-            onClick={openCommandCenter}
-            className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-md bg-cyan-950/60 hover:bg-cyan-900/80 border border-cyan-500/50 text-cyan-300 font-mono text-[10px] font-bold tracking-wider transition-all shadow-[0_0_12px_rgba(0,240,255,0.15)]"
-            title="Open Gemini Brain Command Center"
-          >
-            <Command className="w-3.5 h-3.5" />
-            <span>COMMAND CENTER</span>
-            <Terminal className="w-3 h-3 text-purple-400" />
-          </button>
-
-          {wallet.connected ? (
-            <div className="flex items-center gap-2">
-              <button onClick={handleAirdrop} disabled={requestingAirdrop} title="Request 2.0 Devnet SOL airdrop" className="px-2 py-1.5 rounded bg-emerald-950/50 hover:bg-emerald-900/60 border border-emerald-500/40 text-emerald-300 text-xs font-mono flex items-center gap-1.5 transition-all disabled:opacity-50">
-                <Coins className={`w-3.5 h-3.5 ${requestingAirdrop ? 'animate-spin' : ''}`} />
-                <span>+2.0 SOL</span>
-              </button>
-              <div onClick={onOpenWalletModal} className="px-3 py-1 rounded bg-slate-900/80 border border-cyan-500/40 text-xs font-mono text-cyan-300 flex items-center gap-2 cursor-pointer hover:border-cyan-300 transition-all">
-                <div className="text-right">
-                  <div className="text-[10px] text-slate-400">{wallet.solBalance.toFixed(3)} SOL {wallet.jarsolBalance > 0 ? `| ${wallet.jarsolBalance.toLocaleString()} $JARSOL` : ''}</div>
-                  <div className="font-bold">{wallet.address?.substring(0, 4)}...{wallet.address?.substring(wallet.address.length - 4)}</div>
-                </div>
-                <div className="w-2 h-2 rounded-full bg-cyan-400" />
-              </div>
-            </div>
-          ) : (
-            <button onClick={() => { playCyberClick(); onOpenWalletModal(); }} className="px-3.5 py-1.5 rounded bg-gradient-to-r from-emerald-500 via-teal-400 to-cyan-500 text-slate-950 font-bold text-xs font-mono flex items-center gap-1.5 shadow-[0_0_12px_rgba(0,255,120,0.4)] transition-all">
-              <Wallet className="w-3.5 h-3.5" />
-              <span>Connect Wallet</span>
-            </button>
-          )}
+        <div className="flex items-center justify-start lg:justify-end gap-2 min-w-0 overflow-x-auto">
+          <div className="flex items-center gap-2 px-2.5 py-1.5 rounded-md bg-slate-950/80 border border-cyan-900/70 font-mono text-[9px] leading-tight shrink-0"><Activity className="w-3.5 h-3.5 text-emerald-400" /><div><div className="text-cyan-400 font-bold tracking-wider">SYSTEM STATUS</div><div className="text-slate-400"><span className="text-emerald-400">ONLINE</span> · PQC READY · {wallet.network.toUpperCase()}</div></div></div>
+          <button onClick={openCommandCenter} className="flex items-center gap-2 px-3 py-1.5 rounded-md bg-cyan-950/60 hover:bg-cyan-900/80 border border-cyan-500/50 text-cyan-300 font-mono text-[10px] font-bold tracking-wider shrink-0" title="Open Gemini Brain Command Center"><Command className="w-3.5 h-3.5" /><span>COMMAND CENTER</span><Terminal className="w-3 h-3 text-purple-400" /></button>
+          {wallet.connected ? <div className="flex items-center gap-2 shrink-0"><button onClick={handleAirdrop} disabled={requestingAirdrop} title="Request 2.0 Devnet SOL airdrop" className="px-2 py-1.5 rounded bg-emerald-950/50 hover:bg-emerald-900/60 border border-emerald-500/40 text-emerald-300 text-xs font-mono flex items-center gap-1.5 disabled:opacity-50"><Coins className={`w-3.5 h-3.5 ${requestingAirdrop ? 'animate-spin' : ''}`} /><span>+2.0 SOL</span></button><div onClick={onOpenWalletModal} className="px-3 py-1 rounded bg-slate-900/80 border border-cyan-500/40 text-xs font-mono text-cyan-300 flex items-center gap-2 cursor-pointer hover:border-cyan-300"><div className="text-right"><div className="text-[10px] text-slate-400">{wallet.solBalance.toFixed(3)} SOL {wallet.jarsolBalance > 0 ? `| ${wallet.jarsolBalance.toLocaleString()} $JARSOL` : ''}</div><div className="font-bold">{wallet.address?.substring(0, 4)}...{wallet.address?.substring(wallet.address.length - 4)}</div></div><div className="w-2 h-2 rounded-full bg-cyan-400" /></div></div> : <button onClick={() => { playCyberClick(); onOpenWalletModal(); }} className="px-3.5 py-1.5 rounded bg-gradient-to-r from-emerald-500 via-teal-400 to-cyan-500 text-slate-950 font-bold text-xs font-mono flex items-center gap-1.5 shrink-0"><Wallet className="w-3.5 h-3.5" /><span>Connect Wallet</span></button>}
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-3">
-        <nav className="flex items-center gap-1 py-1 jarvis-tabs-scroll" aria-label="Jarvis navigation tabs">
-          {navItems.map((item) => {
-            const active = activeTab === item.id;
-            return (
-              <button key={item.id} onClick={() => { playCyberClick(); setActiveTab(item.id); }} className={`px-2.5 py-1.5 rounded-md text-xs font-mono transition-all flex items-center gap-1.5 whitespace-nowrap border ${active ? 'bg-emerald-500/20 text-emerald-300 border-emerald-400/80 shadow-[0_0_12px_rgba(0,255,120,0.3)] font-semibold' : 'bg-slate-900/50 text-slate-400 border-slate-800 hover:border-slate-700 hover:text-slate-200'}`}>
-                <span>{item.label}</span>
-                <span className={`text-[9px] px-1 rounded ${active ? 'bg-emerald-950 text-emerald-300 border border-emerald-500/40' : 'bg-slate-800 text-slate-500'}`}>{item.badge}</span>
-              </button>
-            );
-          })}
-        </nav>
-      </div>
+      <div className="max-w-7xl mx-auto px-3"><nav className="flex items-center gap-1 py-1 jarvis-tabs-scroll" aria-label="Jarvis navigation tabs">{navItems.map((item) => { const active = activeTab === item.id; return <button key={item.id} onClick={() => { playCyberClick(); setActiveTab(item.id); }} className={`px-2.5 py-1.5 rounded-md text-xs font-mono transition-all flex items-center gap-1.5 whitespace-nowrap border ${active ? 'bg-emerald-500/20 text-emerald-300 border-emerald-400/80 shadow-[0_0_12px_rgba(0,255,120,0.3)] font-semibold' : 'bg-slate-900/50 text-slate-400 border-slate-800 hover:border-slate-700 hover:text-slate-200'}`}><span>{item.label}</span><span className={`text-[9px] px-1 rounded ${active ? 'bg-emerald-950 text-emerald-300 border border-emerald-500/40' : 'bg-slate-800 text-slate-500'}`}>{item.badge}</span></button>; })}</nav></div>
     </header>
   );
 };
