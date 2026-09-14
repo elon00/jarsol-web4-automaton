@@ -64,21 +64,81 @@ export const CyberHeader: React.FC<CyberHeaderProps> = ({ wallet, onOpenWalletMo
         </div>
       </div>
 
-      {/* Identity row: brand stays left; operational controls are deliberately anchored right. */}
-      <div className="max-w-7xl mx-auto px-3 py-2 grid grid-cols-1 lg:grid-cols-2 gap-3 items-center">
-        <div onClick={() => { playCyberClick(); setActiveTab('metaverse'); }} className="flex items-center gap-2.5 cursor-pointer group min-w-0 lg:max-w-[50%]">
-          <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-emerald-500/20 via-cyan-500/20 to-purple-500/20 border border-emerald-400/60 flex items-center justify-center text-emerald-300 font-black text-lg shrink-0 group-hover:border-emerald-300 transition-all shadow-[0_0_15px_rgba(0,255,120,0.3)]">🎮</div>
-          <div className="min-w-0"><div className="flex items-center gap-1.5"><span className="font-black tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-emerald-300 via-cyan-300 to-purple-300 text-base truncate">Jarvis Metaverse</span><span className="text-[10px] text-emerald-400 px-1 py-0.2 rounded border border-emerald-500/40 bg-emerald-950/40 font-mono shrink-0">24/7 World</span></div><p className="text-[10px] text-slate-400 font-mono leading-none truncate">Real World ↔ Virtual Game & Video Matrix</p></div>
+      {/* Row 2: Identity (Left 45%) & Operations / Wallet (Right 55%) */}
+      <div className="max-w-7xl mx-auto px-3 py-2 flex flex-col md:flex-row items-center justify-between gap-3">
+        {/* Left: Brand Identity */}
+        <div onClick={() => { playCyberClick(); setActiveTab('metaverse'); }} className="flex items-center gap-3 cursor-pointer group min-w-0">
+          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-500/20 via-cyan-500/20 to-purple-500/20 border border-emerald-400/60 flex items-center justify-center text-emerald-300 font-black text-xl shrink-0 group-hover:border-emerald-300 group-hover:scale-105 transition-all shadow-[0_0_15px_rgba(0,255,120,0.3)]">🎮</div>
+          <div className="min-w-0">
+            <div className="flex items-center gap-2">
+              <span className="font-black tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-emerald-300 via-cyan-300 to-purple-300 text-lg truncate">Jarvis Metaverse</span>
+              <span className="text-[10px] text-emerald-400 px-1.5 py-0.5 rounded border border-emerald-500/40 bg-emerald-950/40 font-mono shrink-0">24/7 World</span>
+            </div>
+            <p className="text-[11px] text-slate-400 font-mono leading-none truncate">Real World ↔ Virtual Game & Video Matrix</p>
+          </div>
         </div>
 
-        <div className="flex items-center justify-start lg:justify-end gap-2 min-w-0 overflow-x-auto">
-          <div className="flex items-center gap-2 px-2.5 py-1.5 rounded-md bg-slate-950/80 border border-cyan-900/70 font-mono text-[9px] leading-tight shrink-0"><Activity className="w-3.5 h-3.5 text-emerald-400" /><div><div className="text-cyan-400 font-bold tracking-wider">SYSTEM STATUS</div><div className="text-slate-400"><span className="text-emerald-400">ONLINE</span> · PQC READY · {wallet.network.toUpperCase()}</div></div></div>
-          <button onClick={openCommandCenter} className="flex items-center gap-2 px-3 py-1.5 rounded-md bg-cyan-950/60 hover:bg-cyan-900/80 border border-cyan-500/50 text-cyan-300 font-mono text-[10px] font-bold tracking-wider shrink-0" title="Open Gemini Brain Command Center"><Command className="w-3.5 h-3.5" /><span>COMMAND CENTER</span><Terminal className="w-3 h-3 text-purple-400" /></button>
-          {wallet.connected ? <div className="flex items-center gap-2 shrink-0"><button onClick={handleAirdrop} disabled={requestingAirdrop} title="Request 2.0 Devnet SOL airdrop" className="px-2 py-1.5 rounded bg-emerald-950/50 hover:bg-emerald-900/60 border border-emerald-500/40 text-emerald-300 text-xs font-mono flex items-center gap-1.5 disabled:opacity-50"><Coins className={`w-3.5 h-3.5 ${requestingAirdrop ? 'animate-spin' : ''}`} /><span>+2.0 SOL</span></button><div onClick={onOpenWalletModal} className="px-3 py-1 rounded bg-slate-900/80 border border-cyan-500/40 text-xs font-mono text-cyan-300 flex items-center gap-2 cursor-pointer hover:border-cyan-300"><div className="text-right"><div className="text-[10px] text-slate-400">{wallet.solBalance.toFixed(3)} SOL {wallet.jarsolBalance > 0 ? `| ${wallet.jarsolBalance.toLocaleString()} $JARSOL` : ''}</div><div className="font-bold">{wallet.address?.substring(0, 4)}...{wallet.address?.substring(wallet.address.length - 4)}</div></div><div className="w-2 h-2 rounded-full bg-cyan-400" /></div></div> : <button onClick={() => { playCyberClick(); onOpenWalletModal(); }} className="px-3.5 py-1.5 rounded bg-gradient-to-r from-emerald-500 via-teal-400 to-cyan-500 text-slate-950 font-bold text-xs font-mono flex items-center gap-1.5 shrink-0"><Wallet className="w-3.5 h-3.5" /><span>Connect Wallet</span></button>}
+        {/* Right: Operations & Wallet Controls */}
+        <div className="flex items-center justify-end gap-2.5 min-w-0 overflow-x-auto w-full md:w-auto">
+          <div className="flex items-center gap-2 px-2.5 py-1.5 rounded-md bg-slate-950/80 border border-cyan-900/70 font-mono text-[9px] leading-tight shrink-0">
+            <Activity className="w-3.5 h-3.5 text-emerald-400 animate-pulse" />
+            <div>
+              <div className="text-cyan-400 font-bold tracking-wider">SYSTEM STATUS</div>
+              <div className="text-slate-400"><span className="text-emerald-400 font-semibold">ONLINE</span> · PQC READY · {wallet.network.toUpperCase()}</div>
+            </div>
+          </div>
+          <button onClick={openCommandCenter} className="flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-cyan-950/70 hover:bg-cyan-900/90 border border-cyan-500/50 text-cyan-300 font-mono text-[10px] font-bold tracking-wider shrink-0 transition-all hover:shadow-[0_0_10px_rgba(0,240,255,0.3)]" title="Open Gemini Brain Command Center">
+            <Command className="w-3.5 h-3.5 text-cyan-400" />
+            <span>COMMAND CENTER</span>
+            <Terminal className="w-3 h-3 text-purple-400" />
+          </button>
+          {wallet.connected ? (
+            <div className="flex items-center gap-2 shrink-0">
+              <button onClick={handleAirdrop} disabled={requestingAirdrop} title="Request 2.0 Devnet SOL airdrop" className="px-2.5 py-1.5 rounded bg-emerald-950/50 hover:bg-emerald-900/60 border border-emerald-500/40 text-emerald-300 text-xs font-mono flex items-center gap-1.5 disabled:opacity-50 transition-all">
+                <Coins className={`w-3.5 h-3.5 ${requestingAirdrop ? 'animate-spin' : ''}`} />
+                <span>+2.0 SOL</span>
+              </button>
+              <div onClick={onOpenWalletModal} className="px-3 py-1 rounded-md bg-slate-900/80 border border-cyan-500/40 text-xs font-mono text-cyan-300 flex items-center gap-2 cursor-pointer hover:border-cyan-300 transition-all">
+                <div className="text-right">
+                  <div className="text-[10px] text-slate-400">{wallet.solBalance.toFixed(3)} SOL {wallet.jarsolBalance > 0 ? `| ${wallet.jarsolBalance.toLocaleString()} $JARSOL` : ''}</div>
+                  <div className="font-bold">{wallet.address?.substring(0, 4)}...{wallet.address?.substring(wallet.address.length - 4)}</div>
+                </div>
+                <div className="w-2.5 h-2.5 rounded-full bg-emerald-400 shadow-[0_0_8px_rgba(0,255,120,0.8)]" />
+              </div>
+            </div>
+          ) : (
+            <button onClick={() => { playCyberClick(); onOpenWalletModal(); }} className="px-4 py-1.5 rounded-md bg-gradient-to-r from-emerald-500 via-teal-400 to-cyan-500 text-slate-950 font-bold text-xs font-mono flex items-center gap-1.5 shrink-0 shadow-[0_0_12px_rgba(0,255,180,0.3)] hover:brightness-110 transition-all">
+              <Wallet className="w-3.5 h-3.5" />
+              <span>Connect Wallet</span>
+            </button>
+          )}
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-3"><nav className="flex items-center gap-1 py-1 jarvis-tabs-scroll" aria-label="Jarvis navigation tabs">{navItems.map((item) => { const active = activeTab === item.id; return <button key={item.id} onClick={() => { playCyberClick(); setActiveTab(item.id); }} className={`px-2.5 py-1.5 rounded-md text-xs font-mono transition-all flex items-center gap-1.5 whitespace-nowrap border ${active ? 'bg-emerald-500/20 text-emerald-300 border-emerald-400/80 shadow-[0_0_12px_rgba(0,255,120,0.3)] font-semibold' : 'bg-slate-900/50 text-slate-400 border-slate-800 hover:border-slate-700 hover:text-slate-200'}`}><span>{item.label}</span><span className={`text-[9px] px-1 rounded ${active ? 'bg-emerald-950 text-emerald-300 border border-emerald-500/40' : 'bg-slate-800 text-slate-500'}`}>{item.badge}</span></button>; })}</nav></div>
+      {/* Row 3: Navigation Tabs Rail */}
+      <div className="max-w-7xl mx-auto px-3 border-t border-cyan-950/30">
+        <nav className="flex items-center gap-1.5 py-1.5 jarvis-tabs-scroll" aria-label="Jarvis navigation tabs">
+          {navItems.map((item) => {
+            const active = activeTab === item.id;
+            return (
+              <button
+                key={item.id}
+                onClick={() => { playCyberClick(); setActiveTab(item.id); }}
+                className={`px-3 py-1.5 rounded-md text-xs font-mono transition-all flex items-center gap-1.5 whitespace-nowrap border ${
+                  active
+                    ? 'bg-emerald-500/20 text-emerald-300 border-emerald-400/80 shadow-[0_0_12px_rgba(0,255,120,0.3)] font-semibold'
+                    : 'bg-slate-900/50 text-slate-400 border-slate-800 hover:border-slate-700 hover:text-slate-200'
+                }`}
+              >
+                <span>{item.label}</span>
+                <span className={`text-[9px] px-1.5 py-0.5 rounded ${active ? 'bg-emerald-950 text-emerald-300 border border-emerald-500/40' : 'bg-slate-800 text-slate-500'}`}>
+                  {item.badge}
+                </span>
+              </button>
+            );
+          })}
+        </nav>
+      </div>
     </header>
   );
 };
