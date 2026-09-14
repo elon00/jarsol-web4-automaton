@@ -39,6 +39,47 @@
   scrollbar-width: none;
 }
 
+/* Horizontal Jarvis tab navigator */
+.jarvis-tabs-scroll {
+  overflow-x: auto;
+  overflow-y: hidden;
+  flex-wrap: nowrap;
+  max-width: 100%;
+  min-width: 0;
+  scrollbar-width: thin;
+  scrollbar-color: #0d6878 #04080a;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-x: contain;
+  scroll-behavior: smooth;
+  padding-bottom: 5px;
+}
+
+.jarvis-tabs-scroll::-webkit-scrollbar {
+  display: block;
+  height: 7px;
+}
+
+.jarvis-tabs-scroll::-webkit-scrollbar-track {
+  background: rgba(4, 8, 10, 0.9);
+  border-radius: 999px;
+}
+
+.jarvis-tabs-scroll::-webkit-scrollbar-thumb {
+  background: linear-gradient(90deg, #0d6878, #00f0ff);
+  border: 1px solid rgba(0, 240, 255, 0.45);
+  border-radius: 999px;
+  min-width: 42px;
+}
+
+.jarvis-tabs-scroll::-webkit-scrollbar-thumb:hover {
+  background: #00f0ff;
+  box-shadow: 0 0 12px rgba(0, 240, 255, 0.65);
+}
+
+.jarvis-tabs-scroll > button {
+  flex: 0 0 auto;
+}
+
 /* Cyber Glow Utilities */
 .glow-cyan {
   box-shadow: 0 0 15px rgba(0, 240, 255, 0.35);
