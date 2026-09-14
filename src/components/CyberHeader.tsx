@@ -6,7 +6,6 @@ import {
   Zap,
   Globe,
   Terminal,
-  Radio,
   Layers,
   Activity,
   Command,
@@ -87,28 +86,27 @@ export const CyberHeader: React.FC<CyberHeaderProps> = ({
 
   return (
     <header className="border-b border-cyan-900/60 bg-[#040a0e]/95 backdrop-blur-md sticky top-0 z-50 shadow-lg shadow-cyan-950/20">
-      {/* Top Banner */}
-      <div className="max-w-7xl mx-auto px-3 py-2 flex flex-wrap items-center justify-between gap-3 text-xs border-b border-cyan-950/40">
-        <div className="flex items-center gap-2">
-          <div className="flex items-center gap-1.5 px-2 py-0.5 rounded bg-emerald-950/60 border border-emerald-500/40 text-emerald-300 font-bold">
+      {/* Top Telemetry — balanced 50/50 so neither side dominates */}
+      <div className="max-w-7xl mx-auto px-3 py-2 flex flex-col lg:flex-row items-stretch lg:items-center gap-2 lg:gap-4 text-xs border-b border-cyan-950/40">
+        <div className="flex items-center gap-2 min-w-0 lg:w-1/2 lg:max-w-[50%] overflow-hidden">
+          <div className="flex items-center gap-1.5 px-2 py-0.5 rounded bg-emerald-950/60 border border-emerald-500/40 text-emerald-300 font-bold shrink-0">
             <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
-            <span>24/7 METAVERSE DUAL-WORLD ACTIVE</span>
+            <span>24/7 METAVERSE ACTIVE</span>
           </div>
-          <span className="text-slate-400 hidden sm:inline">| Real-Time Speech & 60FPS Video Streaming</span>
-          <span className="text-emerald-400 px-1.5 py-0.5 rounded bg-emerald-950/40 border border-emerald-500/20 font-mono text-[10px]">
-            1,000,000,000 $JARSOL (100% Fixed Supply)
+          <span className="text-slate-400 hidden xl:inline truncate">Real-Time Speech & 60FPS</span>
+          <span className="text-emerald-400 px-1.5 py-0.5 rounded bg-emerald-950/40 border border-emerald-500/20 font-mono text-[10px] truncate">
+            1B $JARSOL · FIXED
           </span>
         </div>
 
-        {/* Live Telemetry & Reality Inspector Trigger */}
-        <div className="flex items-center gap-3">
+        <div className="flex items-center justify-start lg:justify-end gap-2 min-w-0 lg:w-1/2 lg:max-w-[50%] overflow-x-auto">
           <button
             onClick={() => {
               playCyberClick();
               if (onOpenRealityInspector) onOpenRealityInspector();
               else setActiveTab('reality');
             }}
-            className="flex items-center gap-1.5 px-2.5 py-0.5 rounded bg-cyan-950/80 hover:bg-cyan-900/90 border border-cyan-500/40 text-cyan-300 font-bold transition-all shadow-[0_0_10px_rgba(0,240,255,0.2)] cursor-pointer"
+            className="flex items-center gap-1.5 px-2.5 py-0.5 rounded bg-cyan-950/80 hover:bg-cyan-900/90 border border-cyan-500/40 text-cyan-300 font-bold transition-all shadow-[0_0_10px_rgba(0,240,255,0.2)] cursor-pointer shrink-0"
             title="Open Zero-Trust Reality Inspector"
           >
             <Layers className="w-3.5 h-3.5 text-cyan-400" />
@@ -122,7 +120,7 @@ export const CyberHeader: React.FC<CyberHeaderProps> = ({
             <span className="text-blue-400 font-mono text-[10px]">4 Road</span>
           </button>
 
-          <div className="flex items-center gap-1.5 text-slate-300">
+          <div className="flex items-center gap-1.5 text-slate-300 shrink-0">
             <Zap className="w-3.5 h-3.5 text-amber-400" />
             <span>METABOLISM:</span>
             <span className={`font-bold ${metabolismScore > 50 ? 'text-emerald-400' : 'text-amber-400'}`}>
@@ -130,13 +128,13 @@ export const CyberHeader: React.FC<CyberHeaderProps> = ({
             </span>
           </div>
 
-          <div className="flex items-center gap-1.5 text-slate-300">
+          <div className="flex items-center gap-1.5 text-slate-300 shrink-0">
             <ShieldCheck className="w-3.5 h-3.5 text-cyan-400" />
             <span className="hidden md:inline">PQC:</span>
-            <span className="text-cyan-400 font-bold">NIST FIPS 204</span>
+            <span className="text-cyan-400 font-bold">FIPS 204</span>
           </div>
 
-          <div className="flex items-center gap-1 bg-slate-900 border border-slate-700/60 rounded px-2 py-0.5 text-[11px]">
+          <div className="flex items-center gap-1 bg-slate-900 border border-slate-700/60 rounded px-2 py-0.5 text-[11px] shrink-0">
             <Globe className="w-3 h-3 text-cyan-400" />
             <select
               value={wallet.network}
@@ -155,13 +153,8 @@ export const CyberHeader: React.FC<CyberHeaderProps> = ({
 
       {/* Main Identity / System / Actions Row */}
       <div className="max-w-7xl mx-auto px-3 py-2 flex flex-wrap items-center gap-3">
-        <div
-          onClick={() => { playCyberClick(); setActiveTab('metaverse'); }}
-          className="flex items-center gap-2.5 cursor-pointer group shrink-0"
-        >
-          <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-emerald-500/20 via-cyan-500/20 to-purple-500/20 border border-emerald-400/60 flex items-center justify-center text-emerald-300 font-black text-lg group-hover:border-emerald-300 transition-all shadow-[0_0_15px_rgba(0,255,120,0.3)]">
-            🎮
-          </div>
+        <div onClick={() => { playCyberClick(); setActiveTab('metaverse'); }} className="flex items-center gap-2.5 cursor-pointer group shrink-0">
+          <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-emerald-500/20 via-cyan-500/20 to-purple-500/20 border border-emerald-400/60 flex items-center justify-center text-emerald-300 font-black text-lg group-hover:border-emerald-300 transition-all shadow-[0_0_15px_rgba(0,255,120,0.3)]">🎮</div>
           <div>
             <div className="flex items-center gap-1.5">
               <span className="font-black tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-emerald-300 via-cyan-300 to-purple-300 text-base">Jarvis Metaverse</span>
@@ -171,19 +164,15 @@ export const CyberHeader: React.FC<CyberHeaderProps> = ({
           </div>
         </div>
 
-        {/* Right-side System Status block */}
         <div className="ml-auto flex items-center gap-2">
           <div className="hidden lg:flex items-center gap-2 px-2.5 py-1.5 rounded-md bg-slate-950/80 border border-cyan-900/70 font-mono text-[9px] leading-tight">
             <Activity className="w-3.5 h-3.5 text-emerald-400" />
             <div>
               <div className="text-cyan-400 font-bold tracking-wider">SYSTEM STATUS</div>
-              <div className="text-slate-400">
-                <span className="text-emerald-400">ONLINE</span> · PQC READY · {wallet.network.toUpperCase()}
-              </div>
+              <div className="text-slate-400"><span className="text-emerald-400">ONLINE</span> · PQC READY · {wallet.network.toUpperCase()}</div>
             </div>
           </div>
 
-          {/* Right-side Command Center block */}
           <button
             onClick={openCommandCenter}
             className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-md bg-cyan-950/60 hover:bg-cyan-900/80 border border-cyan-500/50 text-cyan-300 font-mono text-[10px] font-bold tracking-wider transition-all shadow-[0_0_12px_rgba(0,240,255,0.15)]"
@@ -194,36 +183,22 @@ export const CyberHeader: React.FC<CyberHeaderProps> = ({
             <Terminal className="w-3 h-3 text-purple-400" />
           </button>
 
-          {/* Wallet & Airdrop Actions */}
           {wallet.connected ? (
             <div className="flex items-center gap-2">
-              <button
-                onClick={handleAirdrop}
-                disabled={requestingAirdrop}
-                title="Request 2.0 Devnet SOL airdrop"
-                className="px-2 py-1.5 rounded bg-emerald-950/50 hover:bg-emerald-900/60 border border-emerald-500/40 text-emerald-300 text-xs font-mono flex items-center gap-1.5 transition-all disabled:opacity-50"
-              >
+              <button onClick={handleAirdrop} disabled={requestingAirdrop} title="Request 2.0 Devnet SOL airdrop" className="px-2 py-1.5 rounded bg-emerald-950/50 hover:bg-emerald-900/60 border border-emerald-500/40 text-emerald-300 text-xs font-mono flex items-center gap-1.5 transition-all disabled:opacity-50">
                 <Coins className={`w-3.5 h-3.5 ${requestingAirdrop ? 'animate-spin' : ''}`} />
                 <span>+2.0 SOL</span>
               </button>
-              <div
-                onClick={onOpenWalletModal}
-                className="px-3 py-1 rounded bg-slate-900/80 border border-cyan-500/40 text-xs font-mono text-cyan-300 flex items-center gap-2 cursor-pointer hover:border-cyan-300 transition-all"
-              >
+              <div onClick={onOpenWalletModal} className="px-3 py-1 rounded bg-slate-900/80 border border-cyan-500/40 text-xs font-mono text-cyan-300 flex items-center gap-2 cursor-pointer hover:border-cyan-300 transition-all">
                 <div className="text-right">
-                  <div className="text-[10px] text-slate-400">
-                    {wallet.solBalance.toFixed(3)} SOL {wallet.jarsolBalance > 0 ? `| ${wallet.jarsolBalance.toLocaleString()} $JARSOL` : ''}
-                  </div>
+                  <div className="text-[10px] text-slate-400">{wallet.solBalance.toFixed(3)} SOL {wallet.jarsolBalance > 0 ? `| ${wallet.jarsolBalance.toLocaleString()} $JARSOL` : ''}</div>
                   <div className="font-bold">{wallet.address?.substring(0, 4)}...{wallet.address?.substring(wallet.address.length - 4)}</div>
                 </div>
                 <div className="w-2 h-2 rounded-full bg-cyan-400" />
               </div>
             </div>
           ) : (
-            <button
-              onClick={() => { playCyberClick(); onOpenWalletModal(); }}
-              className="px-3.5 py-1.5 rounded bg-gradient-to-r from-emerald-500 via-teal-400 to-cyan-500 text-slate-950 font-bold text-xs font-mono flex items-center gap-1.5 shadow-[0_0_12px_rgba(0,255,120,0.4)] transition-all"
-            >
+            <button onClick={() => { playCyberClick(); onOpenWalletModal(); }} className="px-3.5 py-1.5 rounded bg-gradient-to-r from-emerald-500 via-teal-400 to-cyan-500 text-slate-950 font-bold text-xs font-mono flex items-center gap-1.5 shadow-[0_0_12px_rgba(0,255,120,0.4)] transition-all">
               <Wallet className="w-3.5 h-3.5" />
               <span>Connect Wallet</span>
             </button>
@@ -231,17 +206,12 @@ export const CyberHeader: React.FC<CyberHeaderProps> = ({
         </div>
       </div>
 
-      {/* Navigation Tabs — full-width, horizontally scrollable with visible scrollbar */}
       <div className="max-w-7xl mx-auto px-3">
         <nav className="flex items-center gap-1 py-1 jarvis-tabs-scroll" aria-label="Jarvis navigation tabs">
           {navItems.map((item) => {
             const active = activeTab === item.id;
             return (
-              <button
-                key={item.id}
-                onClick={() => { playCyberClick(); setActiveTab(item.id); }}
-                className={`px-2.5 py-1.5 rounded-md text-xs font-mono transition-all flex items-center gap-1.5 whitespace-nowrap border ${active ? 'bg-emerald-500/20 text-emerald-300 border-emerald-400/80 shadow-[0_0_12px_rgba(0,255,120,0.3)] font-semibold' : 'bg-slate-900/50 text-slate-400 border-slate-800 hover:border-slate-700 hover:text-slate-200'}`}
-              >
+              <button key={item.id} onClick={() => { playCyberClick(); setActiveTab(item.id); }} className={`px-2.5 py-1.5 rounded-md text-xs font-mono transition-all flex items-center gap-1.5 whitespace-nowrap border ${active ? 'bg-emerald-500/20 text-emerald-300 border-emerald-400/80 shadow-[0_0_12px_rgba(0,255,120,0.3)] font-semibold' : 'bg-slate-900/50 text-slate-400 border-slate-800 hover:border-slate-700 hover:text-slate-200'}`}>
                 <span>{item.label}</span>
                 <span className={`text-[9px] px-1 rounded ${active ? 'bg-emerald-950 text-emerald-300 border border-emerald-500/40' : 'bg-slate-800 text-slate-500'}`}>{item.badge}</span>
               </button>
