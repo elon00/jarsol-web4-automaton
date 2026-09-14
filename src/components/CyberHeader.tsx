@@ -177,8 +177,11 @@ export const CyberHeader: React.FC<CyberHeaderProps> = ({
           </div>
         </div>
 
-        {/* Navigation Tabs */}
-        <nav className="flex items-center gap-1 overflow-x-auto py-1 max-w-full no-scrollbar">
+        {/* Navigation Tabs — horizontally scrollable with a visible scrollbar */}
+        <nav
+          className="flex items-center gap-1 py-1 jarvis-tabs-scroll"
+          aria-label="Jarvis navigation tabs"
+        >
           {navItems.map((item) => {
             const active = activeTab === item.id;
             return (
