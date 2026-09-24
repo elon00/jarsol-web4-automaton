@@ -1,0 +1,50 @@
+{
+  "x402Version": "1.0.0",
+  "version": "1.0.0",
+  "name": "JarSol — Web 4.0 Autonomous AI Agent OS & SPL Launchpad",
+  "type": "ai-launchpad-os",
+  "category": "ai-agent-commerce",
+  "tags": [
+    "solana",
+    "launchpad",
+    "spl-token",
+    "post-quantum",
+    "gemini-ai",
+    "autonomous-agent",
+    "x402",
+    "double-audit"
+  ],
+  "provider": {
+    "name": "JarSol / Martin",
+    "website": "https://github.com/elon00/jarsol-web4-automaton",
+    "payTo": "8qhW8ctXX77UNLTY9kx3XoAoH8kstQXPbCghUwqu34es",
+    "network": "solana-devnet",
+    "caip2": "solana:EtWTRABZaYq6iMfeYKouRu166VU2xqa1"
+  },
+  "endpoints": [
+    {
+      "path": "/api/v1/x402/launchpad/quote",
+      "method": "POST",
+      "description": "Generate autonomous SPL token launchpad deployment parameters and quantum-safe tokenomics schema for AI agents",
+      "pricing": {
+        "amountSol": 0.001,
+        "lamports": 1000000,
+        "currency": "SOL",
+        "alternativeUsdc": "0.01"
+      },
+      "challengeHeader": "WWW-Authenticate: x402 realm=\"jarsol\", payTo=\"8qhW8ctXX77UNLTY9kx3XoAoH8kstQXPbCghUwqu34es\", amount=\"0.001\", currency=\"SOL\", network=\"solana:EtWTRABZaYq6iMfeYKouRu166VU2xqa1\""
+    },
+    {
+      "path": "/api/v1/x402/agent/audit",
+      "method": "POST",
+      "description": "Perform Gemini AI Neural Core double-audit on smart contract code or token metadata with verifiable cryptographic report",
+      "pricing": {
+        "amountSol": 0.002,
+        "lamports": 2000000,
+        "currency": "SOL",
+        "alternativeUsdc": "0.02"
+      },
+      "challengeHeader": "WWW-Authenticate: x402 realm=\"jarsol\", payTo=\"8qhW8ctXX77UNLTY9kx3XoAoH8kstQXPbCghUwqu34es\", amount=\"0.002\", currency=\"SOL\", network=\"solana:EtWTRABZaYq6iMfeYKouRu166VU2xqa1\""
+    }
+  ]
+}
