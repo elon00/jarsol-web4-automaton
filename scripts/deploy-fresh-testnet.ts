@@ -131,19 +131,11 @@ async function deployFreshTestnet() {
   }
   console.log('✅ Postcondition verification: Supply matches 100% of mathematical target.');
 
-  // 8. Step 6: Revoke Mint Authority (100% Fixed Supply)
-  console.log('\n🔒 [STEP 6] Revoking Mint Authority (Mathematically Immutable Supply)...');
-  const revokeMintTxSig = await setAuthority(
-    connection,
-    payer,
-    mint,
-    payer,
-    AuthorityType.MintTokens,
-    null
-  );
-  console.log(`✅ [CONFIRMED] Mint Authority Revoked Tx: ${revokeMintTxSig}`);
+  // 8. Step 6: Elastic Supply Mode (Retaining Mint Authority under deployer for ongoing agentic utility)
+  console.log('\n🪙 [STEP 6] Configuring Elastic Supply Mode (Retaining Mint Authority for ongoing Agentic Utility)...');
+  const mintAuthPubkey = payer.publicKey.toBase58();
 
-  // 9. Step 7: Revoke Freeze Authority (Option A - 100% Trustless)
+  // 9. Step 7: Revoke Freeze Authority (Option A - 100% Trustless Censorship Resistance)
   console.log('\n❄️ [STEP 7] Revoking Freeze Authority (Option A - 100% Trustless Censorship Resistance)...');
   const revokeFreezeTxSig = await setAuthority(
     connection,
@@ -159,14 +151,13 @@ async function deployFreshTestnet() {
   console.log('\n🔍 [STEP 8] Performing Final RPC State Audit...');
   const finalMintInfo = await connection.getParsedAccountInfo(mint, 'confirmed');
   const parsedFinal = (finalMintInfo.value?.data as any)?.parsed?.info;
-  const isMintAuthNull = parsedFinal.mintAuthority === null;
   const isFreezeAuthNull = parsedFinal.freezeAuthority === null;
 
-  console.log(`✅ Final Mint Authority:   ${isMintAuthNull ? 'REVOKED (null) [VERIFIED]' : parsedFinal.mintAuthority}`);
+  console.log(`✅ Final Mint Authority:   ${parsedFinal.mintAuthority} [ACTIVE - ELASTIC SUPPLY]`);
   console.log(`✅ Final Freeze Authority: ${isFreezeAuthNull ? 'REVOKED (null) [100% TRUSTLESS]' : parsedFinal.freezeAuthority}`);
 
-  if (!isMintAuthNull || !isFreezeAuthNull) {
-    throw new Error('Authority revocation postcondition verification failed!');
+  if (!isFreezeAuthNull) {
+    throw new Error('Freeze authority revocation postcondition verification failed!');
   }
 
   // 11. Step 9: Save to Canonical Registries
@@ -181,22 +172,23 @@ async function deployFreshTestnet() {
       tokenAccountAddress: tokenAccount.address.toBase58(),
       deployerAddress: payer.publicKey.toBase58(),
       decimals: DECIMALS,
-      totalSupplyFormatted: '1,000,000,000 $JARSOL',
+      initialMintFormatted: '1,000,000,000 $JARSOL',
       rawSupply: RAW_SUPPLY.toString(),
-      supplyModel: 'Safe u64 (1 Billion @ 9 Decimals)',
+      supplyPolicy: 'UNCAPPED_ELASTIC',
+      supplyModel: 'Uncapped Application-Level Minting (Authority Controlled)',
       metadataPDA: metadataPDA.toBase58(),
       metadataUri: METADATA_URI,
     },
     deployment: {
       confirmedOnChain: true,
-      mintAuthorityRevoked: true,
+      mintAuthorityRevoked: false,
       freezeAuthorityRevoked: true,
-      mintAuthority: null,
+      mintAuthority: mintAuthPubkey,
       freezeAuthority: null,
       metadataAttachedOnChain: true,
       metadataTxSignature: metadataTxSig,
       mintTxSignature: mintTxSig,
-      revokeMintTxSignature: revokeMintTxSig,
+      revokeMintTxSignature: null,
       revokeFreezeTxSignature: revokeFreezeTxSig,
       deployedAt: new Date().toISOString(),
       explorerMintUrl: `https://explorer.solana.com/address/${mintAddress}?cluster=testnet`,

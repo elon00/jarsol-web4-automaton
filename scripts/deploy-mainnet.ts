@@ -115,16 +115,17 @@ async function deployMainnet() {
     throw new Error(`On-chain supply mismatch! Expected ${RAW_SUPPLY}, found ${supplyInfo.value.amount}`);
   }
 
-  console.log('\n🔒 [STEP 5] Revoking mint authority...');
-  const revokeMintTxSig = await setAuthority(connection, payer, mint, payer, AuthorityType.MintTokens, null);
+  console.log('\n🪙 [STEP 5] Configuring Elastic Supply Mode (Retaining Mint Authority for ongoing Agentic Utility)...');
+  // Mint Authority is intentionally retained by deployer/payer to allow continuous uncapped elastic issuance
+  const mintAuthorityRetained = true;
 
-  console.log('❄️ [STEP 6] Revoking freeze authority...');
+  console.log('❄️ [STEP 6] Revoking freeze authority (Censorship Resistance)...');
   const revokeFreezeTxSig = await setAuthority(connection, payer, mint, payer, AuthorityType.FreezeAccount, null);
 
   const finalMintInfo = await connection.getParsedAccountInfo(mint, 'confirmed');
   const parsedFinal = (finalMintInfo.value?.data as any)?.parsed?.info;
-  if (parsedFinal?.mintAuthority !== null || parsedFinal?.freezeAuthority !== null) {
-    throw new Error('Authority revocation postcondition verification failed.');
+  if (parsedFinal?.freezeAuthority !== null) {
+    throw new Error('Freeze authority revocation postcondition verification failed.');
   }
 
   const mainnetRecord = {
@@ -138,22 +139,23 @@ async function deployMainnet() {
       tokenAccountAddress: tokenAccount.address.toBase58(),
       deployerAddress: payer.publicKey.toBase58(),
       decimals: DECIMALS,
-      totalSupplyFormatted: '1,000,000,000 $JARSOL',
+      initialMintFormatted: '1,000,000,000 $JARSOL',
       rawSupply: RAW_SUPPLY.toString(),
-      supplyModel: 'Safe u64 (1 Billion @ 9 Decimals)',
+      supplyPolicy: 'UNCAPPED_ELASTIC',
+      supplyModel: 'Uncapped Application-Level Minting (Authority Controlled)',
       metadataPDA: metadataPDA.toBase58(),
       metadataUri: METADATA_URI,
     },
     deployment: {
       confirmedOnChain: true,
-      mintAuthorityRevoked: true,
+      mintAuthorityRevoked: false,
       freezeAuthorityRevoked: true,
-      mintAuthority: null,
+      mintAuthority: payer.publicKey.toBase58(),
       freezeAuthority: null,
       metadataAttachedOnChain: true,
       metadataTxSignature: metadataTxSig,
       mintTxSignature: mintTxSig,
-      revokeMintTxSignature: revokeMintTxSig,
+      revokeMintTxSignature: null,
       revokeFreezeTxSignature: revokeFreezeTxSig,
       deployedAt: new Date().toISOString(),
       explorerMintUrl: `https://explorer.solana.com/address/${mintAddress}`,
