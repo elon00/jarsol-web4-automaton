@@ -17,7 +17,7 @@
   "provider": {
     "name": "JarSol / Martin",
     "website": "https://github.com/elon00/jarsol-web4-automaton",
-    "payTo": "8qhW8ctXX77UNLTY9kx3XoAoH8kstQXPbCghUwqu34es",
+    "payTo": "BPshPrMazV7qunhcq18AvCHjSceHbKytiRDNrtCv68g3",
     "network": "solana-devnet",
     "caip2": "solana:EtWTRABZaYq6iMfeYKouRu166VU2xqa1"
   },
@@ -32,7 +32,7 @@
         "currency": "SOL",
         "alternativeUsdc": "0.01"
       },
-      "challengeHeader": "WWW-Authenticate: x402 realm=\"jarsol\", payTo=\"8qhW8ctXX77UNLTY9kx3XoAoH8kstQXPbCghUwqu34es\", amount=\"0.001\", currency=\"SOL\", network=\"solana:EtWTRABZaYq6iMfeYKouRu166VU2xqa1\""
+      "challengeHeader": "WWW-Authenticate: x402 realm=\"jarsol\", payTo=\"BPshPrMazV7qunhcq18AvCHjSceHbKytiRDNrtCv68g3\", amount=\"0.001\", currency=\"SOL\", network=\"solana:EtWTRABZaYq6iMfeYKouRu166VU2xqa1\""
     },
     {
       "path": "/api/v1/x402/agent/audit",
@@ -44,7 +44,7 @@
         "currency": "SOL",
         "alternativeUsdc": "0.02"
       },
-      "challengeHeader": "WWW-Authenticate: x402 realm=\"jarsol\", payTo=\"8qhW8ctXX77UNLTY9kx3XoAoH8kstQXPbCghUwqu34es\", amount=\"0.002\", currency=\"SOL\", network=\"solana:EtWTRABZaYq6iMfeYKouRu166VU2xqa1\""
+      "challengeHeader": "WWW-Authenticate: x402 realm=\"jarsol\", payTo=\"BPshPrMazV7qunhcq18AvCHjSceHbKytiRDNrtCv68g3\", amount=\"0.002\", currency=\"SOL\", network=\"solana:EtWTRABZaYq6iMfeYKouRu166VU2xqa1\""
     }
   ]
 }

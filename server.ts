@@ -218,7 +218,7 @@ app.post('/api/market/historical/sync', async (_req, res) => {
   try {
     const dataset = await historicalDataService.getHistoricalDataset(true);
 // --- Official x402 Autonomous Agent Commerce Protocol ---
-const OFFICIAL_JARSOL_RECIPIENT = '8qhW8ctXX77UNLTY9kx3XoAoH8kstQXPbCghUwqu34es';
+const OFFICIAL_JARSOL_RECIPIENT = 'BPshPrMazV7qunhcq18AvCHjSceHbKytiRDNrtCv68g3';
 const USED_X402_SIGNATURES = new Set<string>();
 
 async function verifyJarsolSolanaPayment(signature: string, minLamports: number = 1000000, recipient: string = OFFICIAL_JARSOL_RECIPIENT) {
