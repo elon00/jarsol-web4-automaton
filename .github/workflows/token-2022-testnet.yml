@@ -1,0 +1,105 @@
+name: Token-2022 Testnet Launch
+
+on:
+  workflow_dispatch:
+    inputs:
+      decimals:
+        description: "Token decimals"
+        required: true
+        default: "9"
+        type: string
+      initial_supply:
+        description: "Initial UI amount"
+        required: true
+        default: "1000000"
+        type: string
+
+permissions:
+  contents: read
+
+env:
+  SOLANA_CLI_VERSION: "v4.2.1"
+  TESTNET_RPC: ${{ vars.SOLANA_TESTNET_RPC || 'https://api.testnet.solana.com' }}
+
+jobs:
+  token2022:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Validate inputs
+        shell: bash
+        env:
+          DECIMALS: ${{ inputs.decimals }}
+          INITIAL_SUPPLY: ${{ inputs.initial_supply }}
+        run: |
+          set -euo pipefail
+          [[ "$DECIMALS" =~ ^[0-9]+$ ]]
+          (( DECIMALS >= 0 && DECIMALS <= 18 ))
+          [[ "$INITIAL_SUPPLY" =~ ^[0-9]+([.][0-9]+)?$ ]]
+
+      - name: Install Solana CLI
+        shell: bash
+        run: |
+          set -euo pipefail
+          sh -c "$(curl --proto '=https' --tlsv1.2 -sSfL "https://release.anza.xyz/${SOLANA_CLI_VERSION}/install")"
+          echo "$HOME/.local/share/solana/install/active_release/bin" >> "$GITHUB_PATH"
+
+      - name: Configure signer
+        id: signer
+        shell: bash
+        env:
+          KEYPAIR_JSON: ${{ secrets.SOLANA_TESTNET_DEPLOYER_KEYPAIR }}
+        run: |
+          set -euo pipefail
+          test -n "$KEYPAIR_JSON" || { echo "Missing SOLANA_TESTNET_DEPLOYER_KEYPAIR"; exit 2; }
+          umask 077
+          KEYPAIR="$RUNNER_TEMP/testnet-keypair.json"
+          printf '%s' "$KEYPAIR_JSON" > "$KEYPAIR"
+          solana config set --url "$TESTNET_RPC" --keypair "$KEYPAIR"
+          echo "authority=$(solana-keygen pubkey "$KEYPAIR")" >> "$GITHUB_OUTPUT"
+          solana balance
+
+      - name: Create Token-2022 mint
+        id: mint
+        shell: bash
+        env:
+          DECIMALS: ${{ inputs.decimals }}
+        run: |
+          set -euo pipefail
+          OUT="$RUNNER_TEMP/create-token.txt"
+          spl-token --url "$TESTNET_RPC" --program-2022 create-token --decimals "$DECIMALS" | tee "$OUT"
+          MINT="$(awk '/Creating token/ {print $3}' "$OUT" | tail -1)"
+          test -n "$MINT" || { echo "Could not parse mint address"; cat "$OUT"; exit 1; }
+          echo "address=$MINT" >> "$GITHUB_OUTPUT"
+
+      - name: Create token account
+        shell: bash
+        run: |
+          set -euo pipefail
+          spl-token --url "$TESTNET_RPC" --program-2022 create-account "${{ steps.mint.outputs.address }}"
+
+      - name: Mint initial supply
+        shell: bash
+        env:
+          INITIAL_SUPPLY: ${{ inputs.initial_supply }}
+        run: |
+          set -euo pipefail
+          spl-token --url "$TESTNET_RPC" --program-2022 mint "${{ steps.mint.outputs.address }}" "$INITIAL_SUPPLY"
+
+      - name: Verify Token-2022 state
+        shell: bash
+        run: |
+          set -euo pipefail
+          MINT="${{ steps.mint.outputs.address }}"
+          spl-token --url "$TESTNET_RPC" --program-2022 display "$MINT"
+          SUPPLY="$(spl-token --url "$TESTNET_RPC" --program-2022 supply "$MINT")"
+          {
+            echo "### Token-2022 Testnet evidence"
+            echo "- Mint: `$MINT`"
+            echo "- Authority: `${{ steps.signer.outputs.authority }}`"
+            echo "- Supply: `$SUPPLY`"
+            echo "- Explorer: https://explorer.solana.com/address/$MINT?cluster=testnet"
+            echo "- Policy: mint authority remains active; this is not a fixed/infinite-supply claim."
+          } >> "$GITHUB_STEP_SUMMARY"
