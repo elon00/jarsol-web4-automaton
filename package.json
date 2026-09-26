@@ -33,7 +33,8 @@
     "reality:certify": "tsx scripts/generate-urs-certificate.ts",
     "test:charms": "tsx src/services/tests/charms-pqc.test.ts",
     "demo:charms": "tsx scripts/charms-pqc-demo.ts",
-    "qmoosa:finish": "node scripts/start-and-finish-everything.mjs"
+    "qmoosa:finish": "node scripts/start-and-finish-everything.mjs",
+    "test:nextgen": "node --test tests/nextgen-integrations.test.mjs"
   },
   "dependencies": {
     "@google/generative-ai": "^0.24.0",
