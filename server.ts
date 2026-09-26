@@ -4,7 +4,7 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import { Connection, Keypair, LAMPORTS_PER_SOL, PublicKey } from '@solana/web3.js';
+import { Connection, Keypair, LAMPORTS_PER_SOL, PublicKey, SystemProgram, Transaction } from '@solana/web3.js';
 import {
   createMint,
   getOrCreateAssociatedTokenAccount,
@@ -16,6 +16,7 @@ import {
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import { marketDataService } from './src/services/MarketDataService.ts';
 import { historicalDataService } from './src/services/HistoricalDataService.ts';
+import { createMcpRuntime, createSolanaActionMetadata, createBlinkUrl } from './src/integrations/nextgen.ts';
 
 dotenv.config();
 
@@ -75,6 +76,87 @@ app.get('/api/health', async (_req, res) => {
   } catch (error: any) {
     res.status(503).json({ status: 'DEGRADED', verified: false, error: error?.message || 'Solana RPC unavailable' });
   }
+});
+
+const jarsolMcp = createMcpRuntime({
+  name: 'jarsol-web4-automaton',
+  version: '4.0.0',
+  tools: [
+    {
+      name: 'health',
+      description: 'Return evidence-first runtime health metadata.',
+      execute: async () => ({
+        project: 'JarSol Web4 Automaton',
+        network: SOLANA_NETWORK,
+        rpc: SOLANA_RPC_URL,
+        verifiedBy: ['runtime configuration'],
+      }),
+    },
+    {
+      name: 'solana_balance',
+      description: 'Read a Solana account balance from the configured RPC.',
+      inputSchema: {
+        type: 'object',
+        properties: { address: { type: 'string' } },
+        required: ['address'],
+        additionalProperties: false,
+      },
+      execute: async (args) => {
+        const address = String(args.address || '');
+        const pubkey = new PublicKey(address);
+        const lamports = await connection.getBalance(pubkey, 'confirmed');
+        return { address: pubkey.toBase58(), lamports, sol: lamports / LAMPORTS_PER_SOL, network: SOLANA_NETWORK };
+      },
+    },
+  ],
+});
+
+app.post('/api/mcp', async (req, res) => {
+  const response = await jarsolMcp.handle(req.body);
+  return res.status(response.error ? 400 : 200).json(response);
+});
+
+const JARSOL_ACTION_RECIPIENT = 'BPshPrMazV7qunhcq18AvCHjSceHbKytiRDNrtCv68g3';
+
+app.get('/api/actions/tip', (_req, res) => {
+  return res.json(createSolanaActionMetadata({
+    title: 'Support JarSol development',
+    icon: 'https://github.com/elon00.png',
+    description: 'Create a wallet-signed SOL transfer on the configured non-mainnet Solana cluster. The server never receives your private key.',
+    label: 'Send 0.001 SOL',
+  }));
+});
+
+app.post('/api/actions/tip', async (req, res) => {
+  try {
+    if (!['devnet', 'testnet'].includes(SOLANA_NETWORK)) {
+      return res.status(403).json({ error: { message: 'This Action is restricted to Devnet/Testnet.' } });
+    }
+    const account = new PublicKey(String(req.body?.account || ''));
+    const recipient = new PublicKey(JARSOL_ACTION_RECIPIENT);
+    const lamports = 1_000_000;
+    const { blockhash, lastValidBlockHeight } = await connection.getLatestBlockhash('confirmed');
+    const tx = new Transaction({
+      feePayer: account,
+      recentBlockhash: blockhash,
+      lastValidBlockHeight,
+    }).add(SystemProgram.transfer({ fromPubkey: account, toPubkey: recipient, lamports }));
+
+    return res.json({
+      transaction: tx.serialize({ requireAllSignatures: false, verifySignatures: false }).toString('base64'),
+      message: 'Review and sign the 0.001 SOL JarSol support transaction in your wallet.',
+    });
+  } catch (error: any) {
+    return res.status(400).json({ error: { message: error?.message || 'Unable to build Solana Action transaction.' } });
+  }
+});
+
+app.get('/api/blinks/tip', (req, res) => {
+  const base = process.env.PUBLIC_BASE_URL || `${req.protocol}://${req.get('host')}`;
+  return res.json({
+    action: `${base}/api/actions/tip`,
+    blink: createBlinkUrl(`${base}/api/actions/tip`),
+  });
 });
 
 app.post('/api/gemini/chat', async (req, res) => {
