@@ -362,7 +362,7 @@ app.post('/api/v1/x402/launchpad/quote', async (req, res) => {
         pqcVaultReserve: '15%',
         communityAirdrop: '5%'
       },
-      quantumProtection: 'NIST FIPS 203/204 Dilithium & Kyber Hybrid Conjunction',
+      quantumProtection: 'PQC research integration; no claim of Solana L1-native quantum resistance',
       estimatedComputeUnits: 250000,
       deployerAuthority: OFFICIAL_JARSOL_RECIPIENT
     }
@@ -419,17 +419,18 @@ app.post('/api/v1/x402/agent/audit', async (req, res) => {
     x402Receipt: verification,
     auditReport: {
       auditedTarget: targetProgram,
-      neuralEngine: 'Gemini AI Neural Core',
-      score: '98/100',
-      status: 'VERIFIED_SECURE',
-      vulnerabilitiesDetected: 0,
-      quantumResilienceGrade: 'GRADE_A_POST_QUANTUM_READY',
+      neuralEngine: genAI ? 'Gemini configured' : 'Not configured',
+      status: 'INFORMATIONAL_ONLY',
+      verified: false,
+      independentlyAudited: false,
+      vulnerabilitiesDetected: null,
+      quantumResilienceGrade: 'NOT_ESTABLISHED',
       findings: [
-        'No integer overflow or reentrancy vectors detected in SVM instruction dispatch.',
-        'Hybrid signature verification prevents classical key substitution.',
-        'Conway automaton state transition invariants preserved.'
+        'This endpoint does not perform an independent smart-contract security audit.',
+        'No fixed security score or zero-vulnerability claim is generated without inspectable evidence.',
+        'Use repository CI, source review, RPC evidence, and an independent audit before production claims.'
       ],
-      certifiedAt: new Date().toISOString()
+      generatedAt: new Date().toISOString()
     }
   });
 });
