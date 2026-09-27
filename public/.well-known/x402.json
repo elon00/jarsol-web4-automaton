@@ -1,6 +1,6 @@
 {
-  "x402Version": "1.0.0",
-  "version": "1.0.0",
+  "x402Version": "2.0.0",
+  "version": "2.0.0",
   "name": "JarSol — Web 4.0 Autonomous AI Agent OS & SPL Launchpad",
   "type": "ai-launchpad-os",
   "category": "ai-agent-commerce",
@@ -12,7 +12,9 @@
     "gemini-ai",
     "autonomous-agent",
     "x402",
-    "double-audit"
+    "double-audit",
+    "fips-203",
+    "fips-204"
   ],
   "provider": {
     "name": "JarSol / Martin",
@@ -20,6 +22,18 @@
     "payTo": "BPshPrMazV7qunhcq18AvCHjSceHbKytiRDNrtCv68g3",
     "network": "solana-devnet",
     "caip2": "solana:EtWTRABZaYq6iMfeYKouRu166VU2xqa1"
+  },
+  "federatedMesh": {
+    "orchestrator": "bountyhunter-os",
+    "connectedNodesCount": 19,
+    "nodes": [
+      "https://elon00.github.io/qmoosa-exchange/.well-known/x402-bazaar.json",
+      "https://scstobcminority-ai.netlify.app/.well-known/x402-bazaar.json",
+      "https://shorx402.netlify.app/.well-known/x402-bazaar.json",
+      "https://elon00.github.io/solana-ai/.well-known/x402-bazaar.json",
+      "https://elon00.github.io/qton/.well-known/x402-bazaar.json",
+      "https://elon00.github.io/bnb-qusd/.well-known/x402-bazaar.json"
+    ]
   },
   "endpoints": [
     {
@@ -45,6 +59,42 @@
         "alternativeUsdc": "0.02"
       },
       "challengeHeader": "WWW-Authenticate: x402 realm=\"jarsol\", payTo=\"BPshPrMazV7qunhcq18AvCHjSceHbKytiRDNrtCv68g3\", amount=\"0.002\", currency=\"SOL\", network=\"solana:EtWTRABZaYq6iMfeYKouRu166VU2xqa1\""
+    },
+    {
+      "path": "/api/v1/x402/pqc/keygen",
+      "method": "POST",
+      "description": "Provision complete NIST FIPS 203 (ML-KEM-768) and FIPS 204 (ML-DSA-65) quantum lattice keypair bundle for AI agent identities",
+      "pricing": {
+        "amountSol": 0.001,
+        "lamports": 1000000,
+        "currency": "SOL",
+        "alternativeUsdc": "0.01"
+      },
+      "challengeHeader": "WWW-Authenticate: x402 realm=\"jarsol\", payTo=\"BPshPrMazV7qunhcq18AvCHjSceHbKytiRDNrtCv68g3\", amount=\"0.001\", currency=\"SOL\", network=\"solana:EtWTRABZaYq6iMfeYKouRu166VU2xqa1\""
+    },
+    {
+      "path": "/api/v1/x402/dex/smart-route",
+      "method": "POST",
+      "description": "Obtain optimal DEX liquidity routing graph and execution parameters across JarSol CPMM and Jupiter pools",
+      "pricing": {
+        "amountSol": 0.0005,
+        "lamports": 500000,
+        "currency": "SOL",
+        "alternativeUsdc": "0.005"
+      },
+      "challengeHeader": "WWW-Authenticate: x402 realm=\"jarsol\", payTo=\"BPshPrMazV7qunhcq18AvCHjSceHbKytiRDNrtCv68g3\", amount=\"0.0005\", currency=\"SOL\", network=\"solana:EtWTRABZaYq6iMfeYKouRu166VU2xqa1\""
+    },
+    {
+      "path": "/api/v1/x402/agent/multimodal-vision",
+      "method": "POST",
+      "description": "Execute multimodal neural vision audit on candlestick charts, transaction graphs, and QR codes",
+      "pricing": {
+        "amountSol": 0.001,
+        "lamports": 1000000,
+        "currency": "SOL",
+        "alternativeUsdc": "0.01"
+      },
+      "challengeHeader": "WWW-Authenticate: x402 realm=\"jarsol\", payTo=\"BPshPrMazV7qunhcq18AvCHjSceHbKytiRDNrtCv68g3\", amount=\"0.001\", currency=\"SOL\", network=\"solana:EtWTRABZaYq6iMfeYKouRu166VU2xqa1\""
     }
   ]
 }

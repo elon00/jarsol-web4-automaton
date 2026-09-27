@@ -30,13 +30,23 @@ export const CyberHeader: React.FC<CyberHeaderProps> = ({ wallet, onOpenWalletMo
   };
 
   const navItems = [
-    { id: 'metaverse', label: '🎮 24/7 Metaverse Game', badge: 'Dual-World' }, { id: 'videos', label: '🎬 Sci-Fi 4K Videos', badge: '60FPS' },
-    { id: 'kingdom', label: '👑 Sci-Fi Kingdom', badge: 'King/Genie' }, { id: 'jarvis', label: '🎙️ Humanoid Jarvis', badge: 'Face-to-Face' },
-    { id: 'reality', label: '🧬 Reality Inspector', badge: '14 Gates' }, { id: 'dex', label: '🔄 DEX Swap', badge: 'Preview' },
-    { id: 'launchpad', label: '🚀 Launchpad', badge: '1B Fixed' }, { id: 'conway', label: '🧬 Conway Matrix', badge: 'B3/S23' },
-    { id: 'terminal', label: '🤖 Gemini Brain', badge: '3.6 Flash' }, { id: 'pqc', label: '🛡️ PQC Shield', badge: 'Lattice Demo' },
-    { id: 'tokenomics', label: '📊 Tokenomics', badge: 'Global Mkt' }, { id: 'audit', label: '⚖️ Legal & Utility', badge: 'Compliance' },
-    { id: 'workflow', label: '⚡ Workflow', badge: 'Web 4.0' }, { id: 'whitepaper', label: '📄 Whitepaper', badge: '6 Ch' }, { id: 'readme', label: '📖 Readme', badge: 'Docs' },
+    { id: 'metaverse', label: '🎮 24/7 Metaverse Game', badge: 'Dual-World' }, 
+    { id: 'videos', label: '🎬 Sci-Fi 4K Videos', badge: '60FPS' },
+    { id: 'kingdom', label: '👑 Sci-Fi Kingdom', badge: 'King/Genie' }, 
+    { id: 'jarvis', label: '🎙️ Humanoid Jarvis', badge: 'Face-to-Face' },
+    { id: 'swarm', label: '🤖 AI Swarm & Vision', badge: '5 Agents' },
+    { id: 'bazaar', label: '🛒 x402 Bazaar v2', badge: 'Mesh 19' },
+    { id: 'dex', label: '🔄 DEX Swap', badge: 'Real AMM' }, 
+    { id: 'launchpad', label: '🚀 Launchpad', badge: '1B Fixed' }, 
+    { id: 'pqc', label: '🛡️ PQC Shield', badge: 'FIPS 203/204' },
+    { id: 'reality', label: '🧬 Reality Inspector', badge: '14 Gates' }, 
+    { id: 'conway', label: '🧬 Conway Matrix', badge: 'B3/S23' },
+    { id: 'terminal', label: '🤖 Gemini Brain', badge: '3.6 Flash' }, 
+    { id: 'tokenomics', label: '📊 Tokenomics', badge: 'Global Mkt' }, 
+    { id: 'audit', label: '⚖️ Legal & Utility', badge: 'Compliance' },
+    { id: 'workflow', label: '⚡ Workflow', badge: 'Web 4.0' }, 
+    { id: 'whitepaper', label: '📄 Whitepaper', badge: '6 Ch' }, 
+    { id: 'readme', label: '📖 Readme', badge: 'Docs' },
   ];
 
   const openCommandCenter = () => { playCyberClick(); setActiveTab('terminal'); onToast('Command Center opened — Gemini Brain terminal active.', 'info'); };

@@ -17,6 +17,8 @@ import { WorkflowViewer } from './components/WorkflowViewer';
 import { WhitepaperReader } from './components/WhitepaperReader';
 import { ReadmeViewer } from './components/ReadmeViewer';
 import { RealityInspectorModal } from './components/RealityInspectorModal';
+import { X402BazaarCommerce } from './components/X402BazaarCommerce';
+import { AutonomousSwarmModule } from './components/AutonomousSwarmModule';
 
 import { WalletState, NetworkType } from './types';
 import { fetchWalletBalance, CANONICAL_DEPLOYMENTS } from './utils/solana';
@@ -198,6 +200,21 @@ export function App() {
             wallet={wallet}
             onToast={addToast}
             onSetGlobalBg={setGlobalBg}
+          />
+        )}
+
+        {activeTab === 'swarm' && (
+          <AutonomousSwarmModule
+            wallet={wallet}
+            onToast={addToast}
+          />
+        )}
+
+        {activeTab === 'bazaar' && (
+          <X402BazaarCommerce
+            wallet={wallet}
+            onRefreshBalance={refreshBalance}
+            onToast={addToast}
           />
         )}
 
