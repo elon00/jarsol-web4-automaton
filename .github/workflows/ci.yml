@@ -33,6 +33,8 @@ jobs:
         run: npx tsc --noEmit
       - name: Verify runtime blockchain upgrade handling
         run: npm run test:upgrades
+      - name: Verify wallet balance identity and failure handling
+        run: npm run test:balances
       - name: Quantum PQC & Portfolio Verification
         run: npm run test:quantum
       - name: Production build

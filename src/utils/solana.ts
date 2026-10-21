@@ -12,6 +12,8 @@ import {
 export const TOKEN_PROGRAM_ID = new PublicKey('TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA');
 import { SplTokenDeploymentResult, NetworkType } from '../types';
 import { createSolanaUpgradeMonitor } from '../services/SolanaUpgradeService';
+import { readWalletBalance } from '../services/WalletBalanceService';
+export type { TokenBalance } from '../services/WalletBalanceService';
 
 export const SOLANA_DEVNET_RPC = 'https://api.devnet.solana.com';
 export const SOLANA_TESTNET_RPC = 'https://api.testnet.solana.com';
@@ -64,12 +66,6 @@ export const CANONICAL_DEPLOYMENTS: Record<'devnet' | 'testnet' | 'mainnet-beta'
   }
 };
 
-export interface TokenBalance {
-  mint: string;
-  amount: string;
-  decimals: number;
-}
-
 const upgradeMonitors = new Map<NetworkType, ReturnType<typeof createSolanaUpgradeMonitor>>();
 export async function getSolanaConnection(network: NetworkType = 'devnet'): Promise<Connection> {
   const endpoint = network === 'devnet' ? SOLANA_DEVNET_RPC : clusterApiUrl(network);
@@ -79,7 +75,10 @@ export async function getSolanaConnection(network: NetworkType = 'devnet'): Prom
     upgradeMonitors.set(network, monitor);
   }
   const status = await monitor();
-  return new Connection(endpoint, status.upgrade.commitment);
+  return new Connection(endpoint, {
+    commitment: status.upgrade.commitment, disableRetryOnRateLimit: true,
+    fetch: (input, init) => fetch(input, { ...init, signal: AbortSignal.timeout(8000) }),
+  });
 }
 
 export function generateDevnetKeypair(): Keypair {
@@ -97,43 +96,26 @@ export function getExplorerUrl(
 
 export async function fetchWalletBalance(
   pubkeyStr: string,
-  network: NetworkType = 'devnet'
-): Promise<{ sol: number; tokens: TokenBalance[] }> {
-  try {
-    const res = await fetch(`/api/solana/balance/${pubkeyStr}`);
-    if (res.ok) {
-      const data = await res.json();
+  network: NetworkType = 'devnet',
+) {
+  return readWalletBalance(pubkeyStr, network, {
+    readRpc: async (address, selectedNetwork) => {
+      const conn = await getSolanaConnection(selectedNetwork);
+      const pubkey = new PublicKey(address);
+      const [lamports, accounts] = await Promise.all([
+        conn.getBalance(pubkey),
+        conn.getParsedTokenAccountsByOwner(pubkey, { programId: TOKEN_PROGRAM_ID }),
+      ]);
+      if (!Number.isSafeInteger(lamports) || lamports < 0) throw new Error('Invalid lamport balance');
       return {
-        sol: Number(data.sol ?? 0),
-        tokens: Array.isArray(data.tokens) ? data.tokens : [],
+        sol: lamports / LAMPORTS_PER_SOL,
+        tokens: accounts.value.map(ta => {
+          const info = ta.account.data.parsed.info;
+          return { mint: info.mint, amount: info.tokenAmount.uiAmountString, decimals: info.tokenAmount.decimals };
+        }),
       };
-    }
-  } catch (e) {}
-
-  try {
-    const conn = await getSolanaConnection(network);
-    const pubkey = new PublicKey(pubkeyStr);
-    const balanceLamports = await conn.getBalance(pubkey);
-    const tokenAccounts = await conn.getParsedTokenAccountsByOwner(pubkey, {
-      programId: TOKEN_PROGRAM_ID,
-    });
-
-    const parsedTokens: TokenBalance[] = tokenAccounts.value.map((ta) => {
-      const info = ta.account.data.parsed.info;
-      return {
-        mint: info.mint,
-        amount: info.tokenAmount.uiAmountString,
-        decimals: info.tokenAmount.decimals,
-      };
-    });
-
-    return {
-      sol: balanceLamports / LAMPORTS_PER_SOL,
-      tokens: parsedTokens,
-    };
-  } catch (err: any) {
-    return { sol: 0, tokens: [] };
-  }
+    },
+  });
 }
 
 export async function requestAirdropOnChain(

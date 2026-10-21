@@ -8,7 +8,8 @@ export interface WalletState {
   publicKey: string | null;
   solBalance: number;
   jarsolBalance: number;
-  walletType: 'phantom' | 'solflare' | 'keypair' | null;
+  balanceAvailable?: boolean;
+  walletType: 'phantom' | 'solflare' | 'keypair' | 'watch-only' | null;
   network: NetworkType;
 }
 
