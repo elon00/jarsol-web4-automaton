@@ -21,6 +21,8 @@ import { historicalDataService } from './src/services/HistoricalDataService.ts';
 import { createMcpRuntime, createSolanaActionMetadata, createBlinkUrl } from './src/integrations/nextgen.ts';
 import { pqcMlKem768 } from './src/crypto/pqc/ml-kem.ts';
 import { pqcMlDsa65 } from './src/crypto/pqc/ml-dsa.ts';
+import { createSolanaUpgradeMonitor } from './src/services/SolanaUpgradeService.ts';
+import { SOLANA_GENESIS } from './src/integrations/chain-upgrades.ts';
 
 dotenv.config();
 
@@ -32,6 +34,8 @@ const GEMINI_API_KEY = process.env.GEMINI_API_KEY || '';
 const SOLANA_NETWORK = process.env.SOLANA_NETWORK || 'devnet';
 const SOLANA_RPC_URL = process.env.SOLANA_RPC_URL || 'https://api.devnet.solana.com';
 const connection = new Connection(SOLANA_RPC_URL, 'confirmed');
+if (!Object.hasOwn(SOLANA_GENESIS, SOLANA_NETWORK)) throw new Error('Unsupported SOLANA_NETWORK');
+const consensusStatus = createSolanaUpgradeMonitor(SOLANA_RPC_URL, SOLANA_NETWORK as keyof typeof SOLANA_GENESIS);
 
 // Official JarSol & Fleet Constants
 const OFFICIAL_JARSOL_RECIPIENT = 'BPshPrMazV7qunhcq18AvCHjSceHbKytiRDNrtCv68g3';
@@ -65,13 +69,14 @@ if (GEMINI_API_KEY) {
 // -------------------------------------------------------------
 app.get('/api/health', async (_req, res) => {
   try {
-    const [version, slot] = await Promise.all([connection.getVersion(), connection.getSlot()]);
+    const [version, slot, consensus] = await Promise.all([connection.getVersion(), connection.getSlot(), consensusStatus()]);
     res.json({
       status: 'ONLINE',
       project: 'JarSol Web4 Automaton',
       version: '4.5.0-QUANTUM-AGENTIC',
       network: SOLANA_NETWORK,
-      solanaRpc: SOLANA_RPC_URL,
+      solanaRpc: 'configured server endpoint',
+      alpenglow: consensus,
       solanaVersion: version,
       solanaSlot: slot,
       geminiConfigured: !!GEMINI_API_KEY,
@@ -92,7 +97,7 @@ app.get('/api/health', async (_req, res) => {
       },
     });
   } catch (error: any) {
-    res.status(503).json({ status: 'DEGRADED', verified: false, error: error?.message || 'Solana RPC unavailable' });
+    res.status(503).json({ status: 'DEGRADED', verified: false, error: 'Solana RPC identity or connectivity could not be verified' });
   }
 });
 
@@ -267,12 +272,18 @@ app.post('/api/gemini/audit', async (_req, res) => {
 // -------------------------------------------------------------
 // Solana On-Chain & Deployment Endpoints
 // -------------------------------------------------------------
+app.get('/api/solana/consensus', async (_req, res) => {
+  try { res.json(await consensusStatus()); }
+  catch { res.status(503).json({ status: 'unavailable', error: 'Consensus RPC identity or connectivity could not be verified' }); }
+});
+
 app.get('/api/solana/balance/:pubkey', async (req, res) => {
   try {
     const pubkey = new PublicKey(req.params.pubkey);
+    const commitment = (await consensusStatus()).upgrade.commitment;
     const [balanceLamports, tokenAccounts] = await Promise.all([
-      connection.getBalance(pubkey, 'confirmed'),
-      connection.getParsedTokenAccountsByOwner(pubkey, { programId: TOKEN_PROGRAM_ID }, 'confirmed'),
+      connection.getBalance(pubkey, commitment),
+      connection.getParsedTokenAccountsByOwner(pubkey, { programId: TOKEN_PROGRAM_ID }, commitment),
     ]);
     const tokens = tokenAccounts.value.map((ta) => { 
       const info: any = ta.account.data.parsed.info; 
@@ -280,7 +291,7 @@ app.get('/api/solana/balance/:pubkey', async (req, res) => {
     });
     res.json({ address: pubkey.toBase58(), sol: balanceLamports / LAMPORTS_PER_SOL, lamports: balanceLamports, tokens, network: SOLANA_NETWORK, verified: true });
   } catch (error: any) { 
-    res.status(503).json({ success: false, verified: false, error: error?.message || 'Balance query failed' }); 
+    res.status(503).json({ success: false, verified: false, error: 'Balance query failed; check RPC identity and connectivity' });
   }
 });
 

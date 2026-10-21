@@ -1,5 +1,7 @@
 # ⚡ JarSol — Reality-First Web4 + Solana Prototype
 
+See [blockchain upgrade compatibility](CHAIN_UPGRADES.md) for the current Glamsterdam and Alpenglow integration, commands and verification limits.
+
 > **Reality cannot be claimed; reality must be proven.**
 
 JarSol is an experimental Web4/autonomous-agent project with Solana integration. This repository follows a **Reality-First / URS (Universal Reality System)** policy: every important claim should be traceable to code, reproducible tests, CI evidence, or independently verifiable public evidence.
