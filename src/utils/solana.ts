@@ -11,6 +11,7 @@ import {
 } from '@solana/web3.js';
 export const TOKEN_PROGRAM_ID = new PublicKey('TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA');
 import { SplTokenDeploymentResult, NetworkType } from '../types';
+import { createSolanaUpgradeMonitor } from '../services/SolanaUpgradeService';
 
 export const SOLANA_DEVNET_RPC = 'https://api.devnet.solana.com';
 export const SOLANA_TESTNET_RPC = 'https://api.testnet.solana.com';
@@ -69,9 +70,16 @@ export interface TokenBalance {
   decimals: number;
 }
 
-export function getSolanaConnection(network: NetworkType = 'devnet'): Connection {
+const upgradeMonitors = new Map<NetworkType, ReturnType<typeof createSolanaUpgradeMonitor>>();
+export async function getSolanaConnection(network: NetworkType = 'devnet'): Promise<Connection> {
   const endpoint = network === 'devnet' ? SOLANA_DEVNET_RPC : clusterApiUrl(network);
-  return new Connection(endpoint, 'confirmed');
+  let monitor = upgradeMonitors.get(network);
+  if (!monitor) {
+    monitor = createSolanaUpgradeMonitor(endpoint, network);
+    upgradeMonitors.set(network, monitor);
+  }
+  const status = await monitor();
+  return new Connection(endpoint, status.upgrade.commitment);
 }
 
 export function generateDevnetKeypair(): Keypair {
@@ -103,7 +111,7 @@ export async function fetchWalletBalance(
   } catch (e) {}
 
   try {
-    const conn = getSolanaConnection(network);
+    const conn = await getSolanaConnection(network);
     const pubkey = new PublicKey(pubkeyStr);
     const balanceLamports = await conn.getBalance(pubkey);
     const tokenAccounts = await conn.getParsedTokenAccountsByOwner(pubkey, {
