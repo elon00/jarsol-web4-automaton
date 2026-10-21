@@ -88,6 +88,14 @@ test('actual backend routes enforce identity, registry path and unavailable-serv
       const discovery = await fetch(url + '/.well-known/x402-bazaar.json');
       assert.equal(discovery.status, 503);
       assert.deepEqual((await discovery.json()).services, []);
+      const malformed = await fetch(url + '/api/gemini/chat', { method: 'POST', headers, body: '{broken' });
+      assert.equal(malformed.status, 400);
+      const vision = await fetch(url + '/api/gemini/multimodal', { method: 'POST', headers,
+        body: JSON.stringify({ imageBase64: 'synthetic-image-canary' }) });
+      assert.equal(vision.status, 503);
+      const visionBody = await vision.json();
+      assert.equal(visionBody.verified, false);
+      assert.equal(visionBody.analysis, undefined);
       const oversized = await fetch(url + '/api/gemini/chat', { method: 'POST', headers,
         body: JSON.stringify({ message: 'x'.repeat(1024 * 1024) }) });
       assert.equal(oversized.status, 413);

@@ -19,7 +19,7 @@ import { historicalDataService } from './src/services/HistoricalDataService.ts';
 import { createMcpRuntime, createSolanaActionMetadata, createBlinkUrl } from './src/integrations/nextgen.ts';
 import { createSolanaUpgradeMonitor } from './src/services/SolanaUpgradeService.ts';
 import { SOLANA_GENESIS } from './src/integrations/chain-upgrades.ts';
-import { createOperationBoundary, canonicalNetwork, verifyTestnetOperation, OperationBoundaryError, checkedSolanaRpcUrl } from './src/server/operation-boundaries.ts';
+import { createOperationBoundary, canonicalNetwork, verifyTestnetOperation, OperationBoundaryError, checkedSolanaRpcUrl, publicHttpFailure } from './src/server/operation-boundaries.ts';
 
 dotenv.config();
 
@@ -226,7 +226,7 @@ app.post('/api/gemini/chat', async (req, res) => {
     const result = await model.generateContent({ contents: [...formattedHistory, currentContent] });
     const reply = result.response.text();
     if (!reply?.trim()) throw new Error('Gemini returned an empty response');
-    return res.json({ success: true, verified: true, model: process.env.GEMINI_MODEL || 'gemini-2.5-flash', reply: reply.trim(), timestamp: new Date().toISOString() });
+    return res.json({ success: true, verified: false, execution: 'provider_response', model: process.env.GEMINI_MODEL || 'gemini-2.5-flash', reply: reply.trim(), timestamp: new Date().toISOString() });
   } catch (error: any) {
     return res.status(502).json({ success: false, verified: false, status: 'FAILED', error: 'Gemini request failed' });
   }
@@ -237,25 +237,11 @@ app.post('/api/gemini/multimodal', async (req, res) => {
   if (!imageBase64) return res.status(400).json({ success: false, error: 'imageBase64 is required for multimodal vision inspection' });
 
   if (!genAI) {
-    // Deterministic fallback response when API key is pending
-    return res.json({
-      success: true,
-      mode: 'EMBEDDED_NEURAL_VISION_HEURISTIC',
-      type,
-      analysis: {
-        detectedFeatures: ['Candlestick Volatility Bands', 'Liquidity Imbalance', 'Lattice PQC Header Signature'],
-        sentiment: 'BULLISH_BREAKOUT',
-        confidenceScore: 0.94,
-        resistanceLevel: 108.50,
-        supportLevel: 102.20,
-        summary: `JarSol Multimodal Vision inspected image payload. Volatility bands demonstrate structural breakout potential with 0.94 neural confidence.`
-      },
-      timestamp: new Date().toISOString()
-    });
+    return res.status(503).json({ success: false, verified: false, status: 'UNAVAILABLE', error: 'Gemini is not configured.' });
   }
 
   try {
-    const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
+    const model = genAI.getGenerativeModel({ model: process.env.GEMINI_MODEL || 'gemini-2.5-flash' });
     const cleanBase64 = imageBase64.replace(/^data:image\/\w+;base64,/, '');
     const visionPrompt = prompt || `Perform deep technical vision audit on this image (${type}). Identify visual patterns, risk signals, anomalies, and provide strategic action steps.`;
 
@@ -554,8 +540,8 @@ app.post('/api/market/historical/sync', async (_req, res) => {
 app.get('*', (_req, res) => res.sendFile(path.join(__dirname, 'dist', 'index.html')));
 
 app.use((error: any, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
-  const status = error?.type === 'entity.too.large' ? 413 : 400;
-  res.status(status).json({ success: false, verified: false, error: 'Invalid or oversized request.' });
+  const failure = publicHttpFailure(error);
+  res.status(failure.status).json({ success: false, verified: false, error: failure.message });
 });
 const server = app.listen(PORT, HOST, () => {
   console.log(`JarSol backend listening on ${HOST}:${(server.address() as { port: number }).port}; network=${SOLANA_NETWORK}; operator actions require authorization.`);

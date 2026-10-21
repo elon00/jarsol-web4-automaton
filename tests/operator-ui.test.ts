@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import React from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
+import { LegalAuditor } from '../src/components/LegalAuditor.tsx';
 import { CyberHeader } from '../src/components/CyberHeader.tsx';
 import { SolanaLaunchpad } from '../src/components/SolanaLaunchpad.tsx';
 import type { WalletState } from '../src/types';
@@ -35,4 +36,11 @@ test('the launchpad cannot offer browser deployment or static data as current ve
   assert.match(html, /Repository-recorded deployments/);
   assert.match(html, /not verified by opening this page/);
   assert.doesNotMatch(html, /Production-tested|100% IMMUTABLE|TOKEN SUCCESSFULLY DEPLOYED/);
+});
+
+test('the review page cannot present a fabricated legal pass or certificate', () => {
+  const html = renderToStaticMarkup(React.createElement(LegalAuditor, { onToast: noop }));
+  assert.match(html, /Legal review has not been performed/);
+  assert.match(html, /Automated legal review unavailable/);
+  assert.doesNotMatch(html, /Low Risk|>Compliant<|100%|AI Double-Audit/);
 });

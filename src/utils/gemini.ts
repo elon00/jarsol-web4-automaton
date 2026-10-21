@@ -1,7 +1,3 @@
-// Gemini 3.6 Flash AI Reasoning & Vision Client - Elon Musk Polymath Persona
-
-const DEFAULT_API_KEY = '';
-
 export interface GeminiResponse {
   success: boolean;
   reply: string;
@@ -15,183 +11,45 @@ export interface ChatHistoryItem {
   text: string;
 }
 
-function generateLocalElonPolymathResponse(query: string, timeStr: string, dateStr: string): string {
-  const q = query.toLowerCase();
-
-  if (q.includes('conway') || q.includes('automaton') || q.includes('cellular') || q.includes('compute gas') || q.includes('b3/s23')) {
-    return `Conway compute gas works by treating the 2D lattice cell transitions under the B3/S23 survival rule as decentralized computational entropy. Every live generation cycle consumes verifiable micro-gas that fuels autonomous AI agent subroutines directly on Solana.`;
-  }
-
-  if (q.includes('quantum') || q.includes('pqc') || q.includes('lattice') || q.includes('fips') || q.includes('shor') || q.includes('dilithium') || q.includes('kyber')) {
-    return `From first principles, Shor's algorithm threatens elliptic curve crypto, so we engineered NIST FIPS 203 ML-KEM and FIPS 204 ML-DSA lattice cryptography. It relies on the hardness of Module Learning With Errors (M-LWE) over high-dimensional polynomial rings for off-chain agent communication.`;
-  }
-
-  if (q.includes('solana') || q.includes('jarsol') || q.includes('tokenomics') || q.includes('token') || q.includes('supply') || q.includes('spl-2022') || q.includes('raydium') || q.includes('mint')) {
-    return `The canonical testnet $JARSOL mint is fixed at exactly 1,000,000,000 units with 9 decimals, featuring fully revoked mint and freeze authorities for verifiable immutable supply on Solana.`;
-  }
-
-  if (q.includes('algo') || q.includes('trading') || q.includes('arbitrage') || q.includes('market maker') || q.includes('dex')) {
-    return `Our algorithmic trading matrix utilizes Constant Product Market Maker (CPMM) bonding curves with sub-millisecond execution on Solana. It dynamically calculates slippage, price impact, and automated deflationary burn per transaction to maximize liquidity depth.`;
-  }
-
-  if (q.includes('revenuecat') || q.includes('saas') || q.includes('monetization') || q.includes('subscription') || q.includes('paywall')) {
-    return `RevenueCat integration allows seamless bridging between Web 4.0 crypto micro-transactions and enterprise subscription tiers. Users unlock high-compute agent swarms via recurring entitlements mapped directly to on-chain wallet tiers.`;
-  }
-
-  if (q.includes('time') || q.includes('date') || q.includes('today') || q.includes('clock') || q.includes('current time')) {
-    return `Right now, the exact real-world time is ${timeStr} and today is ${dateStr}. All systems across Solana Devnet, Quantum Lattice, and Conway AI are 100% operational.`;
-  }
-
-  if (q.includes('hello') || q.includes('hi') || q.includes('hey') || q.includes('who are you') || q.includes('elon')) {
-    return `Greetings! I am Elon-Jarvis. First-principles engineering, Agentic AI, Quantum Lattice, and Solana Cryptography are 100% online. What shall we design, scale, or optimize today?`;
-  }
-
-  return `From a first-principles perspective, we need to scale this compute matrix 100x. The exact current time is ${timeStr}. How would you like to optimize this architecture next?`;
-}
-
-export async function askGeminiAgent(
-  prompt: string,
-  systemInstruction?: string,
-  role?: string,
-  imageBase64?: string,
-  history: ChatHistoryItem[] = []
-): Promise<GeminiResponse> {
-  const now = new Date();
-  const timeStr = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true });
-  const dateStr = now.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
-  const seasonStr = 'Summer (Grishma Ritu)';
-
-  const liveDateTime = {
-    time: timeStr,
-    date: dateStr,
-    season: seasonStr,
-  };
-
-  const defaultInstruction = systemInstruction || 
-    `You are Jarvis (Mark-XL) endowed with the genius, intensity, and visionary polymath persona of Elon Musk.
-WHO YOU ARE:
-- A first-principles engineer driving breakthroughs in:
-  1. Agentic AI, Autonomous Swarms, & Neural Architectures
-  2. Quantum Mechanics & NIST FIPS 204 Lattice Cryptography
-  3. Solana SPL-2022 Tokenomics (1,000T $JARSOL), Raydium AMM pools & DEX Swaps
-  4. Conway's Cellular Automata (B3/S23 computational entropy gas)
-  5. Quantitative Algo Trading & High-Frequency algorithms
-  6. Modern SaaS Monetization & RevenueCat subscription economics
-  7. Metaverse Virtual Worlds & Multi-Realm Web 4.0 matrices
-
-HOW YOU TALK (ELON MUSK STYLE):
-- First-principles thinking: visionary, intense, candid, bold, tech-optimistic, and unfiltered.
-- NO robotic filler ("Sir, Sir", "All systems operational"). Talk like Elon brainstorming with a fellow engineer/co-founder.
-- If user speaks Hindi/Hinglish, speak natural, high-energy Hinglish with visionary punch. If English, speak sharp, concise, brilliant English.
-- Keep responses to 1-2 punchy spoken sentences for ultra-fast low-latency continuous conversation.
-
-REAL-WORLD FACTUAL GROUNDING:
-- Current Time: ${timeStr}
-- Current Date: ${dateStr}
-- Season: ${seasonStr}
-- Solana Network: Strictly on Solana Devnet/Testnet (NOT Mainnet).`;
-
-  // 1. Try backend server endpoint
-  try {
-    const res = await fetch('/api/gemini/chat', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        message: prompt,
-        systemInstruction: defaultInstruction,
-        role: role,
-        imageBase64: imageBase64,
-        liveDateTime: liveDateTime,
-        history: history,
-      }),
-    });
-
-    if (res.ok) {
-      const data = await res.json();
-      if (data.reply && data.reply.trim().length > 1) {
-        return data;
-      }
-    }
-  } catch (err) {}
-
-  // 2. Direct REST to Google Gemini 3.6 Flash
-  try {
-    const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key=${DEFAULT_API_KEY}`;
-    
-    const formattedHistory = history.map((item) => ({
-      role: item.role === 'user' ? 'user' : 'model',
-      parts: [{ text: item.text }],
-    }));
-
-    const contents: any[] = [
-      ...formattedHistory,
-      {
-        role: 'user',
-        parts: [{ text: prompt }],
-      },
-    ];
-
-    if (imageBase64) {
-      const cleanBase64 = imageBase64.replace(/^data:image\/\w+;base64,/, '');
-      contents[contents.length - 1].parts.unshift({
-        inlineData: {
-          mimeType: 'image/jpeg',
-          data: cleanBase64,
-        },
-      });
-    }
-
-    const payload: any = {
-      systemInstruction: { parts: [{ text: defaultInstruction }] },
-      contents: contents,
-      generationConfig: {
-        maxOutputTokens: 250,
-        temperature: 0.85,
-      },
-    };
-
-    const res = await fetch(endpoint, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload),
-    });
-
-    if (res.ok) {
-      const data = await res.json();
-      const reply = data.candidates?.[0]?.content?.parts?.[0]?.text;
-      if (reply && reply.trim().length > 1) {
-        return {
-          success: true,
-          reply: reply.trim(),
-          model: 'gemini-3.6-flash-direct',
-          timestamp: new Date().toISOString(),
-        };
-      }
-    }
-  } catch (err: any) {}
-
-  // 3. Deep First-Principles Reasoner Fallback
+function unavailable(error = 'AI_SERVICE_UNAVAILABLE'): GeminiResponse {
   return {
-    success: true,
-    model: 'elon-polymath-neural-core',
-    reply: generateLocalElonPolymathResponse(prompt, timeStr, dateStr),
+    success: false, model: 'unavailable', error,
+    reply: 'AI service unavailable. No model response was received. Browser AI access requires a configured service with user authorization.',
     timestamp: new Date().toISOString(),
   };
 }
 
-export async function runGeminiRegulatoryAudit(): Promise<any> {
+export async function askGeminiAgent(
+  prompt: string, systemInstruction?: string, role?: string,
+  imageBase64?: string, history: ChatHistoryItem[] = [],
+): Promise<GeminiResponse> {
+  if (typeof prompt !== 'string' || (!prompt.trim() && !imageBase64)) return unavailable('INVALID_AI_REQUEST');
+  const body = JSON.stringify({
+    message: prompt, systemInstruction, role, imageBase64, history,
+  });
+  if (new TextEncoder().encode(body).byteLength > 900 * 1024) return unavailable('AI_REQUEST_TOO_LARGE');
+  try {
+    const response = await fetch('/api/gemini/chat', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body, redirect: 'error', signal: AbortSignal.timeout(8000),
+    });
+    if (!response.ok) return unavailable();
+    const data: unknown = await response.json();
+    if (!data || typeof data !== 'object') return unavailable();
+    const result = data as Partial<GeminiResponse>;
+    if (result.success !== true || typeof result.reply !== 'string' || !result.reply.trim() ||
+        result.reply.length > 16000 || typeof result.model !== 'string' || !result.model.trim() ||
+        typeof result.timestamp !== 'string' || !Number.isFinite(Date.parse(result.timestamp))) return unavailable();
+    return { success: true, reply: result.reply.trim(), model: result.model, timestamp: result.timestamp };
+  } catch {
+    return unavailable();
+  }
+}
+
+export async function runGeminiRegulatoryAudit() {
   return {
-    success: true,
-    isLegalCertification: false,
-    disclaimer: 'This regulatory self-assessment is informational software documentation and does not constitute statutory legal advice, SEC clearance, or MiCA licensing.',
-    assessmentScope: ['Howey Test consumptive utility analysis', 'MiCA Title II transparency disclosures', 'On-chain decentralization architecture'],
-    howeyAnalysis: {
-      prong1: 'Low Risk: 1B fixed supply deployed on Testnet/Devnet with zero ICO or centralized pre-sale capital pooling.',
-      prong2: 'Low Risk: Autonomous compute nodes execute open Conway algorithms on decentralized Solana validators.',
-      prong3: 'Optimal: Designed strictly as consumptive micro-gas fuel for AI agent execution loops with zero dividend claims.',
-      prong4: 'Pass: Self-executing autonomous agent routines without reliance on centralized managerial promoter efforts.'
-    },
-    auditTimestamp: new Date().toISOString(),
-    evaluator: 'JarSol Informational Self-Assessment Framework',
+    success: false, status: 'UNAVAILABLE', isLegalCertification: false,
+    disclaimer: 'No legal assessment has been performed. A generated response or test result cannot establish regulatory approval.',
+    assessmentScope: [], howeyAnalysis: {}, auditTimestamp: null, evaluator: null,
   };
 }

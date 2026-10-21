@@ -65,3 +65,13 @@ export function createOperationBoundary(operatorToken: () => string): RequestHan
     return next();
   };
 }
+
+export function publicHttpFailure(error: unknown): { status: number; message: string } {
+  const value = error && typeof error === 'object' ? error as { status?: unknown; statusCode?: unknown } : {};
+  const candidate = value.status ?? value.statusCode;
+  const status = typeof candidate === 'number' && Number.isInteger(candidate) && candidate >= 400 && candidate <= 599
+    ? candidate : 500;
+  const message = status === 413 ? 'Request too large.' : status === 400 ? 'Invalid request.' :
+    status === 404 ? 'Resource not found.' : 'Request failed.';
+  return { status, message };
+}

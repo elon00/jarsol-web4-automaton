@@ -2,6 +2,10 @@
 
 See [blockchain upgrade compatibility](CHAIN_UPGRADES.md) for the current Glamsterdam and Alpenglow integration, commands and verification limits. See [wallet balance behavior](WALLET_BALANCES.md) for network validation, availability and disposable Devnet wallet limits. See [backend operation boundaries](BACKEND_SECURITY.md) before running a server.
 
+## About
+
+An experimental Solana dashboard with network-verified wallet reads, local cryptography demonstrations and a read-only deployment registry. See [local startup instructions](LOCAL_DEVELOPMENT.md) and open [localhost:5173](http://localhost:5173/) after starting the app. AI, commerce, legal review and production acceptance remain subject to their documented gates.
+
 > **Reality cannot be claimed; reality must be proven.**
 
 JarSol is an experimental Web4/autonomous-agent project with Solana integration. This repository follows a **Reality-First / URS (Universal Reality System)** policy: every important claim should be traceable to code, reproducible tests, CI evidence, or independently verifiable public evidence.
@@ -76,7 +80,8 @@ A successful build, CI run, or testnet verification does **not** automatically a
 npm ci
 npm start
 npm run build
-npm run verify:all
+npm test
+npm run test:quantum
 ```
 
 If a command fails, treat the failure as evidence that the corresponding claim is **not currently verified**.
