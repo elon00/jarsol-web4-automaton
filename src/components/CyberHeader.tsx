@@ -35,7 +35,7 @@ export const CyberHeader: React.FC<CyberHeaderProps> = ({ wallet, onOpenWalletMo
     { id: 'kingdom', label: '👑 Sci-Fi Kingdom', badge: 'King/Genie' }, 
     { id: 'jarvis', label: '🎙️ Humanoid Jarvis', badge: 'Face-to-Face' },
     { id: 'swarm', label: '🤖 AI Swarm & Vision', badge: '5 Agents' },
-    { id: 'bazaar', label: '🛒 x402 Bazaar v2', badge: 'Mesh 19' },
+    { id: 'bazaar', label: '🛒 Agent commerce', badge: 'Unavailable' },
     { id: 'dex', label: '🔄 DEX Swap', badge: 'Real AMM' }, 
     { id: 'launchpad', label: '🚀 Launchpad', badge: '1B Fixed' }, 
     { id: 'pqc', label: '🛡️ PQC Shield', badge: 'FIPS 203/204' },

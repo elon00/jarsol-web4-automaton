@@ -1,6 +1,6 @@
 # ⚡ JarSol — Reality-First Web4 + Solana Prototype
 
-See [blockchain upgrade compatibility](CHAIN_UPGRADES.md) for the current Glamsterdam and Alpenglow integration, commands and verification limits. See [wallet balance behavior](WALLET_BALANCES.md) for network validation, availability and disposable Devnet wallet limits.
+See [blockchain upgrade compatibility](CHAIN_UPGRADES.md) for the current Glamsterdam and Alpenglow integration, commands and verification limits. See [wallet balance behavior](WALLET_BALANCES.md) for network validation, availability and disposable Devnet wallet limits. See [backend operation boundaries](BACKEND_SECURITY.md) before running a server.
 
 > **Reality cannot be claimed; reality must be proven.**
 

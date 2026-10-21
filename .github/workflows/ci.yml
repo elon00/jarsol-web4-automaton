@@ -35,6 +35,8 @@ jobs:
         run: npm run test:upgrades
       - name: Verify wallet balance identity and failure handling
         run: npm run test:balances
+      - name: Verify backend operation boundaries
+        run: npm run test:backend
       - name: Quantum PQC & Portfolio Verification
         run: npm run test:quantum
       - name: Production build
