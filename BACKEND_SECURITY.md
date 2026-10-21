@@ -13,3 +13,5 @@ The legacy payment endpoints, fabricated swap receipts, random agent proofs and 
 MCP metadata and startup messages omit the configured RPC URL. Public error responses do not forward provider exception messages. JSON bodies are limited to 1 MiB; RPC fetches and HTTP request/header lifetimes have bounds. These controls are not a complete deployment security review.
 
 Run npm run test:backend for HTTP authorization and network-boundary regression checks. Run npm test and npm run build for the integrated checks. No test sends funds or deploys a token. A production release still needs user authentication, rate limiting and capacity testing, a reviewed signing/custody design, transaction recovery and idempotency, independent security review, and owner acceptance. A real payment service needs a reviewed protocol adapter and durable replay protection before it is advertised.
+
+The browser links Devnet users to the official faucet rather than calling the operator-only airdrop route. The launchpad is a read-only repository registry and offers no browser deployment action. Static deployment records do not establish current on-chain authority, metadata or supply.

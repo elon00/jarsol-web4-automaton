@@ -39,7 +39,7 @@
     "test": "npm run test:nextgen && npm run test:upgrades && npm run test:balances && npm run test:backend && npm run typecheck",
     "test:upgrades": "tsx --test tests/chain-upgrades.test.ts tests/solana-monitor.test.ts",
     "test:balances": "tsx --test tests/wallet-balance.test.ts tests/wallet-display.test.ts",
-    "test:backend": "tsx --test tests/backend-boundaries.test.ts tests/backend-server.test.ts"
+    "test:backend": "tsx --test tests/backend-boundaries.test.ts tests/backend-server.test.ts tests/operator-ui.test.ts"
   },
   "dependencies": {
     "@google/generative-ai": "^0.24.0",

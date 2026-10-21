@@ -1,8 +1,7 @@
 import React from 'react';
 import { ShieldCheck, Coins, Wallet, Zap, Globe, Terminal, Layers, Activity, Command } from 'lucide-react';
 import { WalletState, NetworkType } from '../types';
-import { playCyberClick, playSuccessChime } from '../utils/audio';
-import { requestDevnetAirdrop } from '../utils/solana';
+import { playCyberClick } from '../utils/audio';
 
 interface CyberHeaderProps {
   wallet: WalletState;
@@ -16,19 +15,7 @@ interface CyberHeaderProps {
   onOpenRealityInspector?: () => void;
 }
 
-export const CyberHeader: React.FC<CyberHeaderProps> = ({ wallet, onOpenWalletModal, onNetworkChange, onRefreshBalance, metabolismScore, activeTab, setActiveTab, onToast, onOpenRealityInspector }) => {
-  const [requestingAirdrop, setRequestingAirdrop] = React.useState(false);
-
-  const handleAirdrop = async () => {
-    if (!wallet.address) { onToast('Please connect a wallet first to receive Devnet SOL.', 'warning'); return; }
-    playCyberClick(); setRequestingAirdrop(true);
-    onToast('Requesting 2.0 Devnet SOL airdrop from Solana RPC...', 'info');
-    const res = await requestDevnetAirdrop(wallet.address, 2, wallet.network as 'devnet' | 'testnet');
-    setRequestingAirdrop(false);
-    if (res.success) { playSuccessChime(); onToast('Airdrop of 2.0 SOL confirmed!', 'success'); onRefreshBalance(); }
-    else onToast(res.error || 'Airdrop rate limit reached. Try https://faucet.solana.com', 'error');
-  };
-
+export const CyberHeader: React.FC<CyberHeaderProps> = ({ wallet, onOpenWalletModal, onNetworkChange, metabolismScore, activeTab, setActiveTab, onToast, onOpenRealityInspector }) => {
   const navItems = [
     { id: 'metaverse', label: '🎮 24/7 Metaverse Game', badge: 'Dual-World' }, 
     { id: 'videos', label: '🎬 Sci-Fi 4K Videos', badge: '60FPS' },
@@ -104,10 +91,12 @@ export const CyberHeader: React.FC<CyberHeaderProps> = ({ wallet, onOpenWalletMo
           </button>
           {wallet.connected ? (
             <div className="flex items-center gap-2 shrink-0">
-              <button onClick={handleAirdrop} disabled={requestingAirdrop} title="Request 2.0 Devnet SOL airdrop" className="px-2.5 py-1.5 rounded bg-emerald-950/50 hover:bg-emerald-900/60 border border-emerald-500/40 text-emerald-300 text-xs font-mono flex items-center gap-1.5 disabled:opacity-50 transition-all">
-                <Coins className={`w-3.5 h-3.5 ${requestingAirdrop ? 'animate-spin' : ''}`} />
-                <span>+2.0 SOL</span>
-              </button>
+              {wallet.network === 'devnet' && (
+                <a href="https://faucet.solana.com/" target="_blank" rel="noopener noreferrer"
+                  className="px-2.5 py-1.5 rounded border border-emerald-500/40 text-emerald-300 text-xs font-mono flex items-center gap-1.5">
+                  <Coins className="w-3.5 h-3.5" /> Devnet SOL faucet
+                </a>
+              )}
               <div onClick={onOpenWalletModal} className="px-3 py-1 rounded-md bg-slate-900/80 border border-cyan-500/40 text-xs font-mono text-cyan-300 flex items-center gap-2 cursor-pointer hover:border-cyan-300 transition-all">
                 <div className="text-right">
                   <div className="text-[10px] text-slate-400">{wallet.balanceAvailable ? `${wallet.solBalance.toFixed(3)} SOL${wallet.jarsolBalance > 0 ? ` | ${wallet.jarsolBalance.toLocaleString()} $JARSOL` : ''}` : 'Balance unavailable'}</div>
