@@ -1,37 +1,30 @@
-# Blockchain upgrade compatibility
+# Solana Alpenglow compatibility
 
-Reviewed 2026-10-21 UTC. This SDK integrates read-only capability detection and dynamic gas estimation. It does not implement or activate a chain's consensus upgrade.
+Reviewed 2026-10-21 UTC. JarSol uses the shared read-only capability SDK from [Plonky](https://github.com/elon00/plonky/blob/main/src/chain-upgrades.ts). This application integration detects Solana consensus; it does not activate a network upgrade or implement Ethereum consensus.
 
-Build once with `npm ci --ignore-scripts` and `npm run build`, then run:
+Install and verify the application:
 
 ```text
-node tools/chain-upgrades.mjs --network sepolia
-node tools/chain-upgrades.mjs --network solana-devnet
-node tools/chain-upgrades.mjs --network solana-mainnet
+npm ci --ignore-scripts
+npm run test:upgrades
+npm run typecheck
+npm run build
 ```
 
-Use `QMOOSA_RPC_URL` or `QMOOSA_SOLANA_RPC_URL` for an operator-configured endpoint. Keep private provider URLs on the server; browser bundles are public. Solana identity is checked against the pinned cluster genesis hash before querying consensus. Devnet can reset: review a changed hash against trusted cluster information before updating `QMOOSA_SOLANA_GENESIS_HASH`. Never accept a mismatched network silently.
+Run the backend with `npm run server`. Configure `SOLANA_NETWORK` as devnet, testnet or mainnet-beta and `SOLANA_RPC_URL` as the matching HTTPS endpoint. Defaults target Devnet. Keep private provider URLs on the server; browser bundles are public. A network mismatch fails the identity check. Cluster genesis hashes are pinned in the shared SDK; a Devnet reset requires reviewing the new identity before updating the pin.
 
-Exit 0 means the tested capability was observed, 1 means not active/unverified, 2 means configuration/transport failure. JSON distinguishes these results. None means complete protocol conformance, a cryptographic audit, or application release approval. Results describe one RPC provider at one time.
+The backend exposes `GET /api/solana/consensus` and includes its result in `/api/health`. Backend balance reads, MCP balance reads and the browser balance fallback select the commitment from the same runtime probe. Probe requests are coalesced and cached for 15 seconds with `checkedAt` metadata. The browser fallback uses the public cluster endpoint. Backend responses omit configured provider URLs and raw provider error text.
 
-## Ethereum Glamsterdam
+## Runtime detection
 
-[EIP-7773](https://eips.ethereum.org/EIPS/eip-7773) records Sepolia activation at epoch 353024, October 6, 2026 13:53:36 UTC, and Hoodi at epoch 132352, October 26, 2026 17:42:48 UTC. Mainnet is unscheduled in this reviewed source. The earlier [EF testnet announcement](https://blog.ethereum.org/en/2026/09/17/glamsterdam-testnet-announcement) had Hoodi pending; the newer meta-EIP takes precedence for its schedule.
+The [official migration guide](https://solana.com/upgrades/alpenglow) describes `getAgGenesisCert`. A null result means TowerBFT, method-not-found means an older RPC server, and a certificate reports that the cluster migrated. The SDK checks the configured genesis identity first, distinguishes these outcomes, and validates certificate structure. It does not independently verify the BLS signature.
 
-`probeEvmUpgrade` verifies the expected chain ID, fetches a live block and requests `eth_estimateGas` at that block. For Ethereum it also tests [EIP-7843 SLOTNUM](https://eips.ethereum.org/EIPS/eip-7843) using temporary code in `eth_call` state overrides. No contract is deployed. Unsupported overrides, invalid opcodes and unavailable historical state leave this capability unverified. One opcode is not proof that every Glamsterdam rule is implemented. Dates and client version strings never enable a capability.
+A structurally valid provider-reported certificate selects finalized. TowerBFT and unknown/unavailable capability results retain confirmed. Identity or connectivity errors are not reported as successful probes. Dates and client-version strings never select a new commitment. Check `upgrade.capability`, `upgrade.consensus` and `checkedAt` rather than assuming a target latency.
 
-`estimateEvmGas` estimates the actual supplied transaction under current node rules and enforces the caller's gas ceiling. Avoid cached gas constants, fixed call stipends and assumptions about `gasleft()`. [EF repricing guidance](https://blog.ethereum.org/2026/08/24/glamsterdam-repricing-testing) covers state creation/access changes. The launchpad deployment remains restricted to Sepolia/local rehearsal and Foundry estimates its gas. Existing local contract tests use the pinned supported compiler/EVM target; they are not a Glamsterdam fork-conformance suite. Contracts need representative Sepolia transaction tests and independent review before release. Indexers must filter logs by emitting address and topic rather than assuming all transfer logs are ERC-20 events. Ethereum L2s have independent activation schedules; the helper does not label them Glamsterdam.
+Alpenglow changes consensus, leaving program execution, transaction formats and fees unchanged. This patch changes no signing or deployment behavior and sends no transactions. Mainnet deployment remains a separate release decision.
 
-## Solana Alpenglow
+## Streaming and further upgrades
 
-The [Solana migration guide](https://solana.com/upgrades/alpenglow) schedules mainnet epoch 1064 for approximately October 21, 2026 13:20 UTC, with a further 5000-slot transition window. Devnet and testnet are listed active. **Query the cluster instead of using this schedule to switch behavior.** `getAgGenesisCert` returns null for TowerBFT, a certificate after migration, or method-not-found on an older RPC. The SDK distinguishes all three and validates the returned structure. It does not independently verify the BLS signature. Only a structurally valid provider-reported certificate selects `finalized`; Tower/unknown keeps the existing `confirmed` behavior.
+Geyser consumers need per-connection buffers keyed on slot and bank_id; reconciliation across providers uses blockhash because bank IDs are node-local. Indexers must review vote-transaction counts, tick assumptions and Clock timestamp behavior. JarSol's account-state reads do not implement a Geyser indexer. Rotor is a later phase without a scheduled activation in the reviewed source.
 
-Transaction execution, SVM programs and fee mechanics are unchanged by Alpenglow. Applications streaming Geyser data need buffers per connection and `(slot, bank_id)`; cross-provider reconciliation uses blockhash because bank IDs are node-local. Indexers must stop counting vote transactions and ticks, and review Clock timestamp assumptions. Rotor is a later phase with no activation date in the reviewed source. The advertised finality is a target, not an application latency guarantee.
-
-## Other chains and upgrades
-
-Use the same procedure per actual dependency: record an official specification and activation status, pin a supported SDK/client release, preserve chain/genesis identity checks, add behavior tests, then roll out the verified shared code. Do not install floating `latest` packages or apply Ethereum/Solana consensus changes to ICP, Sui, Arbitrum, Polkadot or other chains. Their project-specific compatibility reviews remain part of the portfolio mission. Forks remain upstream reference dependencies.
-
-## JarSol integration
-
-`npm run test:upgrades` runs the shared behavioral tests. The browser balance fallback and backend balance endpoint use the commitment returned by live consensus detection. The backend exposes `/api/solana/consensus` and reports the same result in `/api/health`. Requests are coalesced and cached for 15 seconds; reports carry `checkedAt`. No provider URL is returned. Transaction/deployment signing behavior is unchanged, and this integration sends no transactions. The source is shared with Plonky; keep its exact source hash when updating.
+Ethereum Glamsterdam probing and its standalone CLI are provided by the canonical Plonky workbench, not by this JarSol checkout. Other chains require their own official specifications, identity checks and compatibility tests. Local/hosted test success is not an independent security certification or an application finality guarantee.

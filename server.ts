@@ -127,7 +127,8 @@ const jarsolMcp = createMcpRuntime({
       execute: async (args) => {
         const address = String(args.address || '');
         const pubkey = new PublicKey(address);
-        const lamports = await connection.getBalance(pubkey, 'confirmed');
+        const commitment = (await consensusStatus()).upgrade.commitment;
+        const lamports = await connection.getBalance(pubkey, commitment);
         return { address: pubkey.toBase58(), lamports, sol: lamports / LAMPORTS_PER_SOL, network: SOLANA_NETWORK };
       },
     },
