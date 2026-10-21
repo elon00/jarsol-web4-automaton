@@ -55,12 +55,7 @@ export const SolanaLaunchpad: React.FC<SolanaLaunchpadProps> = ({
     setDeploying(true);
     setCurrentStep(1);
 
-    // Optional background airdrop attempt (never blocks deployment)
-    if (wallet.solBalance < 0.05) {
-      try {
-        await requestDevnetAirdrop(wallet.address!, 2, wallet.network);
-      } catch (e) {}
-    }
+    // The backend uses its operator payer; a connected wallet balance does not fund it.
 
     try {
       // Step progression simulation
@@ -145,7 +140,7 @@ export const SolanaLaunchpad: React.FC<SolanaLaunchpadProps> = ({
             <div className="space-y-1">
               <div className="text-xs text-slate-400 font-mono">Wallet Status</div>
               <div className="font-mono text-sm text-cyan-300 font-bold flex items-center justify-between">
-                <span>{wallet.connected ? `${wallet.solBalance.toFixed(3)} SOL` : 'Disconnected'}</span>
+                <span>{wallet.connected ? (wallet.balanceAvailable ? `${wallet.solBalance.toFixed(3)} SOL` : 'Balance unavailable') : 'Disconnected'}</span>
                 <span className="text-[10px] px-1.5 py-0.5 rounded bg-cyan-950 border border-cyan-500/30">
                   {wallet.network}
                 </span>

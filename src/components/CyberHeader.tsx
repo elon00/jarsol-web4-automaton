@@ -110,7 +110,7 @@ export const CyberHeader: React.FC<CyberHeaderProps> = ({ wallet, onOpenWalletMo
               </button>
               <div onClick={onOpenWalletModal} className="px-3 py-1 rounded-md bg-slate-900/80 border border-cyan-500/40 text-xs font-mono text-cyan-300 flex items-center gap-2 cursor-pointer hover:border-cyan-300 transition-all">
                 <div className="text-right">
-                  <div className="text-[10px] text-slate-400">{wallet.solBalance.toFixed(3)} SOL {wallet.jarsolBalance > 0 ? `| ${wallet.jarsolBalance.toLocaleString()} $JARSOL` : ''}</div>
+                  <div className="text-[10px] text-slate-400">{wallet.balanceAvailable ? `${wallet.solBalance.toFixed(3)} SOL${wallet.jarsolBalance > 0 ? ` | ${wallet.jarsolBalance.toLocaleString()} $JARSOL` : ''}` : 'Balance unavailable'}</div>
                   <div className="font-bold">{wallet.address?.substring(0, 4)}...{wallet.address?.substring(wallet.address.length - 4)}</div>
                 </div>
                 <div className="w-2.5 h-2.5 rounded-full bg-emerald-400 shadow-[0_0_8px_rgba(0,255,120,0.8)]" />

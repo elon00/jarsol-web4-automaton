@@ -234,7 +234,7 @@ export const RealDexExchange: React.FC<RealDexExchangeProps> = ({
           <div className="p-4 rounded-xl bg-slate-900/90 border border-slate-800 space-y-2">
             <div className="flex justify-between text-xs font-mono text-slate-400">
               <span>You Pay</span>
-              <span>Balance: {fromToken === 'SOL' ? `${wallet.solBalance.toFixed(3)} SOL` : '450,000,000,000 JARSOL'}</span>
+              <span>Balance: {wallet.connected && wallet.balanceAvailable ? (fromToken === 'SOL' ? `${wallet.solBalance.toFixed(3)} SOL` : `${wallet.jarsolBalance.toLocaleString()} JARSOL`) : 'Unavailable'}</span>
             </div>
 
             <div className="flex items-center justify-between gap-3">

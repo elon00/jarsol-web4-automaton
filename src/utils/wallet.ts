@@ -1,113 +1,60 @@
-import { Keypair, PublicKey } from '@solana/web3.js';
+import { Keypair } from '@solana/web3.js';
 import { WalletState, NetworkType } from '../types';
-import { fetchWalletBalance, generateDevnetKeypair } from './solana';
+import { fetchWalletBalance, generateDevnetKeypair, CANONICAL_DEPLOYMENTS } from './solana';
+import { canonicalTokenBalance } from '../services/WalletBalanceService';
 
 declare global {
-  interface Window {
-    solana?: any;
-    solflare?: any;
-    ethereum?: any;
-  }
+  interface Window { solana?: any; solflare?: any; ethereum?: any; }
 }
 
 export const PRIMARY_USER_WALLET_ADDRESS = 'ETMPB8Kha7UJDnqBX93MFBhKCe9Q8v5YZJdugsoJfVCV';
 
-export async function connectUserWallet(network: NetworkType = 'devnet'): Promise<WalletState> {
-  const pubkey = PRIMARY_USER_WALLET_ADDRESS;
-  const balances = await fetchWalletBalance(pubkey, network);
-
-  return {
-    connected: true,
-    address: pubkey,
-    publicKey: pubkey,
-    solBalance: balances.sol,
-    jarsolBalance: 0,
-    walletType: 'phantom',
-    network,
+async function walletSnapshot(
+  address: string, network: NetworkType, walletType: WalletState['walletType'],
+): Promise<WalletState> {
+  const state: WalletState = {
+    connected: true, address, publicKey: address, network, walletType,
+    solBalance: 0, jarsolBalance: 0, balanceAvailable: false,
   };
+  try {
+    const balances = await fetchWalletBalance(address, network);
+    state.solBalance = balances.sol;
+    state.jarsolBalance = canonicalTokenBalance(balances.tokens,
+      CANONICAL_DEPLOYMENTS[network].status === 'ACTIVE' ? CANONICAL_DEPLOYMENTS[network].mintAddress : undefined);
+    state.balanceAvailable = true;
+  } catch { /* Wallet connection and balance availability are separate states. */ }
+  return state;
+}
+
+/** Observing a public address does not establish possession of a wallet signer. */
+export async function connectUserWallet(network: NetworkType = 'devnet'): Promise<WalletState> {
+  return walletSnapshot(PRIMARY_USER_WALLET_ADDRESS, network, 'watch-only');
 }
 
 export async function connectPhantomWallet(network: NetworkType = 'devnet'): Promise<WalletState> {
-  if (typeof window !== 'undefined' && window.solana && window.solana.isPhantom) {
-    try {
-      const resp = await window.solana.connect();
-      const pubkey = resp.publicKey.toString();
-      const balances = await fetchWalletBalance(pubkey, network);
-
-      return {
-        connected: true,
-        address: pubkey,
-        publicKey: pubkey,
-        solBalance: balances.sol,
-        jarsolBalance: balances.tokens.find(t => t.mint)?.amount ? parseFloat(balances.tokens[0].amount) : 0,
-        walletType: 'phantom',
-        network,
-      };
-    } catch (err: any) {
-      console.error('Phantom connection failed:', err);
-      throw new Error(err.message || 'User rejected Phantom connection.');
-    }
-  } else {
-    throw new Error('Phantom wallet extension not detected. Please install Phantom from https://phantom.app to connect.');
+  if (typeof window === 'undefined' || !window.solana?.isPhantom) {
+    throw new Error('Phantom wallet extension not detected. Install it from https://phantom.app.');
   }
+  try {
+    const response = await window.solana.connect();
+    return walletSnapshot(response.publicKey.toString(), network, 'phantom');
+  } catch { throw new Error('Phantom connection was declined or unavailable.'); }
 }
 
 export async function connectSolflareWallet(network: NetworkType = 'devnet'): Promise<WalletState> {
-  if (typeof window !== 'undefined' && (window.solflare || (window.solana && window.solana.isSolflare))) {
-    try {
-      const provider = window.solflare || window.solana;
-      await provider.connect();
-      const pubkey = provider.publicKey.toString();
-      const balances = await fetchWalletBalance(pubkey, network);
-
-      return {
-        connected: true,
-        address: pubkey,
-        publicKey: pubkey,
-        solBalance: balances.sol,
-        jarsolBalance: balances.tokens.find(t => t.mint)?.amount ? parseFloat(balances.tokens[0].amount) : 0,
-        walletType: 'solflare',
-        network,
-      };
-    } catch (err: any) {
-      console.error('Solflare connection failed:', err);
-      throw new Error(err.message || 'User rejected Solflare connection.');
-    }
-  } else {
-    throw new Error('Solflare wallet extension not detected. Please install Solflare from https://solflare.com to connect.');
-  }
+  const provider = typeof window === 'undefined' ? undefined : window.solflare || (window.solana?.isSolflare ? window.solana : undefined);
+  if (!provider) throw new Error('Solflare wallet extension not detected. Install it from https://solflare.com.');
+  try {
+    await provider.connect();
+    return walletSnapshot(provider.publicKey.toString(), network, 'solflare');
+  } catch { throw new Error('Solflare connection was declined or unavailable.'); }
 }
 
+// Disposable Devnet demo only. Never persist browser-generated signing material.
+let disposableDevnetKeypair: Keypair | undefined;
 export async function connectInstantDevnetKeypair(network: NetworkType = 'devnet'): Promise<{ walletState: WalletState; keypair: Keypair }> {
-  let keypair: Keypair;
-  const storedSecret = sessionStorage.getItem('jarsol_devnet_secret');
-
-  if (storedSecret) {
-    try {
-      const arr = JSON.parse(storedSecret);
-      keypair = Keypair.fromSecretKey(Uint8Array.from(arr));
-    } catch {
-      keypair = generateDevnetKeypair();
-      sessionStorage.setItem('jarsol_devnet_secret', JSON.stringify(Array.from(keypair.secretKey)));
-    }
-  } else {
-    keypair = generateDevnetKeypair();
-    sessionStorage.setItem('jarsol_devnet_secret', JSON.stringify(Array.from(keypair.secretKey)));
-  }
-
-  const pubkey = keypair.publicKey.toBase58();
-  const balances = await fetchWalletBalance(pubkey, network);
-
-  return {
-    walletState: {
-      connected: true,
-      address: pubkey,
-      publicKey: pubkey,
-      solBalance: balances.sol,
-      jarsolBalance: 0,
-      walletType: 'keypair',
-      network,
-    },
-    keypair,
-  };
+  if (network !== 'devnet') throw new Error('The disposable demo keypair is for Devnet only. Connect a browser wallet for other networks.');
+  try { globalThis.sessionStorage?.removeItem('jarsol_devnet_secret'); } catch { /* Storage may be disabled. */ }
+  const keypair = disposableDevnetKeypair ??= generateDevnetKeypair();
+  return { walletState: await walletSnapshot(keypair.publicKey.toBase58(), network, 'keypair'), keypair };
 }

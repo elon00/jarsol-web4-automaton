@@ -65,7 +65,7 @@ export const WalletModal: React.FC<WalletModalProps> = ({
       const { walletState } = await connectInstantDevnetKeypair(wallet.network);
       onWalletConnected(walletState);
       playSuccessChime();
-      onToast('Instant Ed25519 Devnet Keypair loaded into session!', 'success');
+      onToast('Disposable Devnet wallet opened. It resets when this page reloads.', 'success');
       onClose();
     } catch (err: any) {
       onToast('Failed to initialize keypair: ' + err.message, 'error');
@@ -135,7 +135,7 @@ export const WalletModal: React.FC<WalletModalProps> = ({
                 <div className="grid grid-cols-2 gap-2 pt-1 border-t border-slate-800/80 text-xs">
                   <div>
                     <span className="text-slate-500 block text-[10px]">SOL Balance</span>
-                    <span className="text-slate-200 font-mono font-bold">{wallet.solBalance.toFixed(4)} SOL</span>
+                    <span className="text-slate-200 font-mono font-bold">{wallet.balanceAvailable ? `${wallet.solBalance.toFixed(4)} SOL` : 'Unavailable'}</span>
                   </div>
                   <div>
                     <span className="text-slate-500 block text-[10px]">Wallet Type</span>
@@ -176,7 +176,7 @@ export const WalletModal: React.FC<WalletModalProps> = ({
               {/* Instant Devnet Keypair Option */}
               <button
                 onClick={handleInstantKeypair}
-                disabled={!!connecting}
+                disabled={!!connecting || wallet.network !== 'devnet'}
                 className="w-full p-3.5 rounded-lg bg-cyan-950/40 hover:bg-cyan-900/60 border border-cyan-400/60 hover:border-cyan-300 text-left transition-all flex items-center justify-between group shadow-[0_0_15px_rgba(0,240,255,0.15)]"
               >
                 <div className="flex items-center gap-3">
@@ -190,7 +190,7 @@ export const WalletModal: React.FC<WalletModalProps> = ({
                         1-CLICK FAST
                       </span>
                     </div>
-                    <p className="text-[11px] text-slate-400">Auto-generates & stores an Ed25519 keypair for testnet testing</p>
+                    <p className="text-[11px] text-slate-400">Disposable Devnet wallet. Resets on reload; never use for real funds.</p>
                   </div>
                 </div>
                 <Key className="w-4 h-4 text-cyan-400" />

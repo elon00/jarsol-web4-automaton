@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect, useRef } from 'react';
 import { CyberHeader } from './components/CyberHeader';
 import { WalletModal } from './components/WalletModal';
 import { MetaverseGameEngine } from './components/MetaverseGameEngine';
@@ -22,6 +22,7 @@ import { AutonomousSwarmModule } from './components/AutonomousSwarmModule';
 
 import { WalletState, NetworkType } from './types';
 import { fetchWalletBalance, CANONICAL_DEPLOYMENTS } from './utils/solana';
+import { canonicalTokenBalance } from './services/WalletBalanceService';
 import { CheckCircle2, AlertCircle, Info, AlertTriangle, X } from 'lucide-react';
 
 export interface ToastMessage {
@@ -45,6 +46,7 @@ export function App() {
     publicKey: null,
     solBalance: 0,
     jarsolBalance: 0,
+    balanceAvailable: false,
     walletType: null,
     network: 'devnet',
   });
@@ -65,33 +67,55 @@ export function App() {
     setToasts((prev) => prev.filter((t) => t.id !== id));
   };
 
-  // Refresh Balance
+  const balanceRequest = useRef(0);
   const refreshBalance = useCallback(async () => {
-    if (wallet.address) {
-      const b = await fetchWalletBalance(wallet.address, wallet.network);
-      const canonicalMint = CANONICAL_DEPLOYMENTS[wallet.network]?.mintAddress;
-      const matchingToken = b.tokens.find((t) => t.mint === canonicalMint);
-      setWallet((prev) => ({
-        ...prev,
-        solBalance: b.sol,
-        jarsolBalance: matchingToken?.amount ? parseFloat(matchingToken.amount) : 0,
-      }));
+    if (!wallet.connected || !wallet.address) return;
+    const address = wallet.address;
+    const network = wallet.network;
+    const request = ++balanceRequest.current;
+    const matches = (current: WalletState) => current.connected &&
+      current.address === address && current.network === network;
+    setWallet(current => matches(current) ? { ...current, balanceAvailable: false } : current);
+    try {
+      const balance = await fetchWalletBalance(address, network);
+      const deployment = CANONICAL_DEPLOYMENTS[network];
+      const jarsolBalance = canonicalTokenBalance(balance.tokens,
+        deployment.status === 'ACTIVE' ? deployment.mintAddress : undefined);
+      if (request !== balanceRequest.current) return;
+      setWallet(current => matches(current) ? {
+        ...current, solBalance: balance.sol, jarsolBalance, balanceAvailable: true,
+      } : current);
+    } catch {
+      if (request !== balanceRequest.current) return;
+      setWallet(current => matches(current) ? { ...current, balanceAvailable: false } : current);
+      addToast('Balance unavailable for this wallet and network. Try refreshing.', 'warning');
     }
-  }, [wallet.address, wallet.network]);
+  }, [wallet.connected, wallet.address, wallet.network, addToast]);
 
+  useEffect(() => {
+    void refreshBalance();
+    return () => { balanceRequest.current++; };
+  }, [refreshBalance]);
 
   const handleNetworkChange = (net: NetworkType) => {
-    setWallet((prev) => ({ ...prev, network: net }));
+    if (wallet.walletType === 'keypair' && net !== 'devnet') {
+      addToast('The disposable wallet is for Devnet only. Disconnect it and connect a browser wallet to change networks.', 'warning');
+      return;
+    }
+    balanceRequest.current++;
+    setWallet(prev => ({ ...prev, network: net, balanceAvailable: false, solBalance: 0, jarsolBalance: 0 }));
     addToast(`Solana network switched to ${net.toUpperCase()}`, 'info');
   };
 
   const handleDisconnectWallet = () => {
+    balanceRequest.current++;
     setWallet({
       connected: false,
       address: null,
       publicKey: null,
       solBalance: 0,
       jarsolBalance: 0,
+      balanceAvailable: false,
       walletType: null,
       network: wallet.network,
     });
@@ -166,7 +190,13 @@ export function App() {
         onClose={() => setIsWalletModalOpen(false)}
         wallet={wallet}
         onWalletConnected={(w) => {
-          setWallet(w);
+          balanceRequest.current++;
+          setWallet(current => {
+            if (w.walletType === 'keypair' && current.network !== 'devnet') return current;
+            const sameNetwork = w.network === current.network;
+            return { ...w, network: current.network, balanceAvailable: sameNetwork && w.balanceAvailable === true,
+              solBalance: sameNetwork ? w.solBalance : 0, jarsolBalance: sameNetwork ? w.jarsolBalance : 0 };
+          });
         }}
         onDisconnect={handleDisconnectWallet}
         onToast={addToast}
