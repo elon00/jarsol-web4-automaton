@@ -28,3 +28,7 @@ Thumbs.db
 # QMoosa Finisher Reports
 .qmoosa/
 
+# Python CI-tool bytecode
+__pycache__/
+*.py[cod]
+
