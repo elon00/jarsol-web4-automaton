@@ -110,7 +110,7 @@ export const TokenomicsModule: React.FC<TokenomicsModuleProps> = ({ onToast }) =
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <div
-                    className="w-3 h-3 rounded-full shadow-sm"
+                    className="w-3 h-3 rounded-full shadow-xs"
                     style={{ backgroundColor: alloc.color }}
                   />
                   <span className="font-bold text-xs text-slate-200">{alloc.category}</span>
@@ -205,7 +205,7 @@ export const TokenomicsModule: React.FC<TokenomicsModuleProps> = ({ onToast }) =
                 type="number"
                 value={stakedAmount}
                 onChange={(e) => setStakedAmount(Number(e.target.value))}
-                className="w-full p-2.5 rounded bg-black/60 border border-slate-700 text-cyan-300 font-bold focus:outline-none"
+                className="w-full p-2.5 rounded bg-black/60 border border-slate-700 text-cyan-300 font-bold focus:outline-hidden"
               />
             </div>
 

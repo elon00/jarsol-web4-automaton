@@ -1,4 +1,5 @@
-import { Connection, PublicKey } from '@solana/web3.js';
+import { deploymentConnection } from './deployment-rpc.ts';
+import { PublicKey } from '@solana/web3.js';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -24,7 +25,7 @@ async function main() {
   if (!mintAddress || !ataAddress || !deployer) throw new Error('Registry missing mint, ATA, or deployer identity.');
   if (expectedRawSupply !== EXPECTED_RAW_SUPPLY) throw new Error(`Unexpected target raw supply: ${expectedRawSupply}`);
 
-  const connection = new Connection(TESTNET_RPC, 'finalized');
+  const connection = await deploymentConnection(TESTNET_RPC, 'testnet');
   const mint = new PublicKey(mintAddress);
   const ata = new PublicKey(ataAddress);
 
@@ -70,23 +71,7 @@ async function main() {
   console.log(`Finalized slot: ${slot}`);
 }
 
-main().catch((error: any) => {
-  const isNetworkOr503 = 
-    error?.message?.includes('503') || 
-    error?.message?.includes('429') || 
-    error?.message?.includes('Service unavailable') || 
-    error?.message?.includes('fetch') ||
-    error?.message?.includes('ECONNREFUSED') ||
-    error?.message?.includes('timeout');
-
-  if (isNetworkOr503) {
-    console.warn(`\n⚠️ [FAIL-SAFE] Solana Testnet RPC upstream downtime detected: ${error?.message || error}`);
-    console.log('🛡️ Validating Metaplex PDA derivation & registry integrity offline...');
-    console.log('✅ Local registry, ATA identity, and Metaplex PDA math: VALID');
-    console.log('🏆 [AUTO-HEAL VERDICT] JARSOL TESTNET V2 VERIFICATION: PASS (Offline Cryptographic Evidence Mode)\n');
-    process.exit(0);
-  }
-
-  console.error(`JARSOL TESTNET V2 VERIFICATION FAILED: ${error?.message || error}`);
-  process.exit(1);
+main().catch(() => {
+  console.error('FRESH TESTNET DEPLOYMENT VERIFICATION FAILED OR UNAVAILABLE; no live pass is claimed.');
+  process.exitCode = 1;
 });

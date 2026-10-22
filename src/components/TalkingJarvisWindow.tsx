@@ -71,6 +71,7 @@ export const TalkingJarvisWindow: React.FC<TalkingJarvisWindowProps> = ({
   onExecuteOnChainAction,
 }) => {
   const [commMode, setCommMode] = useState<CommMode>('2-way');
+  const [modelStatus, setModelStatus] = useState<'unverified' | 'requesting' | 'available' | 'unavailable'>('unverified');
   const [selectedLang, setSelectedLang] = useState<SpeechLang>('en-IN');
   const [isCallActive, setIsCallActive] = useState(false);
   const [turnState, setTurnState] = useState<TurnState>('idle');
@@ -116,15 +117,7 @@ export const TalkingJarvisWindow: React.FC<TalkingJarvisWindowProps> = ({
   }, []);
 
   // Conversation history
-  const [messages, setMessages] = useState<ChatMessage[]>([
-    {
-      id: 'msg-init',
-      sender: 'jarvis',
-      senderLabel: '🚀 Elon-Jarvis (Gemini Live)',
-      text: "Continuous Gemini Live call active! First-principles AI, Quantum, Conway, and Solana crypto online. Boliye, main sun raha hoon!",
-      time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-    },
-  ]);
+  const [messages, setMessages] = useState<ChatMessage[]>([]);
 
   const pipelineRef = useRef<RealtimeAudioVisualPipeline | null>(null);
   const videoRef = useRef<HTMLVideoElement | null>(null);
@@ -161,6 +154,7 @@ export const TalkingJarvisWindow: React.FC<TalkingJarvisWindowProps> = ({
     lastProcessedTextRef.current = lower;
     lastProcessedTimeRef.current = nowTime;
 
+    setModelStatus('requesting');
     pipelineRef.current?.setTurnState('thinking');
 
     const timeStr = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
@@ -207,7 +201,9 @@ DIRECTIVES:
 - Keep responses to 1-2 punchy spoken sentences for ultra-fast low-latency continuous conversation.`;
       
       const res = await askGeminiAgent(trimmed, jarvisPrompt, undefined, imageBase64, historyPayload);
-      const jarvisReply = res.reply || `Look, from a first-principles perspective, we need to scale this compute matrix 100x. Let's execute!`;
+      const jarvisReply = res.reply;
+          if (typeof jarvisReply !== 'string' || !jarvisReply.trim()) throw new Error('Model reply unavailable');
+      setModelStatus('available');
       
       const jarvisMsg: ChatMessage = {
         id: `jarvis-${Date.now()}`,
@@ -230,16 +226,18 @@ DIRECTIVES:
       // If 3-Way or 4-Way Mode, trigger auxiliary AI agent responses in conversation
       if (commMode === '3-way' || commMode === '4-way') {
         setTimeout(async () => {
-          const secPrompt = `You are SEC & MiCA Legal Auditor AI. Elon-Jarvis and User are discussing: "${trimmed}". In 1 brief sentence, provide a regulatory perspective on $JARSOL utility gas under MiCA Title II.`;
+          try {
+          const secPrompt = `You provide unverified general commentary, not legal advice or regulatory approval. The user is discussing: "${trimmed}". In one brief sentence, identify uncertainty and review questions. Do not issue a legal classification or approval.`;
           const secRes = await askGeminiAgent(trimmed, secPrompt);
-          const secReply = secRes.reply || `Regulatory framework confirms: $JARSOL qualifies 100% as a consumptive decentralized utility fuel without security exposure.`;
+          const secReply = secRes.reply;
+          if (typeof secReply !== 'string' || !secReply.trim()) throw new Error('Model reply unavailable');
 
           setMessages((prev) => [
             ...prev,
             {
               id: `sec-${Date.now()}`,
               sender: 'sec',
-              senderLabel: '⚖️ SEC Auditor AI',
+              senderLabel: 'Model commentary (unverified)',
               text: secReply,
               time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
             },
@@ -248,14 +246,17 @@ DIRECTIVES:
           if (voiceEnabled) {
             pipelineRef.current?.speak(secReply, 'sec');
           }
+          } catch { onToast('Additional model commentary unavailable.', 'warning'); }
         }, 3200);
       }
 
       if (commMode === '4-way') {
         setTimeout(async () => {
+          try {
           const quantumPrompt = `You are Quantum Guard AI. In 1 brief sentence, comment on quantum lattice encryption security for: "${trimmed}".`;
           const qRes = await askGeminiAgent(trimmed, quantumPrompt);
-          const qReply = qRes.reply || `NIST FIPS 204 ML-DSA lattice parameters verified. Shor's algorithm resistance nominal.`;
+          const qReply = qRes.reply;
+          if (typeof qReply !== 'string' || !qReply.trim()) throw new Error('Model reply unavailable');
 
           setMessages((prev) => [
             ...prev,
@@ -271,30 +272,18 @@ DIRECTIVES:
           if (voiceEnabled) {
             pipelineRef.current?.speak(qReply, 'quantum');
           }
+          } catch { onToast('Additional model commentary unavailable.', 'warning'); }
         }, 6200);
       }
 
-    } catch (err: any) {
-      console.error('Dialogue error:', err);
-      const fallbackReply = `From a first-principles perspective, we need to scale this compute matrix 100x. The current time is ${currentTime}. Conway automaton compute, quantum lattice security, and Solana DEX pools are fully primed—let's ship it!`;
-      setMessages((prev) => [
-        ...prev,
-        {
-          id: `jarvis-${Date.now()}`,
-          sender: 'jarvis',
-          senderLabel: '🚀 Elon-Jarvis',
-          text: fallbackReply,
-          time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-        },
-      ]);
-      setActiveSpeaker('jarvis');
-      if (voiceEnabled) {
-        pipelineRef.current?.speak(fallbackReply, 'jarvis');
-      }
+    } catch {
+      setModelStatus('unavailable');
+      onToast('AI service unavailable. No model reply was created.', 'warning');
+      pipelineRef.current?.setTurnState('idle');
     } finally {
       isProcessingRef.current = false;
     }
-  }, [commMode, cameraActive, currentTime, currentDate, voiceEnabled]);
+  }, [commMode, cameraActive, voiceEnabled]);
 
   // Initialize pipeline instance
   useEffect(() => {
@@ -352,8 +341,8 @@ DIRECTIVES:
       const res = await pipelineRef.current?.activatePipeline();
       if (res?.success) {
         setIsCallActive(true);
-        onToast('Continuous Gemini Live Call Online! Speak freely now.', 'success');
-        pipelineRef.current?.speak("Continuous Gemini Live call connected! Voice, Vision, and Neural reasoning active. Boliye!");
+        onToast('Browser speech session started. Model replies require an available backend.', 'success');
+        pipelineRef.current?.speak("Browser speech is ready. This greeting is generated locally.");
       } else {
         onToast('Microphone access pending. You can also type or click prompts.', 'warning');
       }
@@ -372,7 +361,7 @@ DIRECTIVES:
     playCyberClick();
     playSuccessChime();
     await ArgentAutonomousHealer.getInstance().healAudioSystem();
-    pipelineRef.current?.speak("Audio cured and verified! Hardcore engineering across AI, Quantum, Crypto, and Conway Automata online.");
+    pipelineRef.current?.speak("Browser audio test. This message is generated locally.");
     onToast('Audio Test triggered! You should hear Elon-Jarvis speaking.', 'info');
   };
 
@@ -388,25 +377,17 @@ DIRECTIVES:
 
     if (report.activeIssuesCount === 0) {
       playSuccessChime();
-      onToast(`⚡ System 100% CURED & OPTIMIZED! Score: ${report.overallHealthScore}/100`, 'success');
-      pipelineRef.current?.speak("Argent autonomous cure complete. All 8 subsystem vectors are 100% healthy.");
+      onToast(`Browser checks completed. Live service verification is pending.`, 'success');
+      pipelineRef.current?.speak("Browser checks completed. Live service verification is pending.");
     } else {
-      onToast(`Argent cured ${report.healedCount} components. System health: ${report.overallHealthScore}%`, 'info');
+      onToast(`Browser checks completed with ${report.activeIssuesCount} reported issues.`, 'info');
     }
   };
 
   // Clear Chat History
   const handleClearChat = () => {
     playCyberClick();
-    setMessages([
-      {
-        id: `msg-${Date.now()}`,
-        sender: 'jarvis',
-        senderLabel: '🚀 Elon-Jarvis',
-        text: "Context cleared. Let's rethink from first principles. What are we building next?",
-        time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-      },
-    ]);
+    setMessages([]);
     onToast('Conversation stream cleared', 'info');
   };
 
@@ -444,7 +425,7 @@ DIRECTIVES:
           <div className="flex items-center gap-2 flex-wrap">
             <span className="px-2.5 py-1 rounded bg-gradient-to-r from-emerald-950 to-cyan-950 border border-emerald-400/50 text-emerald-300 text-xs font-mono font-bold flex items-center gap-1.5 shadow-[0_0_10px_rgba(0,255,150,0.3)]">
               <HeartPulse className="w-3.5 h-3.5 text-emerald-400 animate-pulse" />
-              <span>CONTINUOUS GEMINI LIVE VOICE & VISION STREAMING</span>
+              <span>BROWSER SPEECH & OPTIONAL MODEL CHAT</span>
             </span>
             <span className="px-2 py-0.5 rounded bg-cyan-950/60 border border-cyan-500/30 text-cyan-400 text-xs font-mono">
               Auto-Restart Loop • Multi-Lingual Speech Recognition
@@ -452,11 +433,11 @@ DIRECTIVES:
           </div>
 
           <h1 className="font-cyber font-black text-2xl md:text-3xl text-slate-100 tracking-wide">
-            Continuous <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 via-cyan-400 to-purple-400">Gemini Live Voice</span> Jarvis
+            Continuous <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 via-cyan-400 to-purple-400">Browser Speech</span> Jarvis
           </h1>
 
           <p className="text-sm text-slate-400 leading-relaxed font-mono">
-            Continuous, hands-free conversational AI like Gemini Live. Supports fluent Hindi, Hinglish, and English with auto-reconnecting audio loops, barge-in interruptibility, and Argent autonomous self-healing.
+            Browser speech and optional model chat. Speech support depends on your browser and permission settings; model replies require a configured backend.
           </p>
         </div>
 
@@ -472,7 +453,7 @@ DIRECTIVES:
             }`}
           >
             {isCallActive ? <PhoneOff className="w-4 h-4" /> : <PhoneCall className="w-4 h-4" />}
-            <span>{isCallActive ? 'DISCONNECT LIVE CALL' : '🔴 CONNECT GEMINI LIVE'}</span>
+            <span>{isCallActive ? 'DISCONNECT LIVE CALL' : '🔴 START BROWSER SPEECH'}</span>
           </button>
 
           {/* Interrupt Button (When speaking) */}
@@ -633,7 +614,7 @@ DIRECTIVES:
             <div className="flex items-center justify-center gap-2">
               <span className={`w-2.5 h-2.5 rounded-full ${isCallActive ? 'bg-emerald-400 animate-ping' : 'bg-slate-600'}`} />
               <span className="font-bold text-slate-200">
-                {isCallActive ? `🔴 GEMINI LIVE STREAM ACTIVE (${selectedLang})` : 'CALL STANDBY // CLICK CONNECT TO TALK'}
+                {isCallActive ? `🔴 BROWSER SPEECH SESSION OPEN (${selectedLang})` : 'CALL STANDBY // CLICK CONNECT TO TALK'}
               </span>
             </div>
             <div className="text-[10px] text-slate-400">
@@ -661,13 +642,15 @@ DIRECTIVES:
                   <span>CLEAR</span>
                 </button>
                 <span className="text-[10px] font-mono text-emerald-400 px-2 py-0.5 rounded bg-emerald-950/60 border border-emerald-500/30">
-                  Gemini Live Active
+                  {isCallActive ? 'Browser speech session open' : 'Speech interface idle'} · {modelStatus === 'available' ? 'Latest model reply received' : modelStatus === 'requesting' ? 'Requesting model reply' : modelStatus === 'unavailable' ? 'AI unavailable' : 'AI unverified'}
                 </span>
               </div>
             </div>
 
             {/* Messages Scroll Area */}
             <div className="flex-1 overflow-y-auto space-y-3 pr-2 no-scrollbar">
+              {modelStatus === 'unavailable' && <p role="status" className="text-sm text-amber-300">AI service unavailable. No model reply was created.</p>}
+              {messages.length === 0 && <p className="text-sm text-slate-400">No model replies yet. An available AI service is required for responses.</p>}
               {messages.map((msg) => (
                 <div
                   key={msg.id}
@@ -699,7 +682,7 @@ DIRECTIVES:
               {turnState === 'thinking' && (
                 <div className="flex items-center gap-2 p-3 rounded-xl bg-slate-900/60 border border-cyan-500/30 text-xs font-mono text-cyan-300 animate-pulse">
                   <RefreshCw className="w-4 h-4 animate-spin text-cyan-400" />
-                  <span>Gemini Flash is streaming response...</span>
+                  <span>Waiting for a model reply...</span>
                 </div>
               )}
 
@@ -728,7 +711,7 @@ DIRECTIVES:
                 onChange={(e) => setInputText(e.target.value)}
                 placeholder={`Type or speak naturally in ${selectedLang === 'hi-IN' ? 'Hindi' : 'Hinglish / English'}...`}
                 disabled={turnState === 'thinking'}
-                className="flex-1 p-3 rounded-xl bg-black/60 border border-slate-700 text-cyan-200 text-xs font-mono focus:outline-none focus:border-cyan-400 disabled:opacity-50"
+                className="flex-1 p-3 rounded-xl bg-black/60 border border-slate-700 text-cyan-200 text-xs font-mono focus:outline-hidden focus:border-cyan-400 disabled:opacity-50"
               />
               <button
                 type="submit"

@@ -45,19 +45,19 @@ export const CyberHeader: React.FC<CyberHeaderProps> = ({ wallet, onOpenWalletMo
         <div className="min-w-0 flex items-center gap-2 overflow-hidden lg:border-r lg:border-cyan-950/40 lg:pr-3">
           <div className="flex items-center gap-1.5 px-2 py-1 rounded bg-emerald-950/60 border border-emerald-500/40 text-emerald-300 font-bold shrink-0">
             <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
-            <span className="truncate">24/7 METAVERSE DUAL-WORLD ACTIVE</span>
+            <span className="truncate">EXPERIMENTAL BROWSER DEMO</span>
           </div>
-          <span className="text-slate-400 hidden xl:inline truncate">Real-Time Speech & 60FPS Video</span>
-          <span className="text-emerald-400 px-1.5 py-1 rounded bg-emerald-950/40 border border-emerald-500/20 font-mono text-[10px] shrink-0">1B $JARSOL · FIXED</span>
+          <span className="text-slate-400 hidden xl:inline truncate">Speech/video needs browser permission</span>
+          <span className="text-emerald-400 px-1.5 py-1 rounded bg-emerald-950/40 border border-emerald-500/20 font-mono text-[10px] shrink-0">Reference token policy</span>
         </div>
 
         <div className="min-w-0 flex items-center justify-start lg:justify-end gap-2 overflow-x-auto lg:pl-3">
           <button onClick={() => { playCyberClick(); if (onOpenRealityInspector) onOpenRealityInspector(); else setActiveTab('reality'); }} className="flex items-center gap-1.5 px-2 py-1 rounded bg-cyan-950/80 hover:bg-cyan-900/90 border border-cyan-500/40 text-cyan-300 font-bold shrink-0" title="Open Zero-Trust Reality Inspector">
-            <Layers className="w-3.5 h-3.5 text-cyan-400" /><span>REALITY:</span><span className="text-emerald-400 font-mono text-[10px]">17 Real</span><span className="text-slate-500">•</span><span className="text-purple-400 font-mono text-[10px]">4 Exp</span><span className="text-slate-500">•</span><span className="text-amber-400 font-mono text-[10px]">3 Sim</span><span className="text-slate-500">•</span><span className="text-blue-400 font-mono text-[10px]">4 Road</span>
+            <Layers className="w-3.5 h-3.5 text-cyan-400" /><span>VERIFICATION: OPEN</span>
           </button>
-          <div className="flex items-center gap-1.5 text-slate-300 shrink-0"><Zap className="w-3.5 h-3.5 text-amber-400" /><span>METABOLISM:</span><span className={`font-bold ${metabolismScore > 50 ? 'text-emerald-400' : 'text-amber-400'}`}>{metabolismScore.toFixed(1)}%</span></div>
-          <div className="flex items-center gap-1.5 text-slate-300 shrink-0"><ShieldCheck className="w-3.5 h-3.5 text-cyan-400" /><span>PQC:</span><span className="text-cyan-400 font-bold">FIPS 204</span></div>
-          <div className="flex items-center gap-1 bg-slate-900 border border-slate-700/60 rounded px-2 py-1 text-[11px] shrink-0"><Globe className="w-3 h-3 text-cyan-400" /><select value={wallet.network} onChange={(e) => { playCyberClick(); onNetworkChange(e.target.value as NetworkType); }} className="bg-transparent text-cyan-300 font-mono focus:outline-none cursor-pointer"><option value="devnet" className="bg-slate-900 text-slate-100">Solana Devnet</option><option value="testnet" className="bg-slate-900 text-slate-100">Solana Testnet</option></select></div>
+          <div className="flex items-center gap-1.5 text-slate-300 shrink-0"><Zap className="w-3.5 h-3.5 text-amber-400" /><span>SERVICES:</span><span className="text-amber-300">UNVERIFIED</span></div>
+          <div className="flex items-center gap-1.5 text-slate-300 shrink-0"><ShieldCheck className="w-3.5 h-3.5 text-cyan-400" /><span>PQC:</span><span className="text-cyan-400 font-bold">Crypto demo</span></div>
+          <div className="flex items-center gap-1 bg-slate-900 border border-slate-700/60 rounded px-2 py-1 text-[11px] shrink-0"><Globe className="w-3 h-3 text-cyan-400" /><select value={wallet.network} onChange={(e) => { playCyberClick(); onNetworkChange(e.target.value as NetworkType); }} className="bg-transparent text-cyan-300 font-mono focus:outline-hidden cursor-pointer"><option value="devnet" className="bg-slate-900 text-slate-100">Solana Devnet</option><option value="testnet" className="bg-slate-900 text-slate-100">Solana Testnet</option></select></div>
         </div>
       </div>
 
@@ -69,9 +69,9 @@ export const CyberHeader: React.FC<CyberHeaderProps> = ({ wallet, onOpenWalletMo
           <div className="min-w-0">
             <div className="flex items-center gap-2">
               <span className="font-black tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-emerald-300 via-cyan-300 to-purple-300 text-lg truncate">Jarvis Metaverse</span>
-              <span className="text-[10px] text-emerald-400 px-1.5 py-0.5 rounded border border-emerald-500/40 bg-emerald-950/40 font-mono shrink-0">24/7 World</span>
+              <span className="text-[10px] text-emerald-400 px-1.5 py-0.5 rounded border border-emerald-500/40 bg-emerald-950/40 font-mono shrink-0">Experimental</span>
             </div>
-            <p className="text-[11px] text-slate-400 font-mono leading-none truncate">Real World ↔ Virtual Game & Video Matrix</p>
+            <p className="text-[11px] text-slate-400 font-mono leading-none truncate">Virtual demo · service verification required</p>
           </div>
         </div>
 
@@ -80,8 +80,8 @@ export const CyberHeader: React.FC<CyberHeaderProps> = ({ wallet, onOpenWalletMo
           <div className="flex items-center gap-2 px-2.5 py-1.5 rounded-md bg-slate-950/80 border border-cyan-900/70 font-mono text-[9px] leading-tight shrink-0">
             <Activity className="w-3.5 h-3.5 text-emerald-400 animate-pulse" />
             <div>
-              <div className="text-cyan-400 font-bold tracking-wider">SYSTEM STATUS</div>
-              <div className="text-slate-400"><span className="text-emerald-400 font-semibold">ONLINE</span> · PQC READY · {wallet.network.toUpperCase()}</div>
+              <div className="text-cyan-400 font-bold tracking-wider">BROWSER DEMO</div>
+              <div className="text-slate-400"><span className="text-emerald-400 font-semibold">UNVERIFIED</span> · selected network: {wallet.network.toUpperCase()}</div>
             </div>
           </div>
           <button onClick={openCommandCenter} className="flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-cyan-950/70 hover:bg-cyan-900/90 border border-cyan-500/50 text-cyan-300 font-mono text-[10px] font-bold tracking-wider shrink-0 transition-all hover:shadow-[0_0_10px_rgba(0,240,255,0.3)]" title="Open Gemini Brain Command Center">

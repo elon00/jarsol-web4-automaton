@@ -1,4 +1,5 @@
-import { Connection, PublicKey } from '@solana/web3.js';
+import { deploymentConnection, assertReferenceMint } from './deployment-rpc.ts';
+import { PublicKey } from '@solana/web3.js';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -11,7 +12,6 @@ const RPC_URL = process.env.SOLANA_RPC_URL || 'https://api.devnet.solana.com';
 
 async function verifyDevnet() {
   console.log('🔍 [AUDIT] Starting JarSol Devnet On-Chain Verification...');
-  console.log(`📡 [RPC] Cluster URL: ${RPC_URL}`);
 
   if (!fs.existsSync(REGISTRY_PATH)) {
     console.error(`❌ [ERROR] Deployment registry not found at: ${REGISTRY_PATH}`);
@@ -22,76 +22,40 @@ async function verifyDevnet() {
   const mintAddress = registry.token?.mintAddress || registry.mintAddress;
   const deployerAddress = registry.token?.deployerAddress || registry.deployerAddress;
 
-  console.log(`💎 [MINT] Auditing Mint Address: ${mintAddress}`);
-  console.log(`👤 [DEPLOYER] Registered Deployer: ${deployerAddress}`);
 
-  const connection = new Connection(RPC_URL, 'confirmed');
+  const connection = await deploymentConnection(RPC_URL, 'devnet');
 
   // 1. Audit Mint Account
   const mintPubkey = new PublicKey(mintAddress);
-  const mintAccount = await connection.getParsedAccountInfo(mintPubkey, 'confirmed');
+  const mintAccount = await connection.getParsedAccountInfo(mintPubkey, 'finalized');
 
   if (!mintAccount.value) {
     console.error('❌ [ERROR] Mint account not found on Devnet!');
     process.exit(1);
   }
 
+  assertReferenceMint(mintAccount.value);
   const parsedInfo = (mintAccount.value.data as any).parsed.info;
   console.log('\n--- 📋 ON-CHAIN AUDIT REPORT ---');
   console.log(`✅ Token Program:       ${mintAccount.value.owner.toBase58()}`);
   console.log(`✅ Is Initialized:     ${parsedInfo.isInitialized}`);
   console.log(`✅ Decimals:           ${parsedInfo.decimals}`);
   console.log(`✅ On-Chain Supply:     ${parsedInfo.supply} raw units`);
-  console.log(`✅ Mint Authority:     ${parsedInfo.mintAuthority === null ? 'REVOKED (null) [100% Secure]' : parsedInfo.mintAuthority}`);
+  console.log(`✅ Mint Authority:     ${parsedInfo.mintAuthority === null ? 'revoked (observed)' : parsedInfo.mintAuthority}`);
   console.log(`ℹ️ Freeze Authority:   ${parsedInfo.freezeAuthority}`);
 
   // 2. Audit Deployer Balance
   if (deployerAddress) {
     const deployerPubkey = new PublicKey(deployerAddress);
-    const balanceLamports = await connection.getBalance(deployerPubkey, 'confirmed');
+    const balanceLamports = await connection.getBalance(deployerPubkey, 'finalized');
     console.log(`✅ Deployer SOL:        ${balanceLamports / 1e9} SOL`);
   }
 
-  console.log('\n🏆 [VERDICT] 100% ON-CHAIN VERIFIED ON SOLANA DEVNET');
+  console.log('\n🏆 [OBSERVATION] LIVE DEVNET MINT POLICY CHECKS PASSED; NOT A COMPLETE AUDIT');
   console.log(`🔗 Explorer: https://explorer.solana.com/address/${mintAddress}?cluster=devnet`);
 }
 
-async function runWithRetry(maxRetries = 3) {
-  for (let attempt = 1; attempt <= maxRetries; attempt++) {
-    try {
-      await verifyDevnet();
-      return;
-    } catch (err: any) {
-      console.warn(`⚠️ [RETRY ${attempt}/${maxRetries}] RPC call failed: ${err.message || err}`);
-      if (attempt === maxRetries) {
-        const isNetworkOr503 = 
-          err?.message?.includes('503') || 
-          err?.message?.includes('429') || 
-          err?.message?.includes('Service unavailable') || 
-          err?.message?.includes('fetch') ||
-          err?.message?.includes('ECONNREFUSED') ||
-          err?.message?.includes('timeout');
-
-        if (isNetworkOr503) {
-          console.warn('\n⚠️ [FAIL-SAFE] Public Solana Devnet RPC is experiencing upstream outage/rate-limiting.');
-          console.log('🛡️ Validating canonical Devnet deployment registry offline...');
-          if (fs.existsSync(REGISTRY_PATH)) {
-            const reg = JSON.parse(fs.readFileSync(REGISTRY_PATH, 'utf-8'));
-            if (reg.status === 'DEPLOYED' && (reg.token?.mintAddress || reg.mintAddress)) {
-              console.log('✅ Canonical Devnet Registry: VALID & INTACT');
-              console.log(`💎 Registered Mint:     ${reg.token?.mintAddress || reg.mintAddress}`);
-              console.log('🏆 [AUTO-HEAL VERDICT] PASS - Verified via Canonical Deployment Registry & Evidence Artifacts\n');
-              return;
-            }
-          }
-        }
-
-        console.error('Audit failed with error:', err);
-        process.exit(1);
-      }
-      await new Promise(res => setTimeout(res, 2500));
-    }
-  }
-}
-
-runWithRetry();
+verifyDevnet().catch(() => {
+  console.error('DEVNET DEPLOYMENT VERIFICATION FAILED OR UNAVAILABLE; no live pass is claimed.');
+  process.exitCode = 1;
+});

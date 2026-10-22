@@ -242,7 +242,7 @@ export const RealDexExchange: React.FC<RealDexExchangeProps> = ({
                 type="number"
                 value={fromAmount}
                 onChange={(e) => setFromAmount(e.target.value)}
-                className="bg-transparent text-xl md:text-2xl font-cyber font-black text-slate-100 focus:outline-none w-full"
+                className="bg-transparent text-xl md:text-2xl font-cyber font-black text-slate-100 focus:outline-hidden w-full"
                 placeholder="0.0"
               />
               <div className="px-3 py-1.5 rounded-xl bg-black/60 border border-cyan-500/30 text-cyan-300 font-bold font-mono text-sm flex items-center gap-1.5">

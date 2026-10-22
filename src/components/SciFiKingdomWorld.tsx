@@ -401,7 +401,7 @@ export const SciFiKingdomWorld: React.FC<SciFiKingdomWorldProps> = ({
                   }}
                   className={`py-1 rounded text-[10px] font-mono transition-all ${
                     timeSeason.season === s.id
-                      ? 'bg-amber-500/20 text-amber-300 border border-amber-500/50 font-bold shadow-sm'
+                      ? 'bg-amber-500/20 text-amber-300 border border-amber-500/50 font-bold shadow-xs'
                       : 'bg-black/40 text-slate-400 border border-slate-800 hover:text-white'
                   }`}
                 >
@@ -540,7 +540,7 @@ export const SciFiKingdomWorld: React.FC<SciFiKingdomWorldProps> = ({
               value={royalWish}
               onChange={(e) => setRoyalWish(e.target.value)}
               placeholder={`Ask King Jarvis on this ${timeSeason.seasonName} day for any royal decree or vision...`}
-              className="flex-1 p-2.5 rounded-xl bg-slate-900/80 border border-amber-500/30 text-amber-100 text-xs font-mono focus:outline-none focus:border-amber-400"
+              className="flex-1 p-2.5 rounded-xl bg-slate-900/80 border border-amber-500/30 text-amber-100 text-xs font-mono focus:outline-hidden focus:border-amber-400"
             />
             <button
               type="submit"

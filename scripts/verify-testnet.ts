@@ -1,4 +1,5 @@
-import { Connection, PublicKey } from '@solana/web3.js';
+import { deploymentConnection, assertReferenceMint } from './deployment-rpc.ts';
+import { PublicKey } from '@solana/web3.js';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -7,11 +8,10 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const REGISTRY_PATH = path.join(__dirname, '..', 'deployments', 'testnet.json');
-const RPC_URL = 'https://api.testnet.solana.com';
+const RPC_URL = process.env.SOLANA_TESTNET_RPC || 'https://api.testnet.solana.com';
 
 async function verifyTestnet() {
   console.log('🔍 [AUDIT] Starting JarSol Testnet On-Chain Verification...');
-  console.log(`📡 [RPC] Cluster URL: ${RPC_URL}`);
 
   if (!fs.existsSync(REGISTRY_PATH)) {
     console.error(`❌ [ERROR] Deployment registry not found at: ${REGISTRY_PATH}`);
@@ -19,82 +19,43 @@ async function verifyTestnet() {
   }
 
   const registry = JSON.parse(fs.readFileSync(REGISTRY_PATH, 'utf-8'));
-  if (registry.status !== 'DEPLOYED') {
-    console.log('⏳ Testnet status is:', registry.status);
-    return;
-  }
+  if (registry.status !== 'DEPLOYED') throw new Error('No deployed Testnet registry available');
 
   const mintAddress = registry.token?.mintAddress || registry.mintAddress;
   const deployerAddress = registry.token?.deployerAddress || registry.deployerAddress;
 
-  console.log(`💎 [MINT] Auditing Testnet Mint Address: ${mintAddress}`);
-  console.log(`👤 [DEPLOYER] Registered Deployer: ${deployerAddress}`);
 
-  const connection = new Connection(RPC_URL, 'confirmed');
+  const connection = await deploymentConnection(RPC_URL, 'testnet');
 
   const mintPubkey = new PublicKey(mintAddress);
-  const mintAccount = await connection.getParsedAccountInfo(mintPubkey, 'confirmed');
+  const mintAccount = await connection.getParsedAccountInfo(mintPubkey, 'finalized');
 
   if (!mintAccount.value) {
     console.error('❌ [ERROR] Mint account not found on Testnet!');
     process.exit(1);
   }
 
+  assertReferenceMint(mintAccount.value);
   const parsedInfo = (mintAccount.value.data as any).parsed.info;
   console.log('\n--- 📋 TESTNET ON-CHAIN AUDIT REPORT ---');
   console.log(`✅ Token Program:       ${mintAccount.value.owner.toBase58()}`);
   console.log(`✅ Is Initialized:     ${parsedInfo.isInitialized}`);
   console.log(`✅ Decimals:           ${parsedInfo.decimals}`);
   console.log(`✅ On-Chain Supply:     ${parsedInfo.supply} raw units`);
-  console.log(`✅ Mint Authority:     ${parsedInfo.mintAuthority === null ? 'REVOKED (null) [100% Secure]' : parsedInfo.mintAuthority}`);
+  console.log(`✅ Mint Authority:     ${parsedInfo.mintAuthority === null ? 'revoked (observed)' : parsedInfo.mintAuthority}`);
   console.log(`ℹ️ Freeze Authority:   ${parsedInfo.freezeAuthority}`);
 
   if (deployerAddress) {
     const deployerPubkey = new PublicKey(deployerAddress);
-    const balanceLamports = await connection.getBalance(deployerPubkey, 'confirmed');
+    const balanceLamports = await connection.getBalance(deployerPubkey, 'finalized');
     console.log(`✅ Deployer Testnet SOL: ${balanceLamports / 1e9} SOL`);
   }
 
-  console.log('\n🏆 [VERDICT] 100% ON-CHAIN VERIFIED ON SOLANA TESTNET');
+  console.log('\n🏆 [OBSERVATION] LIVE TESTNET MINT POLICY CHECKS PASSED; NOT A COMPLETE AUDIT');
   console.log(`🔗 Explorer: https://explorer.solana.com/address/${mintAddress}?cluster=testnet`);
 }
 
-async function runWithRetry(maxRetries = 3) {
-  for (let attempt = 1; attempt <= maxRetries; attempt++) {
-    try {
-      await verifyTestnet();
-      return;
-    } catch (err: any) {
-      console.warn(`⚠️ [RETRY ${attempt}/${maxRetries}] Testnet RPC call failed: ${err.message || err}`);
-      if (attempt === maxRetries) {
-        const isNetworkOr503 = 
-          err?.message?.includes('503') || 
-          err?.message?.includes('429') || 
-          err?.message?.includes('Service unavailable') || 
-          err?.message?.includes('fetch') ||
-          err?.message?.includes('ECONNREFUSED') ||
-          err?.message?.includes('timeout');
-
-        if (isNetworkOr503) {
-          console.warn('\n⚠️ [FAIL-SAFE] Public Solana Testnet RPC is experiencing upstream outage/rate-limiting (503/429).');
-          console.log('🛡️ Validating canonical deployment registry & cryptographic artifacts offline...');
-          if (fs.existsSync(REGISTRY_PATH)) {
-            const reg = JSON.parse(fs.readFileSync(REGISTRY_PATH, 'utf-8'));
-            if (reg.status === 'DEPLOYED' && (reg.token?.mintAddress || reg.mintAddress)) {
-              console.log('✅ Canonical Testnet Registry: VALID & INTACT');
-              console.log(`💎 Registered Mint:     ${reg.token?.mintAddress || reg.mintAddress}`);
-              console.log(`👤 Registered Deployer: ${reg.token?.deployerAddress || reg.deployerAddress}`);
-              console.log('🏆 [AUTO-HEAL VERDICT] PASS - Verified via Canonical Deployment Registry & Evidence Artifacts\n');
-              return;
-            }
-          }
-        }
-        console.error('Audit failed with error:', err);
-        process.exit(1);
-      }
-      await new Promise(res => setTimeout(res, 2500));
-    }
-  }
-}
-
-runWithRetry();
+verifyTestnet().catch(() => {
+  console.error('TESTNET DEPLOYMENT VERIFICATION FAILED OR UNAVAILABLE; no live pass is claimed.');
+  process.exitCode = 1;
+});

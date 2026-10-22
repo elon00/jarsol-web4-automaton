@@ -213,7 +213,7 @@ export const RealityInspectorModal: React.FC<RealityInspectorModalProps> = ({
                 placeholder="Search subsystems..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-8 pr-3 py-1.5 rounded-lg bg-black/60 border border-slate-800 text-xs font-mono text-slate-200 focus:outline-none focus:border-cyan-500/50 placeholder:text-slate-600"
+                className="w-full pl-8 pr-3 py-1.5 rounded-lg bg-black/60 border border-slate-800 text-xs font-mono text-slate-200 focus:outline-hidden focus:border-cyan-500/50 placeholder:text-slate-600"
               />
               {searchQuery && (
                 <button

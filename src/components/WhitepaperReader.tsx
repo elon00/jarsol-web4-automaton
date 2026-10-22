@@ -126,7 +126,7 @@ export const WhitepaperReader: React.FC<WhitepaperReaderProps> = ({ onToast }) =
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Search whitepaper terms..."
-              className="w-full pl-9 pr-4 py-2.5 rounded-xl bg-slate-900/90 border border-cyan-900/60 text-cyan-200 text-xs font-mono focus:outline-none focus:border-cyan-400"
+              className="w-full pl-9 pr-4 py-2.5 rounded-xl bg-slate-900/90 border border-cyan-900/60 text-cyan-200 text-xs font-mono focus:outline-hidden focus:border-cyan-400"
             />
           </div>
 

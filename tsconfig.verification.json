@@ -1,0 +1,12 @@
+{
+  "extends": "./tsconfig.json",
+  "include": [
+    "scripts/deployment-rpc.ts",
+    "scripts/verify-devnet.ts",
+    "scripts/verify-testnet.ts",
+    "scripts/verify-fresh-testnet.ts",
+    "tests/deployment-verification.test.ts",
+    "scripts/token2022-preflight.ts",
+    "tests/token2022-preflight.test.ts"
+  ]
+}
