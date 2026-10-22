@@ -3,8 +3,7 @@
  * Tests:
  * 1. NIST FIPS 203 (ML-KEM-768) & FIPS 204 (ML-DSA-65) Post-Quantum Cryptography
  * 2. DEX AMM Constant Product (x * y = k) & Slippage Guard
- * 3. 5-Agent Autonomous Swarm Consensus
- * 4. x402 Protocol v2 Challenge/Response & Replay Protection
+ * These local algorithm and arithmetic checks do not prove a live swap, swarm or payment service.
  */
 
 import { pqcMlKem768 } from '../../crypto/pqc/ml-kem';
@@ -25,7 +24,7 @@ function assert(condition: boolean, testName: string, detail?: string) {
 }
 
 console.log('\n======================================================');
-console.log('⚡ JARSOL WEB4 AUTOMATON: ADVANCED SUPERPOWERS TEST SUITE');
+console.log('⚡ JARSOL: LOCAL PQC AND AMM ARITHMETIC CHECKS');
 console.log('======================================================\n');
 
 // TEST SUITE 1: NIST FIPS 203 ML-KEM-768 Key Encapsulation Mechanism
@@ -71,13 +70,7 @@ const priceImpact = (inputSol / (solReserve + inputSol)) * 100;
 assert(expectedOutput > 8900000000, 'AMM Output Calculation', `${Math.round(expectedOutput).toLocaleString()} $JARSOL for 1 SOL`);
 assert(priceImpact < 0.01, 'AMM Price Impact Guard', `${priceImpact.toFixed(5)}% on 50,000 SOL pool`);
 
-// TEST SUITE 4: x402 Protocol Challenge/Response Format
-console.log('\n🛒 4. x402 Protocol v2 Standard Specification:');
-const payTo = 'BPshPrMazV7qunhcq18AvCHjSceHbKytiRDNrtCv68g3';
-const challenge = `x402 realm="jarsol", payTo="${payTo}", amount="0.001", currency="SOL", network="solana:EtWTRABZaYq6iMfeYKouRu166VU2xqa1"`;
-assert(challenge.includes('realm="jarsol"'), 'Challenge Realm Parameter', 'jarsol');
-assert(challenge.includes(`payTo="${payTo}"`), 'Challenge payTo Recipient', payTo);
-assert(challenge.includes('solana:EtWTRABZaYq6iMfeYKouRu166VU2xqa1'), 'Challenge CAIP-2 Solana Cluster', 'Solana Devnet');
+// Payment verification is tested by the backend boundary suite, not literal header strings.
 
 console.log('\n======================================================');
 console.log(`🎉 TEST SUMMARY: ${passed} PASSED | ${failed} FAILED`);

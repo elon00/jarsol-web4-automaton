@@ -1,8 +1,7 @@
 import React from 'react';
 import { ShieldCheck, Coins, Wallet, Zap, Globe, Terminal, Layers, Activity, Command } from 'lucide-react';
 import { WalletState, NetworkType } from '../types';
-import { playCyberClick, playSuccessChime } from '../utils/audio';
-import { requestDevnetAirdrop } from '../utils/solana';
+import { playCyberClick } from '../utils/audio';
 
 interface CyberHeaderProps {
   wallet: WalletState;
@@ -16,34 +15,22 @@ interface CyberHeaderProps {
   onOpenRealityInspector?: () => void;
 }
 
-export const CyberHeader: React.FC<CyberHeaderProps> = ({ wallet, onOpenWalletModal, onNetworkChange, onRefreshBalance, metabolismScore, activeTab, setActiveTab, onToast, onOpenRealityInspector }) => {
-  const [requestingAirdrop, setRequestingAirdrop] = React.useState(false);
-
-  const handleAirdrop = async () => {
-    if (!wallet.address) { onToast('Please connect a wallet first to receive Devnet SOL.', 'warning'); return; }
-    playCyberClick(); setRequestingAirdrop(true);
-    onToast('Requesting 2.0 Devnet SOL airdrop from Solana RPC...', 'info');
-    const res = await requestDevnetAirdrop(wallet.address, 2, wallet.network as 'devnet' | 'testnet');
-    setRequestingAirdrop(false);
-    if (res.success) { playSuccessChime(); onToast('Airdrop of 2.0 SOL confirmed!', 'success'); onRefreshBalance(); }
-    else onToast(res.error || 'Airdrop rate limit reached. Try https://faucet.solana.com', 'error');
-  };
-
+export const CyberHeader: React.FC<CyberHeaderProps> = ({ wallet, onOpenWalletModal, onNetworkChange, metabolismScore, activeTab, setActiveTab, onToast, onOpenRealityInspector }) => {
   const navItems = [
     { id: 'metaverse', label: '🎮 24/7 Metaverse Game', badge: 'Dual-World' }, 
     { id: 'videos', label: '🎬 Sci-Fi 4K Videos', badge: '60FPS' },
     { id: 'kingdom', label: '👑 Sci-Fi Kingdom', badge: 'King/Genie' }, 
     { id: 'jarvis', label: '🎙️ Humanoid Jarvis', badge: 'Face-to-Face' },
     { id: 'swarm', label: '🤖 AI Swarm & Vision', badge: '5 Agents' },
-    { id: 'bazaar', label: '🛒 x402 Bazaar v2', badge: 'Mesh 19' },
+    { id: 'bazaar', label: '🛒 Agent commerce', badge: 'Unavailable' },
     { id: 'dex', label: '🔄 DEX Swap', badge: 'Real AMM' }, 
     { id: 'launchpad', label: '🚀 Launchpad', badge: '1B Fixed' }, 
     { id: 'pqc', label: '🛡️ PQC Shield', badge: 'FIPS 203/204' },
     { id: 'reality', label: '🧬 Reality Inspector', badge: '14 Gates' }, 
     { id: 'conway', label: '🧬 Conway Matrix', badge: 'B3/S23' },
-    { id: 'terminal', label: '🤖 Gemini Brain', badge: '3.6 Flash' }, 
+    { id: 'terminal', label: '🤖 AI chat', badge: 'Requires service' },
     { id: 'tokenomics', label: '📊 Tokenomics', badge: 'Global Mkt' }, 
-    { id: 'audit', label: '⚖️ Legal & Utility', badge: 'Compliance' },
+    { id: 'audit', label: '⚖️ Review & Utility', badge: 'Unreviewed' },
     { id: 'workflow', label: '⚡ Workflow', badge: 'Web 4.0' }, 
     { id: 'whitepaper', label: '📄 Whitepaper', badge: '6 Ch' }, 
     { id: 'readme', label: '📖 Readme', badge: 'Docs' },
@@ -104,10 +91,12 @@ export const CyberHeader: React.FC<CyberHeaderProps> = ({ wallet, onOpenWalletMo
           </button>
           {wallet.connected ? (
             <div className="flex items-center gap-2 shrink-0">
-              <button onClick={handleAirdrop} disabled={requestingAirdrop} title="Request 2.0 Devnet SOL airdrop" className="px-2.5 py-1.5 rounded bg-emerald-950/50 hover:bg-emerald-900/60 border border-emerald-500/40 text-emerald-300 text-xs font-mono flex items-center gap-1.5 disabled:opacity-50 transition-all">
-                <Coins className={`w-3.5 h-3.5 ${requestingAirdrop ? 'animate-spin' : ''}`} />
-                <span>+2.0 SOL</span>
-              </button>
+              {wallet.network === 'devnet' && (
+                <a href="https://faucet.solana.com/" target="_blank" rel="noopener noreferrer"
+                  className="px-2.5 py-1.5 rounded border border-emerald-500/40 text-emerald-300 text-xs font-mono flex items-center gap-1.5">
+                  <Coins className="w-3.5 h-3.5" /> Devnet SOL faucet
+                </a>
+              )}
               <div onClick={onOpenWalletModal} className="px-3 py-1 rounded-md bg-slate-900/80 border border-cyan-500/40 text-xs font-mono text-cyan-300 flex items-center gap-2 cursor-pointer hover:border-cyan-300 transition-all">
                 <div className="text-right">
                   <div className="text-[10px] text-slate-400">{wallet.balanceAvailable ? `${wallet.solBalance.toFixed(3)} SOL${wallet.jarsolBalance > 0 ? ` | ${wallet.jarsolBalance.toLocaleString()} $JARSOL` : ''}` : 'Balance unavailable'}</div>

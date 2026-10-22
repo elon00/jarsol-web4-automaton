@@ -3,8 +3,6 @@ import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import path from 'path';
-import crypto from 'crypto';
-import bs58 from 'bs58';
 import { fileURLToPath } from 'url';
 import { Connection, Keypair, LAMPORTS_PER_SOL, PublicKey, SystemProgram, Transaction } from '@solana/web3.js';
 import {
@@ -19,39 +17,56 @@ import { GoogleGenerativeAI } from '@google/generative-ai';
 import { marketDataService } from './src/services/MarketDataService.ts';
 import { historicalDataService } from './src/services/HistoricalDataService.ts';
 import { createMcpRuntime, createSolanaActionMetadata, createBlinkUrl } from './src/integrations/nextgen.ts';
-import { pqcMlKem768 } from './src/crypto/pqc/ml-kem.ts';
-import { pqcMlDsa65 } from './src/crypto/pqc/ml-dsa.ts';
 import { createSolanaUpgradeMonitor } from './src/services/SolanaUpgradeService.ts';
 import { SOLANA_GENESIS } from './src/integrations/chain-upgrades.ts';
+import { createOperationBoundary, canonicalNetwork, verifyTestnetOperation, OperationBoundaryError, checkedSolanaRpcUrl, publicHttpFailure } from './src/server/operation-boundaries.ts';
 
 dotenv.config();
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const app = express();
-const PORT = Number(process.env.PORT) || 3001;
+const PORT = Number(process.env.PORT ?? 3001);
+const HOST = process.env.JARSOL_HOST || '127.0.0.1';
+if (!Number.isInteger(PORT) || PORT < 0 || PORT > 65535) throw new Error('Invalid PORT configuration');
+if (!['127.0.0.1', '0.0.0.0', '::1', '::'].includes(HOST)) throw new Error('Invalid JARSOL_HOST configuration');
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY || '';
 const SOLANA_NETWORK = process.env.SOLANA_NETWORK || 'devnet';
-const SOLANA_RPC_URL = process.env.SOLANA_RPC_URL || 'https://api.devnet.solana.com';
-const connection = new Connection(SOLANA_RPC_URL, 'confirmed');
+const SOLANA_RPC_URL = checkedSolanaRpcUrl(process.env.SOLANA_RPC_URL || 'https://api.devnet.solana.com');
+const connection = new Connection(SOLANA_RPC_URL, {
+  commitment: 'confirmed', disableRetryOnRateLimit: true,
+  fetch: (input, init) => fetch(input, { ...init, signal: AbortSignal.timeout(8000) }),
+});
 if (!Object.hasOwn(SOLANA_GENESIS, SOLANA_NETWORK)) throw new Error('Unsupported SOLANA_NETWORK');
 const consensusStatus = createSolanaUpgradeMonitor(SOLANA_RPC_URL, SOLANA_NETWORK as keyof typeof SOLANA_GENESIS);
 
 // Official JarSol & Fleet Constants
-const OFFICIAL_JARSOL_RECIPIENT = 'BPshPrMazV7qunhcq18AvCHjSceHbKytiRDNrtCv68g3';
-const USED_X402_SIGNATURES = new Set<string>();
 
 app.use(cors());
-app.use(express.json({ limit: '25mb' }));
+app.disable('x-powered-by');
+app.use('/api', createOperationBoundary(() => process.env.JARSOL_OPERATOR_TOKEN || ''));
+app.use(express.json({ limit: '1mb' }));
+// Commerce adapters are unavailable until payment verification and durable replay handling are reviewed.
+app.get(['/.well-known/x402-bazaar.json', '/.well-known/x402.json'], (_req, res) => {
+  res.status(503).json({ status: 'UNAVAILABLE', verified: false, services: [],
+    error: 'No reviewed payment service is configured. Do not send payments.' });
+});
+
 app.use(express.static(path.join(__dirname, 'dist')));
 app.use(express.static(path.join(__dirname, 'public')));
 
 function loadConfiguredPayer(): Keypair {
   const keypairPath = process.env.SOLANA_KEYPAIR_PATH;
   if (!keypairPath) throw new Error('SOLANA_KEYPAIR_PATH is not configured. Refusing temporary payer generation.');
-  if (!fs.existsSync(keypairPath)) throw new Error(`Solana keypair file not found: ${keypairPath}`);
-  const secretKey = JSON.parse(fs.readFileSync(keypairPath, 'utf8'));
-  if (!Array.isArray(secretKey)) throw new Error('Invalid Solana keypair file format.');
+  if (!fs.existsSync(keypairPath)) throw new Error('Configured Solana keypair file is unavailable.');
+  const actualPath = fs.realpathSync(keypairPath);
+  const staticRoots = [__dirname, path.join(__dirname, 'dist'), path.join(__dirname, 'public')].filter(fs.existsSync);
+  if (staticRoots.some(root => {
+    const relative = path.relative(fs.realpathSync(root), actualPath);
+    return !path.isAbsolute(relative) && relative !== '..' && !relative.startsWith('..' + path.sep);
+  })) throw new Error('Keep the operator keypair outside the checkout and static directories.');
+  const secretKey = JSON.parse(fs.readFileSync(actualPath, 'utf8'));
+  if (!Array.isArray(secretKey) || secretKey.length !== 64 || secretKey.some(value => !Number.isInteger(value) || value < 0 || value > 255)) throw new Error('Invalid Solana keypair file format.');
   return Keypair.fromSecretKey(Uint8Array.from(secretKey));
 }
 
@@ -60,7 +75,7 @@ if (GEMINI_API_KEY) {
   try {
     genAI = new GoogleGenerativeAI(GEMINI_API_KEY);
   } catch (err) {
-    console.error('Error initializing Gemini client:', err);
+    console.error('Gemini client initialization failed.');
   }
 }
 
@@ -80,19 +95,19 @@ app.get('/api/health', async (_req, res) => {
       solanaVersion: version,
       solanaSlot: slot,
       geminiConfigured: !!GEMINI_API_KEY,
-      pqcStatus: 'FIPS_203_204_ACTIVE',
-      dexStatus: 'SIMULATOR_ROUTER_ACTIVE',
-      swarmStatus: '5_AGENTS_SYNCHRONIZED',
-      x402Status: 'BAZAAR_V2_MESH_ONLINE',
-      marketDataStatus: 'VERIFIED',
+      pqcStatus: 'EXPERIMENTAL_BROWSER_SOFTWARE',
+      dexStatus: 'SIMULATION_ONLY',
+      swarmStatus: 'CONFIGURATION_ONLY',
+      x402Status: 'UNAVAILABLE',
+      marketDataStatus: 'NOT_PROBED',
       complianceStatus: 'INFORMATIONAL_ONLY',
       reality: {
         solanaRpc: { capability: 'Solana RPC connectivity', status: 'VERIFIED', evidence: ['getVersion', 'getSlot'] },
         gemini: { capability: 'Gemini provider configuration', status: GEMINI_API_KEY ? 'CONFIGURED' : 'UNKNOWN' },
-        marketData: { capability: 'Multi-Source Consensus Pricing & Empirical Statistics', status: 'VERIFIED', sources: ['Coinbase', 'Kraken', 'Binance', 'CoinGecko'] },
-        pqc: { capability: 'NIST FIPS 203 & 204 Lattice Cryptography', status: 'LIVE_VERIFIED', algorithms: ['ML-KEM-768', 'ML-DSA-65'] },
-        dex: { capability: 'Smart Order Router & Constant-Product AMM', status: 'LIVE_VERIFIED' },
-        swarm: { capability: 'JarSol 5-Agent Autonomous Swarm', status: 'ONLINE' },
+        marketData: { capability: 'Multi-Source Consensus Pricing & Empirical Statistics', status: 'NOT_PROBED', sources: ['Coinbase', 'Kraken', 'Binance', 'CoinGecko'] },
+        pqc: { capability: 'NIST FIPS 203 & 204 Lattice Cryptography', status: 'EXPERIMENTAL_SOFTWARE', algorithms: ['ML-KEM-768', 'ML-DSA-65'] },
+        dex: { capability: 'Constant-Product AMM preview', status: 'SIMULATION_ONLY' },
+        swarm: { capability: 'JarSol agent definitions', status: 'CONFIGURATION_ONLY' },
         compliance: { capability: 'Legal classification', status: 'NOT_CERTIFIED', note: 'Software does not provide legal advice or legal certification.' },
       },
     });
@@ -111,7 +126,7 @@ const jarsolMcp = createMcpRuntime({
       execute: async () => ({
         project: 'JarSol Web4 Automaton',
         network: SOLANA_NETWORK,
-        rpc: SOLANA_RPC_URL,
+        rpc: 'configured server endpoint',
         verifiedBy: ['runtime configuration'],
       }),
     },
@@ -137,6 +152,7 @@ const jarsolMcp = createMcpRuntime({
 
 app.post('/api/mcp', async (req, res) => {
   const response = await jarsolMcp.handle(req.body);
+  if (response.error?.code === -32000) response.error.message = 'Tool execution unavailable.';
   return res.status(response.error ? 400 : 200).json(response);
 });
 
@@ -159,7 +175,8 @@ app.post('/api/actions/tip', async (req, res) => {
     const account = new PublicKey(String(req.body?.account || ''));
     const recipient = new PublicKey(JARSOL_ACTION_RECIPIENT);
     const lamports = 1_000_000;
-    const { blockhash, lastValidBlockHeight } = await connection.getLatestBlockhash('confirmed');
+    const commitment = (await consensusStatus()).upgrade.commitment;
+    const { blockhash, lastValidBlockHeight } = await connection.getLatestBlockhash(commitment);
     const tx = new Transaction({
       feePayer: account,
       recentBlockhash: blockhash,
@@ -171,7 +188,7 @@ app.post('/api/actions/tip', async (req, res) => {
       message: 'Review and sign the 0.001 SOL JarSol support transaction in your wallet.',
     });
   } catch (error: any) {
-    return res.status(400).json({ error: { message: error?.message || 'Unable to build Solana Action transaction.' } });
+    return res.status(400).json({ error: { message: 'Unable to build Solana Action transaction.' } });
   }
 });
 
@@ -195,11 +212,11 @@ app.post('/api/gemini/chat', async (req, res) => {
   const currentTimeString = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true });
   const currentDateString = now.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
   const defaultSystemPrompt = `You are Jarvis for JarSol Web4 Automaton. Be evidence-first. You coordinate autonomous agentic workflows, Solana SPL tokenomics, and Post-Quantum Cryptography (NIST FIPS 203/204). Current server time: ${liveDateTime?.time || currentTimeString}. Current server date: ${liveDateTime?.date || currentDateString}. Deployment cluster: ${SOLANA_NETWORK}.`;
-  
-  const formattedHistory = Array.isArray(history) 
-    ? history.map((item: any) => ({ role: item.role === 'user' ? 'user' : 'model', parts: [{ text: item.text || item.parts?.[0]?.text || '' }] })).filter((item: any) => item.parts[0].text.trim()) 
+
+  const formattedHistory = Array.isArray(history)
+    ? history.map((item: any) => ({ role: item.role === 'user' ? 'user' : 'model', parts: [{ text: item.text || item.parts?.[0]?.text || '' }] })).filter((item: any) => item.parts[0].text.trim())
     : [];
-  
+
   const currentContent: any = { role: 'user', parts: [] };
   if (imageBase64) currentContent.parts.push({ inlineData: { data: imageBase64.replace(/^data:image\/\w+;base64,/, ''), mimeType: 'image/jpeg' } });
   currentContent.parts.push({ text: message || 'Hello Jarvis' });
@@ -209,9 +226,9 @@ app.post('/api/gemini/chat', async (req, res) => {
     const result = await model.generateContent({ contents: [...formattedHistory, currentContent] });
     const reply = result.response.text();
     if (!reply?.trim()) throw new Error('Gemini returned an empty response');
-    return res.json({ success: true, verified: true, model: process.env.GEMINI_MODEL || 'gemini-2.5-flash', reply: reply.trim(), timestamp: new Date().toISOString() });
+    return res.json({ success: true, verified: false, execution: 'provider_response', model: process.env.GEMINI_MODEL || 'gemini-2.5-flash', reply: reply.trim(), timestamp: new Date().toISOString() });
   } catch (error: any) {
-    return res.status(502).json({ success: false, verified: false, status: 'FAILED', error: error?.message || 'Gemini request failed' });
+    return res.status(502).json({ success: false, verified: false, status: 'FAILED', error: 'Gemini request failed' });
   }
 });
 
@@ -220,28 +237,14 @@ app.post('/api/gemini/multimodal', async (req, res) => {
   if (!imageBase64) return res.status(400).json({ success: false, error: 'imageBase64 is required for multimodal vision inspection' });
 
   if (!genAI) {
-    // Deterministic fallback response when API key is pending
-    return res.json({
-      success: true,
-      mode: 'EMBEDDED_NEURAL_VISION_HEURISTIC',
-      type,
-      analysis: {
-        detectedFeatures: ['Candlestick Volatility Bands', 'Liquidity Imbalance', 'Lattice PQC Header Signature'],
-        sentiment: 'BULLISH_BREAKOUT',
-        confidenceScore: 0.94,
-        resistanceLevel: 108.50,
-        supportLevel: 102.20,
-        summary: `JarSol Multimodal Vision inspected image payload. Volatility bands demonstrate structural breakout potential with 0.94 neural confidence.`
-      },
-      timestamp: new Date().toISOString()
-    });
+    return res.status(503).json({ success: false, verified: false, status: 'UNAVAILABLE', error: 'Gemini is not configured.' });
   }
 
   try {
-    const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
+    const model = genAI.getGenerativeModel({ model: process.env.GEMINI_MODEL || 'gemini-2.5-flash' });
     const cleanBase64 = imageBase64.replace(/^data:image\/\w+;base64,/, '');
     const visionPrompt = prompt || `Perform deep technical vision audit on this image (${type}). Identify visual patterns, risk signals, anomalies, and provide strategic action steps.`;
-    
+
     const result = await model.generateContent([
       visionPrompt,
       { inlineData: { data: cleanBase64, mimeType: 'image/jpeg' } }
@@ -255,7 +258,7 @@ app.post('/api/gemini/multimodal', async (req, res) => {
       timestamp: new Date().toISOString()
     });
   } catch (err: any) {
-    return res.status(500).json({ success: false, error: err?.message || 'Multimodal vision inspection failed' });
+    return res.status(500).json({ success: false, error: 'Multimodal vision inspection failed' });
   }
 });
 
@@ -286,44 +289,51 @@ app.get('/api/solana/balance/:pubkey', async (req, res) => {
       connection.getBalance(pubkey, commitment),
       connection.getParsedTokenAccountsByOwner(pubkey, { programId: TOKEN_PROGRAM_ID }, commitment),
     ]);
-    const tokens = tokenAccounts.value.map((ta) => { 
-      const info: any = ta.account.data.parsed.info; 
-      return { pubkey: ta.pubkey.toBase58(), mint: info.mint, amount: info.tokenAmount.uiAmountString, decimals: info.tokenAmount.decimals }; 
+    const tokens = tokenAccounts.value.map((ta) => {
+      const info: any = ta.account.data.parsed.info;
+      return { pubkey: ta.pubkey.toBase58(), mint: info.mint, amount: info.tokenAmount.uiAmountString, decimals: info.tokenAmount.decimals };
     });
     res.json({ address: pubkey.toBase58(), sol: balanceLamports / LAMPORTS_PER_SOL, lamports: balanceLamports, tokens, network: SOLANA_NETWORK, verified: true });
-  } catch (error: any) { 
+  } catch (error: any) {
     res.status(503).json({ success: false, verified: false, error: 'Balance query failed; check RPC identity and connectivity' });
   }
 });
 
 app.post('/api/solana/airdrop', async (req, res) => {
   try {
-    const { address, amount = 1 } = req.body;
+    const { address, amount = 1, network } = req.body;
+    const commitment = (await verifyTestnetOperation(network, SOLANA_NETWORK as keyof typeof SOLANA_GENESIS, consensusStatus)).upgrade.commitment;
+    if (typeof amount !== 'number' || !Number.isFinite(amount) || amount <= 0 || amount > 2 || !Number.isSafeInteger(amount * LAMPORTS_PER_SOL)) return res.status(400).json({ success: false, error: 'Airdrop amount must be a positive value of at most 2 SOL in whole lamports.' });
     if (!address) return res.status(400).json({ success: false, error: 'Solana wallet address is required' });
     if (!['devnet', 'testnet'].includes(SOLANA_NETWORK)) return res.status(403).json({ success: false, verified: false, error: 'Airdrop endpoint is limited to non-mainnet test clusters.' });
     const pubkey = new PublicKey(address);
     const signature = await connection.requestAirdrop(pubkey, amount * LAMPORTS_PER_SOL);
-    await connection.confirmTransaction(signature, 'confirmed');
-    const balanceLamports = await connection.getBalance(pubkey, 'confirmed');
+    await connection.confirmTransaction(signature, commitment);
+    const balanceLamports = await connection.getBalance(pubkey, commitment);
     return res.json({ success: true, verified: true, signature, airdroppedSol: amount, newBalanceSol: balanceLamports / LAMPORTS_PER_SOL, explorerUrl: `https://explorer.solana.com/tx/${signature}?cluster=${SOLANA_NETWORK}` });
-  } catch (error: any) { 
-    return res.status(503).json({ success: false, verified: false, error: error?.message || 'Airdrop failed' }); 
+  } catch (error: any) {
+    if (error instanceof OperationBoundaryError) return res.status(error.status).json({ success: false, verified: false, error: error.message });
+    return res.status(503).json({ success: false, verified: false, error: 'Airdrop failed.' });
   }
 });
 
 const REGISTRY_PATH = path.join(__dirname, 'jarsol-deployment.json');
 app.get('/api/solana/canonical-mint', (req, res) => {
-  const network = typeof req.query.network === 'string' ? req.query.network.toLowerCase() : '';
+  let network: ReturnType<typeof canonicalNetwork>;
+  try { network = canonicalNetwork(req.query.network); }
+  catch { return res.status(400).json({ success: false, error: 'Unsupported Solana network.' }); }
   const candidate = network ? path.join(__dirname, 'deployments', `${network}.json`) : REGISTRY_PATH;
   if (!fs.existsSync(candidate)) return res.status(404).json({ success: false, error: 'No canonical deployment registered for requested network' });
-  try { return res.json({ success: true, verified: true, ...JSON.parse(fs.readFileSync(candidate, 'utf8')) }); }
-  catch (error: any) { return res.status(500).json({ success: false, error: error.message }); }
+  try { return res.json({ ...JSON.parse(fs.readFileSync(candidate, 'utf8')), success: true, verified: false, evidence: 'repository_record_not_live_rpc' }); }
+  catch (error: any) { return res.status(500).json({ success: false, error: 'Canonical registry unavailable.' }); }
 });
 
 app.post('/api/solana/deploy-token', async (req, res) => {
   try {
+    await verifyTestnetOperation(req.body?.network, SOLANA_NETWORK as keyof typeof SOLANA_GENESIS, consensusStatus);
     if (!['devnet', 'testnet'].includes(SOLANA_NETWORK)) return res.status(403).json({ success: false, verified: false, error: 'Use the dedicated hard-gated mainnet deployment script for mainnet.' });
     const { forceRedeploy = false, revokeMintAuthority = true } = req.body || {};
+    if (typeof forceRedeploy !== 'boolean' || typeof revokeMintAuthority !== 'boolean') return res.status(400).json({ success: false, error: 'Deployment flags must be boolean.' });
     const payer = loadConfiguredPayer();
     if (!forceRedeploy && fs.existsSync(REGISTRY_PATH)) {
       try {
@@ -350,129 +360,16 @@ app.post('/api/solana/deploy-token', async (req, res) => {
     const result = { success: true, verified: true, tokenName: 'JarSol', tokenSymbol: 'JARSOL', mintAddress: mint.toBase58(), tokenAccountAddress: tokenAccount.address.toBase58(), deployerAddress: payer.publicKey.toBase58(), totalSupplyFormatted: '1,000,000,000 $JARSOL', decimals: 9, rawSupply: totalSupplyRaw.toString(), mintTxSignature: mintTxSig, revokeTxSignature: revokeTxSig, mintAuthorityRevoked: !!revokeMintAuthority, network: SOLANA_NETWORK, confirmedOnChain: true, explorerMintUrl: `https://explorer.solana.com/address/${mint.toBase58()}?cluster=${SOLANA_NETWORK}`, explorerMintTxUrl: `https://explorer.solana.com/tx/${mintTxSig}?cluster=${SOLANA_NETWORK}` };
     fs.writeFileSync(REGISTRY_PATH, JSON.stringify(result, null, 2));
     return res.json(result);
-  } catch (error: any) { 
-    return res.status(500).json({ success: false, verified: false, error: error?.message || 'On-chain token deployment failed' }); 
+  } catch (error: any) {
+    if (error instanceof OperationBoundaryError) return res.status(error.status).json({ success: false, verified: false, error: error.message });
+    return res.status(500).json({ success: false, verified: false, error: 'On-chain token deployment failed.' });
   }
 });
 
 // -------------------------------------------------------------
-// NIST Post-Quantum Cryptography Suite (FIPS 203 & 204)
-// -------------------------------------------------------------
-app.post('/api/pqc/generate-keys', (req, res) => {
-  try {
-    const algo = req.body?.algorithm || 'ALL';
-    const kemKeys = pqcMlKem768.keygen();
-    const dsaKeys = pqcMlDsa65.keygen();
+// Server key export demos are disabled by the operation boundary.
+// Browser cryptography remains local and experimental.
 
-    return res.json({
-      success: true,
-      verified: true,
-      timestamp: new Date().toISOString(),
-      standard: {
-        kem: 'NIST FIPS 203 (ML-KEM-768)',
-        dsa: 'NIST FIPS 204 (ML-DSA-65)',
-        category: 'NIST Category 3 (128-bit quantum security against Grover and Shor algorithms)',
-        shorVulnerability: '0% (Lattice LWE/SVP Hardness)'
-      },
-      mlKem: {
-        algorithm: 'ML-KEM-768',
-        publicKeyHex: Buffer.from(kemKeys.publicKey).toString('hex'),
-        publicKeyBase58: bs58.encode(kemKeys.publicKey),
-        secretKeyHexMasked: `${Buffer.from(kemKeys.secretKey.slice(0, 32)).toString('hex')}...[${kemKeys.secretKey.length} bytes]`,
-        publicKeyBytes: kemKeys.publicKey.length,
-        secretKeyBytes: kemKeys.secretKey.length
-      },
-      mlDsa: {
-        algorithm: 'ML-DSA-65',
-        publicKeyHex: Buffer.from(dsaKeys.publicKey).toString('hex'),
-        publicKeyBase58: bs58.encode(dsaKeys.publicKey),
-        secretKeyHexMasked: `${Buffer.from(dsaKeys.secretKey.slice(0, 32)).toString('hex')}...[${dsaKeys.secretKey.length} bytes]`,
-        publicKeyBytes: dsaKeys.publicKey.length,
-        secretKeyBytes: dsaKeys.secretKey.length,
-        expectedSignatureBytes: 3309
-      }
-    });
-  } catch (err: any) {
-    return res.status(500).json({ success: false, error: err?.message || 'PQC Keygen failed' });
-  }
-});
-
-app.post('/api/pqc/encapsulate', (req, res) => {
-  try {
-    const { publicKeyHex } = req.body;
-    let pkBytes: Uint8Array;
-    if (publicKeyHex) {
-      pkBytes = Uint8Array.from(Buffer.from(publicKeyHex, 'hex'));
-    } else {
-      const generated = pqcMlKem768.keygen();
-      pkBytes = generated.publicKey;
-    }
-    const { cipherText, sharedSecret } = pqcMlKem768.encapsulate(pkBytes);
-    return res.json({
-      success: true,
-      algorithm: 'ML-KEM-768',
-      standard: 'NIST FIPS 203',
-      cipherTextHex: Buffer.from(cipherText).toString('hex'),
-      sharedSecretHex: Buffer.from(sharedSecret).toString('hex'),
-      cipherTextBytes: cipherText.length,
-      sharedSecretBytes: sharedSecret.length
-    });
-  } catch (err: any) {
-    return res.status(400).json({ success: false, error: err?.message || 'PQC Encapsulation failed' });
-  }
-});
-
-app.post('/api/pqc/sign', (req, res) => {
-  try {
-    const { message = 'JarSol Post-Quantum Authorization Envelope' } = req.body;
-    const key = pqcMlDsa65.keygen();
-    const msgBytes = Buffer.from(message, 'utf8');
-    const signature = pqcMlDsa65.sign(msgBytes, key.secretKey);
-
-    return res.json({
-      success: true,
-      algorithm: 'ML-DSA-65',
-      standard: 'NIST FIPS 204',
-      message,
-      signatureHex: Buffer.from(signature).toString('hex'),
-      signatureBase58: bs58.encode(signature),
-      signatureBytes: signature.length,
-      publicKeyHex: Buffer.from(key.publicKey).toString('hex'),
-      publicKeyBase58: bs58.encode(key.publicKey),
-      verifiedLocally: pqcMlDsa65.verify(signature, msgBytes, key.publicKey)
-    });
-  } catch (err: any) {
-    return res.status(500).json({ success: false, error: err?.message || 'PQC Signing failed' });
-  }
-});
-
-app.post('/api/pqc/verify-signature', (req, res) => {
-  try {
-    const { message, signatureHex, publicKeyHex } = req.body;
-    if (!message || !signatureHex || !publicKeyHex) {
-      return res.status(400).json({ success: false, error: 'message, signatureHex, and publicKeyHex are required' });
-    }
-    const msgBytes = Buffer.from(message, 'utf8');
-    const sigBytes = Uint8Array.from(Buffer.from(signatureHex, 'hex'));
-    const pkBytes = Uint8Array.from(Buffer.from(publicKeyHex, 'hex'));
-
-    const isValid = pqcMlDsa65.verify(sigBytes, msgBytes, pkBytes);
-    return res.json({
-      success: true,
-      verified: isValid,
-      algorithm: 'ML-DSA-65',
-      standard: 'NIST FIPS 204',
-      latticeDimension: 6,
-      modulusQ: 8380417,
-      signatureBytes: sigBytes.length,
-      timestamp: new Date().toISOString()
-    });
-  } catch (err: any) {
-    return res.status(400).json({ success: false, verified: false, error: err?.message || 'Verification execution failed' });
-  }
-});
-
-// -------------------------------------------------------------
 // Real DEX Swapping & Smart Order Router (SOR)
 // -------------------------------------------------------------
 // State for JarSol Virtual Liquidity Pool (50k SOL / 450T JARSOL)
@@ -487,7 +384,7 @@ app.get('/api/dex/quote', (req, res) => {
   const toToken = ((req.query.toToken as string) || 'JARSOL').toUpperCase();
   const amount = parseFloat((req.query.amount as string) || '1.0');
 
-  if (amount <= 0 || isNaN(amount)) {
+  if (amount <= 0 || !Number.isFinite(amount)) {
     return res.status(400).json({ success: false, error: 'Amount must be greater than 0' });
   }
 
@@ -517,68 +414,15 @@ app.get('/api/dex/quote', (req, res) => {
     priceImpactPct: Number(priceImpactPct.toFixed(4)),
     spotRate,
     feePct: 0.3,
-    route: ['JarSol-Raydium-CPMM-Pool', 'Jupiter-Simulated-Routing'],
+    mode: 'simulation', verified: false,
+    scope: 'Mathematical preview only; no live pool or execution router.',
+    route: ['Constant-product preview'],
     computeUnits: 140000
   });
 });
 
-app.post('/api/dex/swap', async (req, res) => {
-  try {
-    const { fromToken = 'SOL', toToken = 'JARSOL', amount = 1.0, userAddress, slippage = 0.5 } = req.body;
-    const numInput = parseFloat(amount);
-    if (!numInput || numInput <= 0) {
-      return res.status(400).json({ success: false, error: 'Invalid swap amount' });
-    }
+// Live DEX execution is unavailable; the quote endpoint is a mathematical preview.
 
-    const feeMultiplier = (10000 - VIRTUAL_POOL.feeBps) / 10000;
-    let outputAmount = 0;
-    let priceImpact = 0;
-
-    if (fromToken === 'SOL' && toToken === 'JARSOL') {
-      const inputWithFee = numInput * feeMultiplier;
-      outputAmount = (inputWithFee * VIRTUAL_POOL.jarsolReserve) / (VIRTUAL_POOL.solReserve + inputWithFee);
-      priceImpact = (numInput / (VIRTUAL_POOL.solReserve + numInput)) * 100;
-      VIRTUAL_POOL.solReserve += numInput;
-      VIRTUAL_POOL.jarsolReserve -= outputAmount;
-    } else {
-      const inputWithFee = numInput * feeMultiplier;
-      outputAmount = (inputWithFee * VIRTUAL_POOL.solReserve) / (VIRTUAL_POOL.jarsolReserve + inputWithFee);
-      priceImpact = (numInput / (VIRTUAL_POOL.jarsolReserve + numInput)) * 100;
-      VIRTUAL_POOL.jarsolReserve += numInput;
-      VIRTUAL_POOL.solReserve -= outputAmount;
-    }
-
-    const minOutput = outputAmount * (1 - (slippage / 100));
-    const txId = `tx_${Date.now()}_${crypto.randomBytes(16).toString('hex')}`;
-    const slot = await connection.getSlot().catch(() => 312000000);
-
-    return res.json({
-      success: true,
-      verified: true,
-      txSignature: txId,
-      userAddress: userAddress || OFFICIAL_JARSOL_RECIPIENT,
-      fromToken,
-      toToken,
-      inputAmount: numInput,
-      outputAmount: Number(outputAmount.toFixed(4)),
-      minOutputAmount: Number(minOutput.toFixed(4)),
-      priceImpactPct: Number(priceImpact.toFixed(4)),
-      slippageTolerancePct: slippage,
-      settlementSlot: slot,
-      network: SOLANA_NETWORK,
-      explorerUrl: `https://explorer.solana.com/tx/${txId}?cluster=${SOLANA_NETWORK}`,
-      poolReserves: {
-        solReserve: VIRTUAL_POOL.solReserve,
-        jarsolReserve: VIRTUAL_POOL.jarsolReserve
-      },
-      timestamp: new Date().toISOString()
-    });
-  } catch (err: any) {
-    return res.status(500).json({ success: false, error: err?.message || 'DEX swap execution failed' });
-  }
-});
-
-// -------------------------------------------------------------
 // Autonomous Multi-Agent Swarm (JarSol Hive)
 // -------------------------------------------------------------
 const SWARM_AGENTS = [
@@ -649,33 +493,8 @@ app.get('/api/agents/swarm', (_req, res) => {
   });
 });
 
-app.post('/api/agents/task', async (req, res) => {
-  const { taskTitle = 'Full System Health & Security Audit', taskType = 'GENERAL' } = req.body;
-  const taskId = `task_${Date.now()}_${Math.random().toString(36).substr(2, 6)}`;
-  
-  // Real swarm execution simulation with agentic voting
-  const agentVotes = SWARM_AGENTS.map(agent => ({
-    agentId: agent.id,
-    name: agent.name,
-    verdict: 'APPROVED',
-    confidenceScore: 0.95 + (Math.random() * 0.04),
-    logEntry: `${agent.name} verified directive for: "${taskTitle}". No quantum or liquidity anomalies identified.`
-  }));
+// Agent definitions do not establish a running autonomous execution service.
 
-  return res.json({
-    success: true,
-    taskId,
-    taskTitle,
-    taskType,
-    consensusResult: 'CONSENSUS_REACHED',
-    swarmConsensusPct: 99.2,
-    agentVotes,
-    cryptographicProof: `ML_DSA_65_LATTICE_SIG_${crypto.randomBytes(32).toString('hex')}`,
-    timestamp: new Date().toISOString()
-  });
-});
-
-// -------------------------------------------------------------
 // Market Data Consensus & Empirical Stats
 // -------------------------------------------------------------
 app.get('/api/market/consensus/:symbol?', async (req, res) => {
@@ -684,17 +503,17 @@ app.get('/api/market/consensus/:symbol?', async (req, res) => {
     const result = await marketDataService.getConsensusPrice(symbol);
     return res.json({ success: true, verified: true, ...result });
   } catch (error: any) {
-    return res.status(500).json({ success: false, verified: false, error: error?.message || 'Consensus price query failed' });
+    return res.status(500).json({ success: false, verified: false, error: 'Consensus price query failed' });
   }
 });
 
 app.get('/api/market/statistics', async (req, res) => {
   try {
-    const forceRefresh = req.query.refresh === 'true';
+    const forceRefresh = false; // Explicit cache synchronization uses the protected POST endpoint.
     const stats = await marketDataService.getAutomatedEmpiricalStatistics(forceRefresh);
     return res.json({ success: true, verified: true, ...stats });
   } catch (error: any) {
-    return res.status(500).json({ success: false, verified: false, error: error?.message || 'Statistical derivation failed' });
+    return res.status(500).json({ success: false, verified: false, error: 'Statistical derivation failed' });
   }
 });
 
@@ -704,7 +523,7 @@ app.get('/api/market/historical', async (req, res) => {
     const dataset = await historicalDataService.getHistoricalDataset(forceRefresh);
     return res.json({ success: true, verified: dataset.status === 'LIVE_VERIFIED', ...dataset });
   } catch (error: any) {
-    return res.status(500).json({ success: false, verified: false, status: 'DATA_UNAVAILABLE', error: error?.message || 'Historical data fetch failed' });
+    return res.status(500).json({ success: false, verified: false, status: 'DATA_UNAVAILABLE', error: 'Historical data fetch failed' });
   }
 });
 
@@ -713,399 +532,20 @@ app.post('/api/market/historical/sync', async (_req, res) => {
     const dataset = await historicalDataService.getHistoricalDataset(true);
     return res.json({ success: true, verified: dataset.status === 'LIVE_VERIFIED', dataset });
   } catch (error: any) {
-    return res.status(500).json({ success: false, verified: false, error: error?.message || 'Historical sync failed' });
+    return res.status(500).json({ success: false, verified: false, error: 'Historical sync failed' });
   }
 });
 
 // -------------------------------------------------------------
-// Official x402 Autonomous Agent Commerce Protocol & Mesh Gateway
-// -------------------------------------------------------------
-async function verifyJarsolSolanaPayment(signature: string, minLamports: number = 1000000, recipient: string = OFFICIAL_JARSOL_RECIPIENT) {
-  const cleanSig = (signature || '').trim();
-  if (!cleanSig || cleanSig.length < 64) {
-    return { verified: false, error: 'Invalid transaction signature format' };
-  }
-  if (USED_X402_SIGNATURES.has(cleanSig)) {
-    return { verified: false, error: 'Replay Protection: Transaction signature already claimed' };
-  }
-
-  // Handle simulated / testnet dry-run signatures
-  if (cleanSig.startsWith('sig_test_') || cleanSig.startsWith('devnet_demo_')) {
-    USED_X402_SIGNATURES.add(cleanSig);
-    return {
-      verified: true,
-      signature: cleanSig,
-      slot: 312000450,
-      receivedSol: minLamports / 1e9,
-      payer: 'SIMULATED_DEVNET_AGENT_WALLET',
-      simulated: true
-    };
-  }
-
-  try {
-    const tx = await connection.getParsedTransaction(cleanSig, {
-      commitment: 'confirmed',
-      maxSupportedTransactionVersion: 0
-    });
-    if (!tx) {
-      return { verified: false, error: 'Transaction not found or not yet confirmed on Solana RPC' };
-    }
-    if (tx.meta?.err) {
-      return { verified: false, error: 'Transaction failed on-chain' };
-    }
-    const accountKeys = tx.transaction.message.accountKeys;
-    let recipientIndex = -1;
-    for (let i = 0; i < accountKeys.length; i++) {
-      if (accountKeys[i].pubkey.toBase58() === recipient) {
-        recipientIndex = i;
-        break;
-      }
-    }
-    if (recipientIndex === -1) {
-      return { verified: false, error: `Invalid recipient: Expected ${recipient}` };
-    }
-    const preBal = tx.meta?.preBalances[recipientIndex] ?? 0;
-    const postBal = tx.meta?.postBalances[recipientIndex] ?? 0;
-    const received = postBal - preBal;
-    if (received < minLamports) {
-      return { verified: false, error: `Insufficient payment: Received ${received} lamports, expected ${minLamports}` };
-    }
-    USED_X402_SIGNATURES.add(cleanSig);
-    return {
-      verified: true,
-      signature: cleanSig,
-      slot: tx.slot,
-      receivedSol: received / 1e9,
-      payer: accountKeys[0].pubkey.toBase58()
-    };
-  } catch (err: any) {
-    return { verified: false, error: err?.message || 'Verification error' };
-  }
-}
-
-function parseX402Auth(req: express.Request): string {
-  const authHeader = req.headers['authorization'] || '';
-  const sigHeader = (req.headers['x-payment-signature'] as string) || '';
-  if (typeof authHeader === 'string' && authHeader.toLowerCase().startsWith('x402 ')) {
-    return authHeader.slice(5).trim();
-  }
-  return sigHeader.trim();
-}
-
-app.get(['/.well-known/x402-bazaar.json', '/.well-known/x402.json'], (_req, res) => {
-  return res.json({
-    x402Version: '2.0.0',
-    version: '2.0.0',
-    name: 'JarSol — Web 4.0 Autonomous AI Agent OS & SPL Launchpad',
-    type: 'ai-launchpad-os',
-    category: 'ai-agent-commerce',
-    tags: ['solana', 'launchpad', 'spl-token', 'post-quantum', 'gemini-ai', 'autonomous-agent', 'x402', 'double-audit', 'fips-203', 'fips-204'],
-    provider: {
-      name: 'JarSol / Martin',
-      website: 'https://github.com/elon00/jarsol-web4-automaton',
-      payTo: OFFICIAL_JARSOL_RECIPIENT,
-      network: 'solana-devnet',
-      caip2: 'solana:EtWTRABZaYq6iMfeYKouRu166VU2xqa1'
-    },
-    federatedMesh: {
-      orchestrator: 'bountyhunter-os',
-      connectedNodesCount: 19,
-      nodes: [
-        'https://elon00.github.io/qmoosa-exchange/.well-known/x402-bazaar.json',
-        'https://scstobcminority-ai.netlify.app/.well-known/x402-bazaar.json',
-        'https://shorx402.netlify.app/.well-known/x402-bazaar.json',
-        'https://elon00.github.io/solana-ai/.well-known/x402-bazaar.json',
-        'https://elon00.github.io/qton/.well-known/x402-bazaar.json',
-        'https://elon00.github.io/bnb-qusd/.well-known/x402-bazaar.json'
-      ]
-    },
-    endpoints: [
-      {
-        path: '/api/v1/x402/launchpad/quote',
-        method: 'POST',
-        description: 'Generate autonomous SPL token launchpad deployment parameters and quantum-safe tokenomics schema for AI agents',
-        pricing: { amountSol: 0.001, lamports: 1000000, currency: 'SOL', alternativeUsdc: '0.01' }
-      },
-      {
-        path: '/api/v1/x402/agent/audit',
-        method: 'POST',
-        description: 'Perform Gemini AI Neural Core double-audit on smart contract code or token metadata with verifiable cryptographic report',
-        pricing: { amountSol: 0.002, lamports: 2000000, currency: 'SOL', alternativeUsdc: '0.02' }
-      },
-      {
-        path: '/api/v1/x402/pqc/keygen',
-        method: 'POST',
-        description: 'Provision complete NIST FIPS 203 (ML-KEM-768) and FIPS 204 (ML-DSA-65) quantum lattice keypair bundle for AI agent identities',
-        pricing: { amountSol: 0.001, lamports: 1000000, currency: 'SOL', alternativeUsdc: '0.01' }
-      },
-      {
-        path: '/api/v1/x402/dex/smart-route',
-        method: 'POST',
-        description: 'Obtain optimal DEX liquidity routing graph and execution parameters across JarSol CPMM and Jupiter pools',
-        pricing: { amountSol: 0.0005, lamports: 500000, currency: 'SOL', alternativeUsdc: '0.005' }
-      },
-      {
-        path: '/api/v1/x402/agent/multimodal-vision',
-        method: 'POST',
-        description: 'Execute multimodal neural vision audit on candlestick charts, transaction graphs, and QR codes',
-        pricing: { amountSol: 0.001, lamports: 1000000, currency: 'SOL', alternativeUsdc: '0.01' }
-      }
-    ]
-  });
-});
-
-// Endpoint 1: Launchpad Quote
-app.post('/api/v1/x402/launchpad/quote', async (req, res) => {
-  const signature = parseX402Auth(req);
-  const costLamports = 1000000; // 0.001 SOL
-  const challengeHeader = `x402 realm="jarsol", payTo="${OFFICIAL_JARSOL_RECIPIENT}", amount="0.001", currency="SOL", network="solana:EtWTRABZaYq6iMfeYKouRu166VU2xqa1"`;
-
-  if (!signature) {
-    res.setHeader('WWW-Authenticate', challengeHeader);
-    return res.status(402).json({
-      status: 402,
-      error: 'Payment Required',
-      protocol: 'x402',
-      version: '2.0.0',
-      challenge: {
-        network: 'solana:EtWTRABZaYq6iMfeYKouRu166VU2xqa1',
-        payTo: OFFICIAL_JARSOL_RECIPIENT,
-        pricing: { amountSol: 0.001, lamports: costLamports, currency: 'SOL', alternativeUsdc: '0.01' },
-        solanaPayUri: `solana:${OFFICIAL_JARSOL_RECIPIENT}?amount=0.001&label=JarSol%20Launchpad&memo=x402-quote`
-      },
-      instructions: `Transfer 0.001 SOL on Solana Devnet to ${OFFICIAL_JARSOL_RECIPIENT}, then retry with header: 'Authorization: x402 <txSignature>'`
-    });
-  }
-
-  const verification = await verifyJarsolSolanaPayment(signature, costLamports, OFFICIAL_JARSOL_RECIPIENT);
-  if (!verification.verified) {
-    res.setHeader('WWW-Authenticate', challengeHeader);
-    return res.status(402).json({ status: 402, error: verification.error || 'Payment verification failed', protocol: 'x402', receivedSignature: signature });
-  }
-
-  const symbol = (req.body?.symbol || 'JARSOL').toUpperCase();
-  const name = req.body?.name || 'JarSol Quantum Token';
-
-  return res.json({
-    success: true,
-    protocol: 'x402',
-    service: 'jarsol-web4-automaton',
-    x402Receipt: verification,
-    launchpadQuote: {
-      tokenName: name,
-      tokenSymbol: symbol,
-      decimals: 9,
-      totalSupply: '1000000000000000',
-      tokenomics: {
-        liquidityPool: '60%',
-        ecosystemRewards: '20%',
-        pqcVaultReserve: '15%',
-        communityAirdrop: '5%'
-      },
-      quantumProtection: 'PQC research integration; no claim of Solana L1-native quantum resistance',
-      estimatedComputeUnits: 250000,
-      deployerAuthority: OFFICIAL_JARSOL_RECIPIENT
-    }
-  });
-});
-
-// Endpoint 2: Agent Audit
-app.post('/api/v1/x402/agent/audit', async (req, res) => {
-  const signature = parseX402Auth(req);
-  const costLamports = 2000000; // 0.002 SOL
-  const challengeHeader = `x402 realm="jarsol", payTo="${OFFICIAL_JARSOL_RECIPIENT}", amount="0.002", currency="SOL", network="solana:EtWTRABZaYq6iMfeYKouRu166VU2xqa1"`;
-
-  if (!signature) {
-    res.setHeader('WWW-Authenticate', challengeHeader);
-    return res.status(402).json({
-      status: 402,
-      error: 'Payment Required',
-      protocol: 'x402',
-      version: '2.0.0',
-      challenge: {
-        network: 'solana:EtWTRABZaYq6iMfeYKouRu166VU2xqa1',
-        payTo: OFFICIAL_JARSOL_RECIPIENT,
-        pricing: { amountSol: 0.002, lamports: costLamports, currency: 'SOL', alternativeUsdc: '0.02' },
-        solanaPayUri: `solana:${OFFICIAL_JARSOL_RECIPIENT}?amount=0.002&label=JarSol%20Double%20Audit&memo=x402-audit`
-      },
-      instructions: `Transfer 0.002 SOL on Solana Devnet to ${OFFICIAL_JARSOL_RECIPIENT}, then retry with header: 'Authorization: x402 <txSignature>'`
-    });
-  }
-
-  const verification = await verifyJarsolSolanaPayment(signature, costLamports, OFFICIAL_JARSOL_RECIPIENT);
-  if (!verification.verified) {
-    res.setHeader('WWW-Authenticate', challengeHeader);
-    return res.status(402).json({ status: 402, error: verification.error || 'Payment verification failed', protocol: 'x402', receivedSignature: signature });
-  }
-
-  const targetProgram = req.body?.targetProgram || 'Bnpd9YGaVxMAwdxFoVA3SQP1Vhfwv7jnJ67QNcyAVKq3';
-
-  return res.json({
-    success: true,
-    protocol: 'x402',
-    service: 'jarsol-double-audit-suite',
-    x402Receipt: verification,
-    auditReport: {
-      auditedTarget: targetProgram,
-      neuralEngine: genAI ? 'Gemini AI Neural Core (Active)' : 'Gemini AI Neural Core (Evidence-First)',
-      score: '99/100',
-      status: 'VERIFIED_SECURE',
-      vulnerabilitiesDetected: 0,
-      quantumResilienceGrade: 'GRADE_A_POST_QUANTUM_READY',
-      findings: [
-        'This endpoint does not perform an independent smart-contract security audit.',
-        'No fixed security score or zero-vulnerability claim is generated without inspectable evidence.',
-        'Use repository CI, source review, RPC evidence, and an independent audit before production claims.'
-      ],
-      generatedAt: new Date().toISOString()
-    }
-  });
-});
-
-// Endpoint 3: PQC Keygen Bundle
-app.post('/api/v1/x402/pqc/keygen', async (req, res) => {
-  const signature = parseX402Auth(req);
-  const costLamports = 1000000; // 0.001 SOL
-  const challengeHeader = `x402 realm="jarsol", payTo="${OFFICIAL_JARSOL_RECIPIENT}", amount="0.001", currency="SOL", network="solana:EtWTRABZaYq6iMfeYKouRu166VU2xqa1"`;
-
-  if (!signature) {
-    res.setHeader('WWW-Authenticate', challengeHeader);
-    return res.status(402).json({
-      status: 402,
-      error: 'Payment Required',
-      protocol: 'x402',
-      version: '2.0.0',
-      challenge: {
-        network: 'solana:EtWTRABZaYq6iMfeYKouRu166VU2xqa1',
-        payTo: OFFICIAL_JARSOL_RECIPIENT,
-        pricing: { amountSol: 0.001, lamports: costLamports, currency: 'SOL', alternativeUsdc: '0.01' },
-        solanaPayUri: `solana:${OFFICIAL_JARSOL_RECIPIENT}?amount=0.001&label=JarSol%20PQC%20Bundle&memo=x402-pqc`
-      },
-      instructions: `Transfer 0.001 SOL on Solana Devnet to ${OFFICIAL_JARSOL_RECIPIENT}, then retry with header: 'Authorization: x402 <txSignature>'`
-    });
-  }
-
-  const verification = await verifyJarsolSolanaPayment(signature, costLamports, OFFICIAL_JARSOL_RECIPIENT);
-  if (!verification.verified) {
-    res.setHeader('WWW-Authenticate', challengeHeader);
-    return res.status(402).json({ status: 402, error: verification.error || 'Payment verification failed', protocol: 'x402', receivedSignature: signature });
-  }
-
-  const kemKeys = pqcMlKem768.keygen();
-  const dsaKeys = pqcMlDsa65.keygen();
-
-  return res.json({
-    success: true,
-    protocol: 'x402',
-    service: 'jarsol-pqc-keygen-suite',
-    x402Receipt: verification,
-    pqcBundle: {
-      mlKem768: {
-        standard: 'NIST FIPS 203',
-        publicKeyHex: Buffer.from(kemKeys.publicKey).toString('hex'),
-        publicKeyBase58: bs58.encode(kemKeys.publicKey),
-        secretKeyHex: Buffer.from(kemKeys.secretKey).toString('hex')
-      },
-      mlDsa65: {
-        standard: 'NIST FIPS 204',
-        publicKeyHex: Buffer.from(dsaKeys.publicKey).toString('hex'),
-        publicKeyBase58: bs58.encode(dsaKeys.publicKey),
-        secretKeyHex: Buffer.from(dsaKeys.secretKey).toString('hex')
-      },
-      quantumSecurityLevel: '128-bit Post-Quantum (NIST Category 3)'
-    }
-  });
-});
-
-// Endpoint 4: Smart DEX Route
-app.post('/api/v1/x402/dex/smart-route', async (req, res) => {
-  const signature = parseX402Auth(req);
-  const costLamports = 500000; // 0.0005 SOL
-  const challengeHeader = `x402 realm="jarsol", payTo="${OFFICIAL_JARSOL_RECIPIENT}", amount="0.0005", currency="SOL", network="solana:EtWTRABZaYq6iMfeYKouRu166VU2xqa1"`;
-
-  if (!signature) {
-    res.setHeader('WWW-Authenticate', challengeHeader);
-    return res.status(402).json({
-      status: 402,
-      error: 'Payment Required',
-      protocol: 'x402',
-      version: '2.0.0',
-      challenge: {
-        network: 'solana:EtWTRABZaYq6iMfeYKouRu166VU2xqa1',
-        payTo: OFFICIAL_JARSOL_RECIPIENT,
-        pricing: { amountSol: 0.0005, lamports: costLamports, currency: 'SOL', alternativeUsdc: '0.005' },
-        solanaPayUri: `solana:${OFFICIAL_JARSOL_RECIPIENT}?amount=0.0005&label=JarSol%20DEX%20Route&memo=x402-route`
-      },
-      instructions: `Transfer 0.0005 SOL on Solana Devnet to ${OFFICIAL_JARSOL_RECIPIENT}, then retry with header: 'Authorization: x402 <txSignature>'`
-    });
-  }
-
-  const verification = await verifyJarsolSolanaPayment(signature, costLamports, OFFICIAL_JARSOL_RECIPIENT);
-  if (!verification.verified) {
-    res.setHeader('WWW-Authenticate', challengeHeader);
-    return res.status(402).json({ status: 402, error: verification.error || 'Payment verification failed', protocol: 'x402', receivedSignature: signature });
-  }
-
-  return res.json({
-    success: true,
-    protocol: 'x402',
-    service: 'jarsol-dex-smart-router',
-    x402Receipt: verification,
-    routeRecommendation: {
-      optimalPath: ['JarSol-CPMM-Pool (60%)', 'Jupiter-Aggregator-Split (40%)'],
-      expectedSlippage: '0.08%',
-      estimatedFeeSaved: '0.0014 SOL',
-      mevProtection: 'LATTICE_ENCRYPTED_MEMPOOL_PROTECTED'
-    }
-  });
-});
-
-// Endpoint 5: Multimodal Vision
-app.post('/api/v1/x402/agent/multimodal-vision', async (req, res) => {
-  const signature = parseX402Auth(req);
-  const costLamports = 1000000; // 0.001 SOL
-  const challengeHeader = `x402 realm="jarsol", payTo="${OFFICIAL_JARSOL_RECIPIENT}", amount="0.001", currency="SOL", network="solana:EtWTRABZaYq6iMfeYKouRu166VU2xqa1"`;
-
-  if (!signature) {
-    res.setHeader('WWW-Authenticate', challengeHeader);
-    return res.status(402).json({
-      status: 402,
-      error: 'Payment Required',
-      protocol: 'x402',
-      version: '2.0.0',
-      challenge: {
-        network: 'solana:EtWTRABZaYq6iMfeYKouRu166VU2xqa1',
-        payTo: OFFICIAL_JARSOL_RECIPIENT,
-        pricing: { amountSol: 0.001, lamports: costLamports, currency: 'SOL', alternativeUsdc: '0.01' },
-        solanaPayUri: `solana:${OFFICIAL_JARSOL_RECIPIENT}?amount=0.001&label=JarSol%20Vision%20Audit&memo=x402-vision`
-      },
-      instructions: `Transfer 0.001 SOL on Solana Devnet to ${OFFICIAL_JARSOL_RECIPIENT}, then retry with header: 'Authorization: x402 <txSignature>'`
-    });
-  }
-
-  const verification = await verifyJarsolSolanaPayment(signature, costLamports, OFFICIAL_JARSOL_RECIPIENT);
-  if (!verification.verified) {
-    res.setHeader('WWW-Authenticate', challengeHeader);
-    return res.status(402).json({ status: 402, error: verification.error || 'Payment verification failed', protocol: 'x402', receivedSignature: signature });
-  }
-
-  return res.json({
-    success: true,
-    protocol: 'x402',
-    service: 'jarsol-multimodal-neural-vision',
-    x402Receipt: verification,
-    visionReport: {
-      neuralModel: 'Gemini 2.5 Flash Multimodal',
-      imageFeatures: ['Bullish Market Structure', 'Volume Node Compression', 'Clean Support Retest at $104.20'],
-      tacticalAdvice: 'Accredit liquidity expansion; enter on volume threshold confirmation.',
-      confidence: '97.4%'
-    }
-  });
-});
-
 app.get('*', (_req, res) => res.sendFile(path.join(__dirname, 'dist', 'index.html')));
 
-app.listen(PORT, '0.0.0.0', () => {
-  console.log(`JarSol backend listening on ${PORT} | Solana: ${SOLANA_RPC_URL}`);
-  console.log(`x402 Bazaar Protocol v2 live at http://localhost:${PORT}/.well-known/x402-bazaar.json`);
+app.use((error: any, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
+  const failure = publicHttpFailure(error);
+  res.status(failure.status).json({ success: false, verified: false, error: failure.message });
 });
+const server = app.listen(PORT, HOST, () => {
+  console.log(`JarSol backend listening on ${HOST}:${(server.address() as { port: number }).port}; network=${SOLANA_NETWORK}; operator actions require authorization.`);
+});
+server.requestTimeout = 30000;
+server.headersTimeout = 10000;
+server.keepAliveTimeout = 5000;

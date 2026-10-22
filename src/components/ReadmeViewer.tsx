@@ -122,7 +122,7 @@ export const ReadmeViewer: React.FC<ReadmeViewerProps> = ({ onToast }) => {
             </div>
             <div className="p-3 rounded-lg bg-black/50 border border-slate-800 flex justify-between items-center">
               <div><strong className="text-emerald-400">POST</strong> <span className="text-cyan-300">/api/solana/airdrop</span></div>
-              <span className="text-slate-500 text-[11px]">2.0 Devnet SOL airdrop request</span>
+              <span className="text-slate-500 text-[11px]">Operator-only testnet operation; unavailable to the browser</span>
             </div>
             <div className="p-3 rounded-lg bg-black/50 border border-slate-800 flex justify-between items-center">
               <div><strong className="text-emerald-400">POST</strong> <span className="text-cyan-300">/api/solana/deploy-token</span></div>
