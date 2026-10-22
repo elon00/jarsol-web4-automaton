@@ -2,6 +2,8 @@
 
 See [blockchain upgrade compatibility](CHAIN_UPGRADES.md) for the current Glamsterdam and Alpenglow integration, commands and verification limits. See [wallet balance behavior](WALLET_BALANCES.md) for network validation, availability and disposable Devnet wallet limits. See [backend operation boundaries](BACKEND_SECURITY.md) before running a server.
 
+See the [required CI policy](CI_POLICY.md) and [legacy Devnet retirement plan](LEGACY_DEVNET_RETIREMENT.md). The 2026-10-22 live observations found that the legacy Devnet mint does not meet the fixed-supply/no-authority policy. The existing Testnet reference passed selected read-only checks; production acceptance and the legacy cutover remain open. No retirement transaction has been executed.
+
 ## About
 
 An experimental Solana dashboard with network-verified wallet reads, local cryptography demonstrations and a read-only deployment registry. See [local startup instructions](LOCAL_DEVELOPMENT.md) and open [localhost:5173](http://localhost:5173/) after starting the app. AI, commerce, legal review and production acceptance remain subject to their documented gates.

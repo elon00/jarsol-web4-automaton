@@ -221,7 +221,7 @@ export const FloatingJarvisVoice: React.FC<FloatingJarvisVoiceProps> = ({ onToas
               value={inputText}
               onChange={(e) => setInputText(e.target.value)}
               placeholder="Speak or type to Jarvis..."
-              className="flex-1 p-2 rounded-xl bg-black/60 border border-slate-800 text-xs text-cyan-200 focus:outline-none focus:border-cyan-400"
+              className="flex-1 p-2 rounded-xl bg-black/60 border border-slate-800 text-xs text-cyan-200 focus:outline-hidden focus:border-cyan-400"
             />
 
             <button

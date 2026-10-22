@@ -146,7 +146,7 @@ export const PqcSecurityModule: React.FC<PqcSecurityModuleProps> = ({ onToast })
             <select
               value={selectedAlgo}
               onChange={(e: any) => setSelectedAlgo(e.target.value)}
-              className="w-full p-2 rounded bg-black/60 border border-slate-700 text-cyan-300 text-xs font-mono focus:outline-none"
+              className="w-full p-2 rounded bg-black/60 border border-slate-700 text-cyan-300 text-xs font-mono focus:outline-hidden"
             >
               <option value="ML-DSA-65">ML-DSA-65 (NIST FIPS 204 Signature)</option>
               <option value="ML-DSA-87">ML-DSA-87 (High Security Level 5)</option>
@@ -333,7 +333,7 @@ export const PqcSecurityModule: React.FC<PqcSecurityModuleProps> = ({ onToast })
             type="text"
             value={signMessageInput}
             onChange={(e) => setSignMessageInput(e.target.value)}
-            className="w-full p-3 rounded-lg bg-black/60 border border-slate-700 text-cyan-200 text-xs font-mono focus:outline-none"
+            className="w-full p-3 rounded-lg bg-black/60 border border-slate-700 text-cyan-200 text-xs font-mono focus:outline-hidden"
           />
 
           <button

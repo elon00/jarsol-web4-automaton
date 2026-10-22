@@ -333,7 +333,7 @@ I am your autonomous Web 4.0 agent. How may I assist your on-chain operations or
             value={inputPrompt}
             onChange={(e) => setInputPrompt(e.target.value)}
             placeholder={`Ask ${selectedRole} anything... (e.g. Deploy 1000T supply, Audit Howey Test, Verify PQC)`}
-            className="flex-1 bg-transparent border-none text-cyan-200 font-mono text-xs focus:outline-none placeholder:text-slate-600"
+            className="flex-1 bg-transparent border-none text-cyan-200 font-mono text-xs focus:outline-hidden placeholder:text-slate-600"
           />
           <button
             type="submit"

@@ -1,87 +1,165 @@
 name: JarSol Reality-First CI
-
-on:
+'on':
   push:
-    branches: [main, reality-hardening-v2, reality-next-steps-v2]
+    branches:
+    - main
+    - reality-hardening-v2
+    - reality-next-steps-v2
   pull_request:
-    branches: [main]
+    branches:
+    - main
   schedule:
-    - cron: '0 6 * * *' # Daily autonomous health & reality audit
-  workflow_dispatch:
-
+  - cron: 0 6 * * *
+  workflow_dispatch: null
 permissions:
   contents: read
-
 concurrency:
-  group: jarsol-ci-${{ github.workflow }}-${{ github.ref }}
+  group: jarsol-ci-${{ github.ref }}
   cancel-in-progress: true
-
 jobs:
   quality:
-    name: Quality and Build
-    runs-on: ubuntu-latest
-    timeout-minutes: 15
+    name: Quality and Build (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 20
+    permissions:
+      contents: read
+      pages: read
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+        - ubuntu-latest
+        - windows-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 24
-          cache: npm
-      - name: Install locked dependencies
-        run: npm ci
-      - name: Typecheck
-        run: npx tsc --noEmit
-      - name: Verify runtime blockchain upgrade handling
-        run: npm run test:upgrades
-      - name: Verify wallet balance identity and failure handling
-        run: npm run test:balances
-      - name: Verify backend operation boundaries
-        run: npm run test:backend
-      - name: Quantum PQC & Portfolio Verification
-        run: npm run test:quantum
-      - name: Production build
-        run: npm run build
-
+    - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+      with:
+        persist-credentials: false
+    - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1
+      with:
+        node-version: '24'
+        package-manager-cache: false
+    - run: npm ci --ignore-scripts
+    - run: npm test
+    - run: npm run test:quantum
+    - run: npm run build
+    - uses: actions/configure-pages@983d7736d9b0ae728b81ab479565c72886d7745b
+      if: matrix.os == 'ubuntu-latest' && github.ref == 'refs/heads/main' && github.event_name
+        != 'pull_request'
+    - uses: actions/upload-pages-artifact@7b1f4a764d45c48632c6b24a0339c27f5614fb0b
+      if: matrix.os == 'ubuntu-latest' && github.ref == 'refs/heads/main' && github.event_name
+        != 'pull_request'
+      with:
+        path: dist
   solana-testnet:
     name: Fresh Testnet Verification
-    needs: quality
+    needs:
+    - quality
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 24
-          cache: npm
-      - name: Install locked dependencies
-        run: npm ci
-      - name: Verify canonical Devnet evidence
-        run: npm run verify:devnet
-      - name: Verify canonical Testnet evidence
-        run: npm run verify:testnet
-      - name: Verify fresh safe Testnet template
-        run: npm run verify:testnet:fresh
-
+    - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+      with:
+        persist-credentials: false
+    - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1
+      with:
+        node-version: '24'
+        package-manager-cache: false
+    - run: npm ci --ignore-scripts
+    - run: npm run verify:devnet
+    - run: npm run verify:testnet
+    - run: npm run verify:testnet:fresh
   security:
     name: Dependency Audit
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 24
-          cache: npm
-      - name: Install locked dependencies
-        run: npm ci
-      - name: Audit production dependencies
-        run: npm audit --omit=dev --audit-level=high
-      - name: Verify repository secrets and fail-closed mainnet boundary
-        run: npm run verify:secrets
-
+    - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+      with:
+        persist-credentials: false
+    - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1
+      with:
+        node-version: '24'
+        package-manager-cache: false
+    - run: npm ci --ignore-scripts
+    - run: npm audit --audit-level=high --fetch-timeout=30000 --fetch-retries=1
+    - run: npm run verify:secrets
+    - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
+      with:
+        python-version: '3.12'
+    - run: python -m unittest discover -s ci -v
+  credentials:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+    - name: Check out immutable scanner and policy outside the target repository
+      uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+      with:
+        repository: elon00/qmoosa-1000
+        ref: 6c0e18f684685606845a9aaeba0b8eb08da69dce
+        path: trusted-security
+        persist-credentials: false
+    - name: Check out complete target history separately
+      uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+      with:
+        path: project
+        fetch-depth: 0
+        persist-credentials: false
+    - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
+      with:
+        python-version: '3.12'
+    - name: Install checksum-pinned credential scanner
+      run: python trusted-security/tools/security_guard.py install
+    - name: Verify trusted scanner protections and exact-fixture boundaries
+      run: python -m unittest discover -s trusted-security/tests -p test_security_guard.py
+        -v
+    - name: Scan target history, merge diffs and commit/tag messages
+      run: python trusted-security/tools/security_guard.py scan --repo project --report
+        reports/credential-scan.json
+    - uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f
+      if: always()
+      with:
+        name: credential-scan
+        path: reports/credential-scan.json
+        if-no-files-found: error
+  codeql:
+    uses: ./.github/workflows/codeql.yml
+    permissions:
+      contents: read
+      actions: read
+      security-events: write
   final-gate:
     name: Final Reality Gate
-    needs: [quality, solana-testnet, security]
+    if: ${{ always() }}
+    needs:
+    - quality
+    - solana-testnet
+    - security
+    - credentials
+    - codeql
     runs-on: ubuntu-latest
+    timeout-minutes: 5
     steps:
-      - run: echo "All mandatory CI gates passed."
+    - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+      with:
+        persist-credentials: false
+    - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
+      with:
+        python-version: '3.12'
+    - run: python tools/release_gate.py --report reports/reality-gate.json
+      env:
+        NEEDS_JSON: ${{ toJSON(needs) }}
+    - uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f
+      if: always()
+      with:
+        name: reality-gate
+        path: reports/reality-gate.json
+        if-no-files-found: error
+  pages:
+    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+    needs:
+    - final-gate
+    uses: ./.github/workflows/pages.yml
+    permissions:
+      contents: read
+      pages: write
+      id-token: write

@@ -352,7 +352,7 @@ export const AutonomousSwarmModule: React.FC<AutonomousSwarmModuleProps> = ({
                 type="text"
                 value={visionPrompt}
                 onChange={(e) => setVisionPrompt(e.target.value)}
-                className="w-full p-2.5 rounded-lg bg-slate-900 border border-slate-800 text-xs text-slate-200 font-mono focus:border-cyan-400 focus:outline-none"
+                className="w-full p-2.5 rounded-lg bg-slate-900 border border-slate-800 text-xs text-slate-200 font-mono focus:border-cyan-400 focus:outline-hidden"
               />
             </div>
 

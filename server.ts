@@ -1,5 +1,6 @@
 import fs from 'fs';
 import express from 'express';
+import { rateLimit } from 'express-rate-limit';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import path from 'path';
@@ -42,6 +43,9 @@ const consensusStatus = createSolanaUpgradeMonitor(SOLANA_RPC_URL, SOLANA_NETWOR
 
 // Official JarSol & Fleet Constants
 
+// Direct-client IPs only: proxy headers are untrusted unless a deployment is reviewed.
+app.use(rateLimit({ windowMs: 60000, limit: 120, standardHeaders: 'draft-8', legacyHeaders: false,
+  message: { success: false, verified: false, error: 'Too many requests; retry later.' } }));
 app.use(cors());
 app.disable('x-powered-by');
 app.use('/api', createOperationBoundary(() => process.env.JARSOL_OPERATOR_TOKEN || ''));

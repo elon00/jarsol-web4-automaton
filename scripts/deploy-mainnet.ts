@@ -1,3 +1,4 @@
+import { updateRegistry } from './registry-store.ts';
 import { Connection, Keypair, PublicKey, LAMPORTS_PER_SOL, Transaction, sendAndConfirmTransaction } from '@solana/web3.js';
 import { createMint, getOrCreateAssociatedTokenAccount, mintTo, setAuthority, AuthorityType } from './spl-helper.js';
 import { findMetadataPda, createMetadataAccountV3Instruction } from './metaplex-helper.js';
@@ -167,13 +168,10 @@ async function deployMainnet() {
   fs.mkdirSync(path.dirname(REGISTRY_PATH), { recursive: true });
   fs.writeFileSync(REGISTRY_PATH, JSON.stringify(mainnetRecord, null, 2), 'utf-8');
 
-  let rootRegistry: any = {};
-  if (fs.existsSync(ROOT_REGISTRY_PATH)) {
-    rootRegistry = JSON.parse(fs.readFileSync(ROOT_REGISTRY_PATH, 'utf-8'));
-  }
-  rootRegistry.clusters ??= {};
-  rootRegistry.clusters['mainnet-beta'] = mainnetRecord.token;
-  fs.writeFileSync(ROOT_REGISTRY_PATH, JSON.stringify(rootRegistry, null, 2), 'utf-8');
+  updateRegistry(ROOT_REGISTRY_PATH, rootRegistry => {
+    rootRegistry.clusters ??= {};
+    rootRegistry.clusters['mainnet-beta'] = mainnetRecord.token;
+  });
 
   console.log('✅ Mainnet deployment workflow completed; all postconditions verified.');
   console.log(`💎 Mint: ${mintAddress}`);

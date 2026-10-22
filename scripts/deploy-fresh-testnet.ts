@@ -1,3 +1,4 @@
+import { updateRegistry } from './registry-store.ts';
 import { Connection, Keypair, PublicKey, LAMPORTS_PER_SOL, Transaction, sendAndConfirmTransaction } from '@solana/web3.js';
 import { createMint, getOrCreateAssociatedTokenAccount, mintTo, setAuthority, AuthorityType } from './spl-helper.js';
 import { findMetadataPda, createMetadataAccountV3Instruction } from './metaplex-helper.js';
@@ -202,32 +203,10 @@ async function deployFreshTestnet() {
 
   // Sync root jarsol-deployment.json
   try {
-    let rootRegistry: any = {};
-    if (fs.existsSync(ROOT_REGISTRY_PATH)) {
-      rootRegistry = JSON.parse(fs.readFileSync(ROOT_REGISTRY_PATH, 'utf-8'));
-    }
-    if (!rootRegistry.clusters) rootRegistry.clusters = {};
-    rootRegistry.clusters.testnet = {
-      mintAddress: mintAddress,
-      tokenAccountAddress: tokenAccount.address.toBase58(),
-      deployerAddress: payer.publicKey.toBase58(),
-      status: 'DEPLOYED',
-      decimals: DECIMALS,
-      totalSupplyFormatted: '1,000,000,000 $JARSOL',
-      rawSupply: RAW_SUPPLY.toString(),
-      confirmedOnChain: true,
-      mintAuthorityRevoked: true,
-      freezeAuthorityRevoked: true,
-      metadataAttachedOnChain: true,
-      metadataPDA: metadataPDA.toBase58(),
-      mintTxSignature: mintTxSig,
-      revokeMintTxSignature: revokeMintTxSig,
-      revokeFreezeTxSignature: revokeFreezeTxSig,
-      deployedAt: freshRecord.deployment.deployedAt,
-      explorerMintUrl: freshRecord.deployment.explorerMintUrl,
-      explorerMintTxUrl: freshRecord.deployment.explorerMintTxUrl,
-    };
-    fs.writeFileSync(ROOT_REGISTRY_PATH, JSON.stringify(rootRegistry, null, 2), 'utf-8');
+    updateRegistry(ROOT_REGISTRY_PATH, rootRegistry => {
+      rootRegistry.clusters ??= {};
+      rootRegistry.clusters.testnet = freshRecord.token;
+    });
     console.log(`💾 Synced root registry at: ${ROOT_REGISTRY_PATH}`);
   } catch (rootErr) {
     console.warn('Could not sync root registry:', rootErr);

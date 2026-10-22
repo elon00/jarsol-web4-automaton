@@ -313,15 +313,15 @@ export function App() {
           <div className="flex items-center gap-2">
             <span className="w-2 h-2 rounded-full bg-cyan-400 animate-pulse" />
             <span className="text-slate-300 font-bold">Jarvis // JarSol Humanoid Voice AI</span>
-            <span>- Solana Devnet/Testnet Active</span>
+            <span>- Experimental testnet interface</span>
           </div>
 
           <div className="flex items-center gap-4 text-[11px]">
-            <span>NIST FIPS 203/204 PQC</span>
+            <span>Experimental ML-KEM/ML-DSA software</span>
             <span>•</span>
-            <span>1,000,000,000 JARSOL testnet supply</span>
+            <span>Reference supply policy; live checks required</span>
             <span>•</span>
-            <span>Reality-First verification enabled</span>
+            <span>See verification limits</span>
           </div>
         </div>
       </footer>
