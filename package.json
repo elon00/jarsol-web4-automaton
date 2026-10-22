@@ -40,7 +40,7 @@
     "test:upgrades": "tsx --test tests/chain-upgrades.test.ts tests/solana-monitor.test.ts",
     "test:balances": "tsx --test tests/wallet-balance.test.ts tests/wallet-display.test.ts",
     "test:backend": "tsx --test tests/backend-boundaries.test.ts tests/backend-server.test.ts tests/operator-ui.test.ts tests/ai-availability.test.ts tests/voice-readiness.test.ts",
-    "test:deployment": "tsx --test tests/deployment-verification.test.ts tests/token2022-preflight.test.ts"
+    "test:deployment": "tsx --test tests/deployment-verification.test.ts tests/token2022-preflight.test.ts tests/registry-store.test.ts"
   },
   "dependencies": {
     "@google/generative-ai": "^0.24.0",
@@ -53,12 +53,14 @@
     "cors": "^2.8.5",
     "dotenv": "^16.4.7",
     "express": "^4.21.2",
+    "express-rate-limit": "8.7.1",
     "lucide-react": "^0.475.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "tailwind-merge": "^3.0.2"
   },
   "devDependencies": {
+    "@tailwindcss/postcss": "4.3.3",
     "@types/cors": "^2.8.17",
     "@types/express": "^5.0.0",
     "@types/node": "^22.13.4",
@@ -71,8 +73,7 @@
     "tsx": "^4.19.3",
     "typescript": "^5.7.3",
     "vite": "^6.1.0",
-    "vite-plugin-node-polyfills": "^0.23.0",
-    "@tailwindcss/postcss": "4.3.3"
+    "vite-plugin-node-polyfills": "^0.23.0"
   },
   "overrides": {
     "form-data": "^4.0.6",

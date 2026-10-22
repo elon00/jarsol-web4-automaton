@@ -19,9 +19,16 @@ const files = walk(root);
 const texts = [];
 for (const f of files) {
   try {
-    const st=fs.statSync(f);
-    if (st.size>maxBytes) continue;
-    const b=fs.readFileSync(f);
+    const fd = fs.openSync(f, 'r');
+    let b;
+    try {
+      const st = fs.fstatSync(fd);
+      if (!st.isFile() || st.size > maxBytes) continue;
+      b = Buffer.alloc(maxBytes + 1);
+      const length = fs.readSync(fd, b, 0, b.length, 0);
+      if (length > maxBytes) continue;
+      b = b.subarray(0, length);
+    } finally { fs.closeSync(fd); }
     if (b.includes(0)) continue;
     texts.push({file:path.relative(root,f).replaceAll('\\','/'),text:b.toString('utf8')});
   } catch {}

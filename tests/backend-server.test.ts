@@ -37,6 +37,21 @@ async function withServer(operatorToken: string, rpcUrl: string, callback: (url:
     }
   }
 }
+test('the actual server limits repeated unauthorized traffic without trusting forwarding headers', async () => {
+  await withServer('', 'https://provider.invalid/rate-limit-canary', async url => {
+    for (let index = 0; index < 120; index++) {
+      const response = await fetch(url + '/api/solana/deploy-token', { method: 'POST',
+        headers: { 'content-type': 'application/json', 'x-forwarded-for': '192.0.2.' + (index % 250 + 1) }, body: '{broken' });
+      assert.equal(response.status, 503);
+      await response.arrayBuffer();
+    }
+    const blocked = await fetch(url + '/api/solana/deploy-token', { method: 'POST' });
+    assert.equal(blocked.status, 429);
+    assert.ok(blocked.headers.get('retry-after'));
+    assert.equal((await blocked.json()).verified, false);
+  });
+});
+
 test('the actual default server closes privileged routes before parsing their bodies', async () => {
   await withServer('', 'https://provider.invalid/synthetic-rpc-path-canary', async (url, output) => {
     const response = await fetch(url + '/api/solana/deploy-token', { method: 'POST',

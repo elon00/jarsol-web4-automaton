@@ -17,3 +17,7 @@ The Token-2022 manual workflow is a read-only preflight. It validates positive u
 The auxiliary autonomous workflow runs explicit locked-install, test, quantum-test and build commands. It cannot silently omit a gate because a script is absent. Its technology report is diagnostic evidence, not production certification.
 
 The Tailwind 4 migration requires modern browsers (Safari 16.4+, Chrome 111+, Firefox 128+). The revised dependency audit removed known high/critical findings at the reviewed lockfile; remaining low/moderate advisories require disposition and future audits may change that result.
+
+The backend limits each direct-client IP to 120 requests per minute before authentication, body parsing, static serving or route handlers. Forwarded IP headers are untrusted. This is a single-process protection, not a distributed denial-of-service guarantee; a proxy or multi-instance deployment needs a reviewed trust configuration and shared rate-limit store.
+
+Cooperating registry writers use an exclusive local lock and atomic JSON replacement, preserving unrelated cluster records. An interrupted writer can leave a lock: inspect the owning process and preserve deployment receipts before recovery. Local locks do not coordinate independent hosts. The fresh Testnet script retains mint authority; its registry records that fact rather than claiming revocation. It therefore does not satisfy the fixed-supply reference verifier. No authority changes are performed automatically to make a check pass.
