@@ -11,7 +11,7 @@ const account = () => ({
   owner: { toBase58: () => TOKEN_2022_PROGRAM_ID },
   data: { parsed: { type: 'mint', info: {
     isInitialized: true, decimals: 9, supply: '1000000000000000000',
-    mintAuthority: null, freezeAuthority: null
+    mintAuthority: null as string | null, freezeAuthority: null as string | null
   } } }
 });
 
