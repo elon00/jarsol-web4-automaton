@@ -1,0 +1,674 @@
+{
+  "engine": "REA_Reverse_Engineer_Anything",
+  "status": "STRUCTURE_RECONSTRUCTED",
+  "analyzed_files": 222,
+  "manifest": {
+    "AUTONOMOUS_BLUEPRINT.md": {
+      "bytes": 2032
+    },
+    "BACKEND_SECURITY.md": {
+      "bytes": 3456
+    },
+    "CHAIN_UPGRADES.md": {
+      "bytes": 3120
+    },
+    "index.html": {
+      "bytes": 1235
+    },
+    "jarsol-deployment.json": {
+      "bytes": 2451
+    },
+    "LOCAL_DEVELOPMENT.md": {
+      "bytes": 2331
+    },
+    "netlify.toml": {
+      "bytes": 348
+    },
+    "package-lock.json": {
+      "bytes": 241865
+    },
+    "package.json": {
+      "bytes": 4231
+    },
+    "postcss.config.js": {
+      "bytes": 86
+    },
+    "QMOOSA_TRUTH_PROTOCOL.md": {
+      "bytes": 417
+    },
+    "README.md": {
+      "bytes": 6522
+    },
+    "REALITY_AUDIT.md": {
+      "bytes": 1656
+    },
+    "REALITY_FIRST_ARCHITECTURE.md": {
+      "bytes": 856
+    },
+    "REALITY_MANIFEST.json": {
+      "bytes": 16243
+    },
+    "SECURITY.md": {
+      "bytes": 596
+    },
+    "server.ts": {
+      "bytes": 28781
+    },
+    "start_jarvis.bat": {
+      "bytes": 953
+    },
+    "tailwind.config.js": {
+      "bytes": 1060
+    },
+    "TRUTH_AND_CLAIMS_POLICY.md": {
+      "bytes": 792
+    },
+    "tsconfig.json": {
+      "bytes": 530
+    },
+    "tsconfig.node.json": {
+      "bytes": 236
+    },
+    "vite.config.ts": {
+      "bytes": 753
+    },
+    "WALLET_BALANCES.md": {
+      "bytes": 2009
+    },
+    "charms-pqc-shield\\Cargo.toml": {
+      "bytes": 538
+    },
+    "deployments\\devnet.json": {
+      "bytes": 590
+    },
+    "deployments\\testnet.json": {
+      "bytes": 1902
+    },
+    "docs\\COMPETITION_READINESS.md": {
+      "bytes": 9660
+    },
+    "docs\\CRYPTO_AUDIT_PACK.md": {
+      "bytes": 9555
+    },
+    "docs\\DEMO_PRESENTATION_KIT.md": {
+      "bytes": 4159
+    },
+    "docs\\INCIDENT_RESPONSE_RUNBOOK.md": {
+      "bytes": 3805
+    },
+    "docs\\LIVE_FLOW_TESTING.md": {
+      "bytes": 920
+    },
+    "docs\\MAINNET_PREFLIGHT.md": {
+      "bytes": 508
+    },
+    "docs\\MONITORING_AND_LOGGING_SPEC.md": {
+      "bytes": 2572
+    },
+    "docs\\REALITY_CLASSIFICATION.md": {
+      "bytes": 991
+    },
+    "docs\\REALITY_VERIFICATION.md": {
+      "bytes": 4978
+    },
+    "docs\\ROADMAP.md": {
+      "bytes": 687
+    },
+    "docs\\SOLANA_SIMD_PQC_RFC.md": {
+      "bytes": 3930
+    },
+    "docs\\SYSTEM_REALITY_AUDIT_REPORT.md": {
+      "bytes": 8900
+    },
+    "docs\\WHITEPAPER.md": {
+      "bytes": 9976
+    },
+    "JARSOL_QUANTUM_RESEARCH\\MASTER_RESOURCE_INDEX.md": {
+      "bytes": 6292
+    },
+    "PQC_EVER_READY_TOOLKIT\\pqc-cli.ts": {
+      "bytes": 4581
+    },
+    "PQC_EVER_READY_TOOLKIT\\README.md": {
+      "bytes": 3950
+    },
+    "public\\actions.json": {
+      "bytes": 196
+    },
+    "public\\face.png": {
+      "bytes": 10994
+    },
+    "public\\jarsol-metadata.json": {
+      "bytes": 1485
+    },
+    "public\\jarsol-token-logo.png": {
+      "bytes": 729974
+    },
+    "public\\sci_fi_cyber_oasis.jpg": {
+      "bytes": 1193120
+    },
+    "public\\sci_fi_galactic_citadel.jpg": {
+      "bytes": 1017627
+    },
+    "public\\sci_fi_throne_king.jpg": {
+      "bytes": 1090783
+    },
+    "quantum\\00_MASTER_INDEX.md": {
+      "bytes": 5056
+    },
+    "reality\\URS_EVIDENCE_CERTIFICATE.json": {
+      "bytes": 2680
+    },
+    "reality\\URS_SCORECARD.json": {
+      "bytes": 2224
+    },
+    "scripts\\audit-crypto.mjs": {
+      "bytes": 12981
+    },
+    "scripts\\autonomous-tech-audit.mjs": {
+      "bytes": 2994
+    },
+    "scripts\\charms-pqc-demo.ts": {
+      "bytes": 6182
+    },
+    "scripts\\create-metadata.ts": {
+      "bytes": 3504
+    },
+    "scripts\\deploy-fresh-testnet.ts": {
+      "bytes": 11448
+    },
+    "scripts\\deploy-mainnet.ts": {
+      "bytes": 8077
+    },
+    "scripts\\deploy-testnet.ts": {
+      "bytes": 5036
+    },
+    "scripts\\finish-all.ts": {
+      "bytes": 4897
+    },
+    "scripts\\generate-urs-certificate.ts": {
+      "bytes": 15818
+    },
+    "scripts\\metaplex-helper.ts": {
+      "bytes": 2560
+    },
+    "scripts\\production-ready.ts": {
+      "bytes": 33495
+    },
+    "scripts\\reality-universal.ts": {
+      "bytes": 15232
+    },
+    "scripts\\rea_inspector.py": {
+      "bytes": 1485
+    },
+    "scripts\\rsi_engine.py": {
+      "bytes": 2039
+    },
+    "scripts\\spl-helper.ts": {
+      "bytes": 6462
+    },
+    "scripts\\start-and-finish-everything.mjs": {
+      "bytes": 6978
+    },
+    "scripts\\verify-devnet.ts": {
+      "bytes": 4254
+    },
+    "scripts\\verify-fresh-testnet.ts": {
+      "bytes": 5431
+    },
+    "scripts\\verify-secrets.ts": {
+      "bytes": 4323
+    },
+    "scripts\\verify-testnet.ts": {
+      "bytes": 4458
+    },
+    "src\\App.tsx": {
+      "bytes": 12726
+    },
+    "src\\index.css": {
+      "bytes": 2408
+    },
+    "src\\main.tsx": {
+      "bytes": 246
+    },
+    "tests\\ai-availability.test.ts": {
+      "bytes": 3598
+    },
+    "tests\\backend-boundaries.test.ts": {
+      "bytes": 7212
+    },
+    "tests\\backend-server.test.ts": {
+      "bytes": 6740
+    },
+    "tests\\chain-upgrades.test.ts": {
+      "bytes": 6594
+    },
+    "tests\\nextgen-integrations.test.mjs": {
+      "bytes": 2496
+    },
+    "tests\\operator-ui.test.ts": {
+      "bytes": 2400
+    },
+    "tests\\reality_check_harness.py": {
+      "bytes": 1250
+    },
+    "tests\\solana-monitor.test.ts": {
+      "bytes": 2241
+    },
+    "tests\\wallet-balance.test.ts": {
+      "bytes": 4536
+    },
+    "tests\\wallet-display.test.ts": {
+      "bytes": 1752
+    },
+    ".github\\workflows\\autonomous-one-click.yml": {
+      "bytes": 1436
+    },
+    ".github\\workflows\\ci.yml": {
+      "bytes": 2510
+    },
+    ".github\\workflows\\pages.yml": {
+      "bytes": 1200
+    },
+    ".github\\workflows\\qmoosa-rsi-rea-sync.yml": {
+      "bytes": 531
+    },
+    ".github\\workflows\\safe-dependency-repair.yml": {
+      "bytes": 1811
+    },
+    ".github\\workflows\\token-2022-testnet.yml": {
+      "bytes": 3714
+    },
+    "charms-pqc-shield\\src\\lib.rs": {
+      "bytes": 5930
+    },
+    "docs\\reality\\REALITY_BASELINE_AUDIT.md": {
+      "bytes": 8130
+    },
+    "docs\\reality\\URS_EVIDENCE_CERTIFICATE.md": {
+      "bytes": 2642
+    },
+    "JARSOL_QUANTUM_RESEARCH\\01_NIST_STANDARDS\\01_NIST_PQC_OVERVIEW.md": {
+      "bytes": 3211
+    },
+    "JARSOL_QUANTUM_RESEARCH\\01_NIST_STANDARDS\\02_FIPS_203_ML_KEM.md": {
+      "bytes": 2710
+    },
+    "JARSOL_QUANTUM_RESEARCH\\01_NIST_STANDARDS\\03_FIPS_204_ML_DSA.md": {
+      "bytes": 2702
+    },
+    "JARSOL_QUANTUM_RESEARCH\\01_NIST_STANDARDS\\04_FIPS_205_SLH_DSA.md": {
+      "bytes": 2540
+    },
+    "JARSOL_QUANTUM_RESEARCH\\01_NIST_STANDARDS\\05_ROUND_4_HQC.md": {
+      "bytes": 2138
+    },
+    "JARSOL_QUANTUM_RESEARCH\\04_CMC_COINGECKO_RESEARCH\\AGGREGATOR_CATEGORY_AUDIT.md": {
+      "bytes": 1958
+    },
+    "JARSOL_QUANTUM_RESEARCH\\04_CMC_COINGECKO_RESEARCH\\ANTI_HYPE_DILIGENCE_GUIDE.md": {
+      "bytes": 2269
+    },
+    "JARSOL_QUANTUM_RESEARCH\\04_CMC_COINGECKO_RESEARCH\\MARKET_CAP_VS_SECURITY_VERACITY.md": {
+      "bytes": 2390
+    },
+    "JARSOL_QUANTUM_RESEARCH\\05_LICENSE_AUDIT\\COMMERCIAL_REUSABILITY_VERDICT.md": {
+      "bytes": 1388
+    },
+    "JARSOL_QUANTUM_RESEARCH\\05_LICENSE_AUDIT\\MASTER_LICENSE_MATRIX.md": {
+      "bytes": 2045
+    },
+    "JARSOL_QUANTUM_RESEARCH\\05_LICENSE_AUDIT\\PERMISSIVE_VS_COPYLEFT_RULES.md": {
+      "bytes": 2745
+    },
+    "JARSOL_QUANTUM_RESEARCH\\06_PORTFOLIO_OPTIMIZATION\\MARKOWITZ_VS_QUBO_THEORY.md": {
+      "bytes": 2678
+    },
+    "JARSOL_QUANTUM_RESEARCH\\06_PORTFOLIO_OPTIMIZATION\\SIMULATED_ANNEALING_BENCHMARK_SPEC.md": {
+      "bytes": 2321
+    },
+    "JARSOL_QUANTUM_RESEARCH\\06_PORTFOLIO_OPTIMIZATION\\SOLANA_ASSET_COVARIANCE_MODELS.md": {
+      "bytes": 1811
+    },
+    "JARSOL_QUANTUM_RESEARCH\\07_JARSOL_INTEGRATION\\JARSOL_AGENT_PQC_ENVELOPE.md": {
+      "bytes": 3582
+    },
+    "JARSOL_QUANTUM_RESEARCH\\07_JARSOL_INTEGRATION\\PRODUCTION_RELEASE_GATEWAY.md": {
+      "bytes": 2162
+    },
+    "JARSOL_QUANTUM_RESEARCH\\07_JARSOL_INTEGRATION\\SOLANA_RPC_BACKWARD_COMPATIBILITY.md": {
+      "bytes": 2092
+    },
+    "JARSOL_QUANTUM_RESEARCH\\02_OPEN_SOURCE_PQC\\OpenQuantumSafe\\LIBOQS_DEEP_DIVE.md": {
+      "bytes": 2486
+    },
+    "JARSOL_QUANTUM_RESEARCH\\02_OPEN_SOURCE_PQC\\OpenQuantumSafe\\OQS_PROVIDER_AND_WRAPPERS.md": {
+      "bytes": 1638
+    },
+    "JARSOL_QUANTUM_RESEARCH\\02_OPEN_SOURCE_PQC\\Reference_Implementations\\PQCLEAN_AUDIT.md": {
+      "bytes": 1232
+    },
+    "JARSOL_QUANTUM_RESEARCH\\02_OPEN_SOURCE_PQC\\Reference_Implementations\\STANDALONE_KAT_VECTORS.md": {
+      "bytes": 1758
+    },
+    "JARSOL_QUANTUM_RESEARCH\\02_OPEN_SOURCE_PQC\\Rust_PQC\\RUSTCRYPTO_PQC_ECOSYSTEM.md": {
+      "bytes": 1687
+    },
+    "JARSOL_QUANTUM_RESEARCH\\02_OPEN_SOURCE_PQC\\Rust_PQC\\SOLANA_SVM_RUST_PORTABILITY.md": {
+      "bytes": 3265
+    },
+    "JARSOL_QUANTUM_RESEARCH\\03_QUANTUM_RESISTANT_BLOCKCHAINS\\Abelian\\ABELIAN_CODEBASE_AUDIT.md": {
+      "bytes": 913
+    },
+    "JARSOL_QUANTUM_RESEARCH\\03_QUANTUM_RESISTANT_BLOCKCHAINS\\Abelian\\ABELIAN_LATTICE_PRIVACY_REVIEW.md": {
+      "bytes": 1720
+    },
+    "JARSOL_QUANTUM_RESEARCH\\03_QUANTUM_RESISTANT_BLOCKCHAINS\\Cellframe\\CELLFRAME_LICENSE_AND_RISKS.md": {
+      "bytes": 1280
+    },
+    "JARSOL_QUANTUM_RESEARCH\\03_QUANTUM_RESISTANT_BLOCKCHAINS\\Cellframe\\CELLFRAME_MULTI_ALGO_REVIEW.md": {
+      "bytes": 1487
+    },
+    "JARSOL_QUANTUM_RESEARCH\\03_QUANTUM_RESISTANT_BLOCKCHAINS\\Other_Verified_Projects\\IOTA_AND_POST_QUANTUM_EVOLUTION.md": {
+      "bytes": 1741
+    },
+    "JARSOL_QUANTUM_RESEARCH\\03_QUANTUM_RESISTANT_BLOCKCHAINS\\Other_Verified_Projects\\SOLANA_SIMD_PQC_TRANSITION_PATH.md": {
+      "bytes": 3434
+    },
+    "JARSOL_QUANTUM_RESEARCH\\03_QUANTUM_RESISTANT_BLOCKCHAINS\\QRL\\QRL_REUSABILITY_ANALYSIS.md": {
+      "bytes": 1272
+    },
+    "JARSOL_QUANTUM_RESEARCH\\03_QUANTUM_RESISTANT_BLOCKCHAINS\\QRL\\QRL_XMSS_ARCHITECTURE.md": {
+      "bytes": 2337
+    },
+    "PQC_EVER_READY_TOOLKIT\\modules\\crypto-agility.ts": {
+      "bytes": 1091
+    },
+    "PQC_EVER_READY_TOOLKIT\\modules\\hybrid-envelope.ts": {
+      "bytes": 4490
+    },
+    "PQC_EVER_READY_TOOLKIT\\modules\\hybrid-key-exchange.ts": {
+      "bytes": 1976
+    },
+    "PQC_EVER_READY_TOOLKIT\\modules\\qubo-portfolio.ts": {
+      "bytes": 1465
+    },
+    "PQC_EVER_READY_TOOLKIT\\snippets\\fast-keygen-snippet.ts": {
+      "bytes": 602
+    },
+    "PQC_EVER_READY_TOOLKIT\\snippets\\node-agent-snippet.ts": {
+      "bytes": 1238
+    },
+    "PQC_EVER_READY_TOOLKIT\\snippets\\react-snippet.tsx": {
+      "bytes": 1486
+    },
+    "quantum\\01_NIST_PQC\\ML-DSA.md": {
+      "bytes": 2072
+    },
+    "quantum\\01_NIST_PQC\\ML-KEM.md": {
+      "bytes": 2318
+    },
+    "quantum\\01_NIST_PQC\\SLH-DSA.md": {
+      "bytes": 2012
+    },
+    "quantum\\01_NIST_PQC\\standards.md": {
+      "bytes": 3195
+    },
+    "quantum\\02_PQC_SECURITY\\crypto-agility.ts": {
+      "bytes": 3792
+    },
+    "quantum\\02_PQC_SECURITY\\hybrid-envelope.ts": {
+      "bytes": 4700
+    },
+    "quantum\\02_PQC_SECURITY\\key-management.ts": {
+      "bytes": 1817
+    },
+    "quantum\\03_PQ_COMMUNICATION\\hybrid-key-exchange.ts": {
+      "bytes": 4359
+    },
+    "quantum\\03_PQ_COMMUNICATION\\secure-session.ts": {
+      "bytes": 2286
+    },
+    "quantum\\04_QUANTUM_PORTFOLIO\\benchmark-runner.ts": {
+      "bytes": 8022
+    },
+    "quantum\\04_QUANTUM_PORTFOLIO\\classical-markowitz.ts": {
+      "bytes": 4218
+    },
+    "quantum\\04_QUANTUM_PORTFOLIO\\qubo-formulation.ts": {
+      "bytes": 5203
+    },
+    "quantum\\04_QUANTUM_PORTFOLIO\\simulated-annealer.ts": {
+      "bytes": 3516
+    },
+    "quantum\\05_OPEN_SOURCE_RESEARCH\\blockchain-pqc-survey.md": {
+      "bytes": 3640
+    },
+    "quantum\\05_OPEN_SOURCE_RESEARCH\\LICENSE_INVENTORY.md": {
+      "bytes": 3638
+    },
+    "quantum\\05_OPEN_SOURCE_RESEARCH\\open-quantum-safe-audit.md": {
+      "bytes": 2333
+    },
+    "quantum\\06_TESTS\\known-answer.test.ts": {
+      "bytes": 3273
+    },
+    "quantum\\06_TESTS\\policy-engine.test.ts": {
+      "bytes": 3803
+    },
+    "quantum\\06_TESTS\\portfolio-benchmark.test.ts": {
+      "bytes": 3794
+    },
+    "quantum\\06_TESTS\\pqc-smoke.test.ts": {
+      "bytes": 4674
+    },
+    "quantum\\07_SECURITY_AUDIT\\security-checklist.md": {
+      "bytes": 2186
+    },
+    "quantum\\07_SECURITY_AUDIT\\threat-model.md": {
+      "bytes": 2890
+    },
+    "quantum\\08_JARSOL_INTEGRATION\\architecture.md": {
+      "bytes": 5820
+    },
+    "quantum\\08_JARSOL_INTEGRATION\\claims-policy.md": {
+      "bytes": 2604
+    },
+    "quantum\\08_JARSOL_INTEGRATION\\integration-map.md": {
+      "bytes": 1878
+    },
+    "src\\components\\AutonomousSwarmModule.tsx": {
+      "bytes": 21365
+    },
+    "src\\components\\ConwayLifeCanvas.tsx": {
+      "bytes": 14732
+    },
+    "src\\components\\ConwayTerminal.tsx": {
+      "bytes": 15667
+    },
+    "src\\components\\CyberHeader.tsx": {
+      "bytes": 11213
+    },
+    "src\\components\\FloatingJarvisVoice.tsx": {
+      "bytes": 10112
+    },
+    "src\\components\\HumanoidRobotAvatar.tsx": {
+      "bytes": 10704
+    },
+    "src\\components\\LegalAuditor.tsx": {
+      "bytes": 1682
+    },
+    "src\\components\\MetaverseGameEngine.tsx": {
+      "bytes": 25695
+    },
+    "src\\components\\MetaverseVideoEngine.tsx": {
+      "bytes": 14744
+    },
+    "src\\components\\PqcSecurityModule.tsx": {
+      "bytes": 28067
+    },
+    "src\\components\\ReadmeViewer.tsx": {
+      "bytes": 7854
+    },
+    "src\\components\\RealDexExchange.tsx": {
+      "bytes": 18670
+    },
+    "src\\components\\RealityInspectorModal.tsx": {
+      "bytes": 17051
+    },
+    "src\\components\\SciFiKingdomWorld.tsx": {
+      "bytes": 24482
+    },
+    "src\\components\\SolanaLaunchpad.tsx": {
+      "bytes": 3488
+    },
+    "src\\components\\TalkingJarvisWindow.tsx": {
+      "bytes": 33652
+    },
+    "src\\components\\TokenomicsModule.tsx": {
+      "bytes": 13605
+    },
+    "src\\components\\WalletModal.tsx": {
+      "bytes": 11098
+    },
+    "src\\components\\WhitepaperReader.tsx": {
+      "bytes": 10057
+    },
+    "src\\components\\WorkflowViewer.tsx": {
+      "bytes": 10251
+    },
+    "src\\components\\X402BazaarCommerce.tsx": {
+      "bytes": 1064
+    },
+    "src\\data\\historical-returns.json": {
+      "bytes": 3485
+    },
+    "src\\data\\tokenomicsData.ts": {
+      "bytes": 6105
+    },
+    "src\\data\\whitepaperData.ts": {
+      "bytes": 14098
+    },
+    "src\\integrations\\chain-upgrades.ts": {
+      "bytes": 8670
+    },
+    "src\\integrations\\nextgen.mjs": {
+      "bytes": 4636
+    },
+    "src\\integrations\\nextgen.ts": {
+      "bytes": 2677
+    },
+    "src\\server\\operation-boundaries.ts": {
+      "bytes": 4013
+    },
+    "src\\services\\HistoricalDataService.ts": {
+      "bytes": 10710
+    },
+    "src\\services\\MarketDataService.ts": {
+      "bytes": 15062
+    },
+    "src\\services\\PolicyEngine.ts": {
+      "bytes": 4655
+    },
+    "src\\services\\SolanaUpgradeService.ts": {
+      "bytes": 963
+    },
+    "src\\services\\WalletBalanceService.ts": {
+      "bytes": 3191
+    },
+    "src\\types\\index.ts": {
+      "bytes": 2697
+    },
+    "src\\utils\\ArgentHealerEngine.ts": {
+      "bytes": 8637
+    },
+    "src\\utils\\audio.ts": {
+      "bytes": 2507
+    },
+    "src\\utils\\gemini.ts": {
+      "bytes": 2339
+    },
+    "src\\utils\\pqc-trade-envelope.ts": {
+      "bytes": 1773
+    },
+    "src\\utils\\pqc.ts": {
+      "bytes": 3800
+    },
+    "src\\utils\\realtimeAudioVisualEngine.ts": {
+      "bytes": 16882
+    },
+    "src\\utils\\solana.ts": {
+      "bytes": 6351
+    },
+    "src\\utils\\timeSeasonEngine.ts": {
+      "bytes": 6202
+    },
+    "src\\utils\\wallet.ts": {
+      "bytes": 3263
+    },
+    "src\\crypto\\classical\\ed25519.ts": {
+      "bytes": 993
+    },
+    "src\\crypto\\classical\\hkdf.ts": {
+      "bytes": 1082
+    },
+    "src\\crypto\\classical\\x25519.ts": {
+      "bytes": 809
+    },
+    "src\\crypto\\hybrid\\hybrid-envelope.ts": {
+      "bytes": 4193
+    },
+    "src\\crypto\\hybrid\\hybrid-kex.ts": {
+      "bytes": 2910
+    },
+    "src\\crypto\\pqc\\ml-dsa.ts": {
+      "bytes": 1559
+    },
+    "src\\crypto\\pqc\\ml-kem.ts": {
+      "bytes": 1866
+    },
+    "src\\crypto\\provider\\CryptoProvider.ts": {
+      "bytes": 1820
+    },
+    "src\\crypto\\provider\\provider-registry.ts": {
+      "bytes": 821
+    },
+    "src\\crypto\\tests\\cross-interop.test.ts": {
+      "bytes": 4987
+    },
+    "src\\crypto\\tests\\downgrade-defense.test.ts": {
+      "bytes": 2464
+    },
+    "src\\crypto\\tests\\negative-tests.test.ts": {
+      "bytes": 3894
+    },
+    "src\\crypto\\tests\\official-nist-vectors.test.ts": {
+      "bytes": 12181
+    },
+    "src\\services\\charms\\charms-beaming-bridge.ts": {
+      "bytes": 5229
+    },
+    "src\\services\\charms\\charms-pqc-client.ts": {
+      "bytes": 7075
+    },
+    "src\\services\\charms\\types.ts": {
+      "bytes": 1739
+    },
+    "src\\services\\tests\\charms-pqc.test.ts": {
+      "bytes": 5783
+    },
+    "src\\services\\tests\\historical-data.test.ts": {
+      "bytes": 4962
+    },
+    "src\\services\\tests\\market-data.test.ts": {
+      "bytes": 6024
+    },
+    "src\\services\\tests\\reality-manifest.test.ts": {
+      "bytes": 4333
+    },
+    "src\\services\\tests\\x402-and-pqc-features.test.ts": {
+      "bytes": 4010
+    }
+  },
+  "timestamp": 1794228748
+}
